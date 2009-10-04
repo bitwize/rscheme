@@ -1,0 +1,28 @@
+;;;   an ObjectFigure  -*-Scheme-*-
+
+((a :var <var> pa)
+ (b :var <var> pc)
+ (c :var <var> p5)
+ (pa :hvec <pair> va pb)
+ (pb :hvec <pair> vb ())
+ (pc :hvec <pair> vc pd)
+ (pd :hvec <pair> vd ())
+ (va :gvec <bar> (id) 0 'x 'y)
+ (vb :gvec <foo> (id) 1 'p)
+ (vc :gvec <baz> (id) 2)
+ (vd :gvec <baz> (id) 3)
+ (p5 :hvec <pair> va p6)
+ (p6 :hvec <pair> vb (link pc (r u r))))
+
+((#f #f #f b  #f)
+ (a  pa pb pc pd)
+ (#f va vb vc vd)
+ (c  p5 p6 #f #f))
+
+#|
+((a  #f b  #f)
+ (pa pb pc pd)
+ (va vb vc vd)
+ (p5 p6 #f #f)
+ (c #f  #f #f))
+|#

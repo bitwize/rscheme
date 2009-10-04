@@ -1,0 +1,20 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    modules/tables/tables.mcf
+ |
+ |          Copyright (C)1995 Donovan Kolbly <donovan@tkg.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.5
+ | Date:    2003-02-22 16:57:59
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ `------------------------------------------------------------------------|#
+
+((tables "$dist/tables" "$install/resource/modules")
+ (require-c-header "<rscheme/hashmain.h>")
+ (open primops *scheme* low-scheme objsys corelib mathlib)
+ (files classes misc
+ 	eqtable objtable strcitable strtable symtable 
+	genhooks gentable
+	make tablemap join)
+ (export :local))

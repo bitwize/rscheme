@@ -1,0 +1,66 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}oid->instance{/RefName}
+  {RefPurpose}Return the identified row as an instance.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/oid->instance/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/cnxn/ {Parameter/table-name/ {Parameter/class/ {Parameter/oid/{/ParamDef}{ParamDef role="returns"}
+{Parameter}instance{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}cnxn{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<pg95-connection>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}table-name{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}class{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<<class>>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}oid{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}instance{/Term}
+    {ListItem}{para}
+An instance of {Phrase Role="var"}class{/Phrase}{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Builds a single object (instance of {Parameter}class{/Parameter}) from the row
+in table {Parameter}table-name{/Parameter} with the given object id, {Parameter}oid{/Parameter}.{/para}
+{para}
+In PostgresQL, every row (tuple) in the entire system has a unique
+identity.  This is like object identity.  (And, like object identity 
+encoded in pointers, may be reused for a new row after the row is deleted).{/para}
+{/RefSect1}
+{/RefEntry}

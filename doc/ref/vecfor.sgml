@@ -1,0 +1,58 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}vector-for-each{/RefName}
+  {RefPurpose}Applies a function to elements of a vector{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/vector-for-each/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/proc/ {Parameter/vector/{/ParamDef}{ParamDef role="returns"}
+{Parameter}object{/Parameter} ...{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}proc{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<function>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}vector{/Term}
+    {ListItem}{para}
+Instances of {ClassName/<vector>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}object{/Term}
+    {ListItem}{para}
+Instances of {ClassName/<object>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function is to vectors what {Phrase Role="var"}for-each{/Phrase} is to lists.{/para}
+{para}
+In particular, the procedure {Parameter}proc{/Parameter} is called with 
+corresponding vector elements,
+in order (up to the length of the shortest {Parameter}vector{/Parameter}.)
+Also, {Phrase Role="var"}vector-for-each{/Phrase} returns whatever
+the last call to {Parameter}proc{/Parameter} returns{Footnote}{para}
+This return value
+is deprecated{/para}
+{/Footnote}.{/para}
+{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,39 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}define-module{/RefName}
+  {RefClass role="Type"}special{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/define-module/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/name/ {Parameter/escname/ {Parameter/form/{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}name{/Term}
+    {ListItem}{para}
+The name of the module being defined
+  {/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}escname{/Term}
+    {ListItem}{para}
+The name of the {Quote}escape{/Quote} construct in the {Parameter}form{/Parameter}s.
+  {/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}form{/Term}
+    {ListItem}{para}
+A sequence of forms that constitute the definition of the module.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{/RefEntry}

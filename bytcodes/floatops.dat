@@ -1,0 +1,48 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    bytcodes/floatops.dat
+ |
+ |          Copyright (C)1995 Donovan Kolbly <donovan@tkg.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.3
+ | Date:    1999-09-29 20:27:44
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ `------------------------------------------------------------------------|#
+
+
+(define-primop float-floor ((a <raw-float>) => <raw-float>)
+  "floor")
+
+(define-primop float-ceiling ((a <raw-float>) => <raw-float>)
+  "ceil")
+
+;;; This does no range checking
+
+(define-primop float-truncate* (<raw-float> => <raw-int>)
+  "FLT_TRUNC")
+
+;;; This one always works; may return a bignum or long-int
+
+(define-primop float-truncate (<raw-float> => <obj>)
+  "float_truncate")
+
+(define-primop raw-int->double-float (<raw-int> => <double-float>)
+  "make_float")
+
+(define-primop raw-int->raw-float (<raw-int> => <raw-float>)
+  "FX_FLOAT")
+
+;;
+
+(define-primop float-exp (<raw-float> => <raw-float>) "exp")
+(define-primop float-log (<raw-float> => <raw-float>) "log")
+(define-primop float-sin (<raw-float> => <raw-float>) "sin")
+(define-primop float-cos (<raw-float> => <raw-float>) "cos")
+(define-primop float-tan (<raw-float> => <raw-float>) "tan")
+(define-primop float-asin (<raw-float> => <raw-float>) "asin")
+(define-primop float-acos (<raw-float> => <raw-float>) "acos")
+(define-primop float-sqrt (<raw-float> => <raw-float>) "sqrt")
+(define-primop float-atan1 (<raw-float> => <raw-float>) "atan")
+(define-primop float-atan2 (<raw-float> <raw-float> => <raw-float>) "atan2")
+(define-primop float-pow (<raw-float> <raw-float> => <raw-float>) "pow")

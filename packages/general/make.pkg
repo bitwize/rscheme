@@ -1,0 +1,21 @@
+
+.SUFFIXES: .scm .mif
+
+MI_FILES=rs_lang.mif rs_glue.mif rs_lang_internal.mif \
+	 rs_sys_linker.mif rs_sys_paths.mif rs_sys_tables.mif \
+	 rs_lang_eval.mif rs_sys_reflect.mif
+M_BASES=$(MI_FILES:.mif=)
+
+all:: $(MI_FILES)
+
+.scm.mif:
+	$(RSC) -p $*.scm
+
+install:: $(MI_FILES)
+	for i in $(M_BASES) ; \
+	do cp -pf $$i.mif $$i.mx $(INSTALL_DIR)/resource/modules ; \
+	done
+
+clean::
+	rm -f $(MI_FILES)
+	rm -f $(MI_FILES:.mif=.mx)

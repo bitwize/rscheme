@@ -1,0 +1,53 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}inet-client{/RefName}
+  {RefPurpose}Connect to an internet server.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/inet-client/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/host/ {Parameter/port/{/ParamDef}{ParamDef role="returns"}
+{Parameter}fd{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}host{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<hostspec>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}port{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}fd{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This procedure establishes a TCP/IP (stream) connection to the
+the given {Parameter}port{/Parameter} on the given {Parameter}host{/Parameter}.  The host may be
+specified as either a {ClassName/<string>/ or a {ClassName/<inet-addr>/.  
+If {Phrase Role="var"}host{/Phrase} is a {ClassName/<string>/, it is resolved
+using {Phrase Role="var"}string->hostaddr{/Phrase}.{/para}
+{/RefSect1}
+{/RefEntry}

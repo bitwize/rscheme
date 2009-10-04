@@ -1,0 +1,41 @@
+{Chapter}
+{Title}Debugging in &rs;{/Title}
+{Para}
+{Para}
+Debugging &rs; programs is in some ways both simpler and more
+difficult than debugging programs in a traditional language
+like C.
+{Para}
+It is more difficult because the tools available are different
+than those that the typical C programmer is familiar with, such
+as {UserInput/gdb/.
+{Para}
+However, it is also easier, because &rs; is a much more dynamic
+system.  Because &rs; is usually used (at least during program
+development) in an {Emphasis/interactive/ mode, the developer can interact
+with the running program even more concretely than the most
+advanced features of a traditional debugger like {UserInput/gdb/.
+{Para}
+For example, in &rs;, you can redefine procedures interactively
+without having to reload your entire program.
+{Para}
+(Unfortunately, not all kinds of objects can be redefined 
+sans repurcussion.
+Class objects, for example, often have pointers to them stored in
+various places, such as superclass links and in functions and
+slots that have
+type restrictions on the class.  Since redefining a class amounts to
+assigning a new value (a distinct class object) to the class variable 
+of the given name, pointers to the old class will remain in the system,
+typically necessitating recompiling the definitions of many functions
+and any subclasses, as well as clearing out any data structures that
+may have instances of the old class)
+{Para}
+In addition to the ability to interact with the target program directly,
+&rs; also provides some more traditional debugging facilities.
+{Para}
+&ref.trace;
+&ref.break;
+&ref.no-break;
+&ref.abt;
+&ref.bt;

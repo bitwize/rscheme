@@ -1,0 +1,32 @@
+{Chapter}
+{Title}Unix System Interface{/Title}
+{Para}
+{Para}
+This chapter describes the functions available from the {UserInput/unixm/
+module.
+{Para}
+&ref.get-env;
+&ref.set-env;
+&ref.reset-env;
+&ref.unset-env;
+&ref.mkdir;
+&ref.mkdirs;
+&ref.system;
+&ref.getrusage;
+&ref.open-input-process;
+&ref.sleep;
+&ref.fork;
+&ref.wait;
+&ref.wait-for;
+&ref.getpid;
+&ref.getpgrp;
+&ref.getppid;
+&ref.getuid;
+&ref.geteuid;
+&ref.getlogin;
+&ref.getpw;
+&ref.exec;
+&ref.exec1;
+&ref.pipe;
+&ref.kill;
+&ref.hostname;

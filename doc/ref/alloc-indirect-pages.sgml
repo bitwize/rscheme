@@ -1,0 +1,52 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}alloc-indirect-pages{/RefName}
+  {RefPurpose}Allocate some indirect page numbers{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/alloc-indirect-pages/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/pstore/ {Parameter/num-pages/{/ParamDef}{ParamDef role="returns"}
+{Parameter}first-page{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}pstore{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<persistent-store>/.
+  {/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}num-pages{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}first-page{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+If the well-known indirect page numbers (0-255) are insufficient for an
+applications needs, more page numbers may be obtained using this
+function, which allocates blocks of indirect page numbers.{/para}
+{/RefSect1}
+{/RefEntry}

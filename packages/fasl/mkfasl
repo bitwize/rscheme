@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+#  script to make a fasl file
+#
+
+if test $# -lt 1
+then echo "usage: $0 dir [module...]" >&2
+     exit 1
+fi
+
+script=`dirname "$0"`/genfasl.scm
+if test ! -r $script
+then echo "could not find \`genfasl.scm' in \``dirname "$0"`'" >&2
+     exit 1
+fi
+
+dst=$1
+name=`basename $dst`
+shift
+
+if test ! -d $dst
+then mkdir -p $dst
+fi
+
+export INSTALL_DIR
+$INSTALL_DIR/bin/rs -script $script $dst "$@"

@@ -1,0 +1,18 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    modules/highscm/highscm.mcf
+ |
+ |          Copyright (C)1995 Donovan Kolbly <donovan@tkg.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.4
+ | Date:    1998-12-19 22:57:44
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ `------------------------------------------------------------------------|#
+
+((high-scheme "$dist/highscm" "$install/resource/modules")
+ (open primops *scheme* objsys low-scheme iolib mathlib corelib tables)
+ (files equality procedur promise profiler)
+ (files collexn)
+ (files hooks)
+ (export :local))

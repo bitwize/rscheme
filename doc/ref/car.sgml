@@ -1,0 +1,43 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}car{/RefName}
+  {RefPurpose}Get the car part of a pair.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/car/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/p/{/ParamDef}{ParamDef role="returns"}
+{Parameter}a{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}p{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<pair>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}a{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<object>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This is one of the two standard lisp accessors.{/para}
+{/RefSect1}
+{/RefEntry}

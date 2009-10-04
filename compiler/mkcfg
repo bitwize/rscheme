@@ -1,0 +1,43 @@
+#!/bin/sh
+
+dist_path=$1
+dist_path=`cd $dist_path ; pwd`
+
+b="v0.7.3.4-b7u, 2007-05-30"
+case "$b" in
+  %*) b="$RSCHEME_VERSION, `date +'%Y-%m-%d-%H:%M'`" ;;
+esac
+
+# strip off date part and leading "v"
+v=`echo "$b" | sed 's/,.*//' | sed 's/^v//'`
+vlist=`echo "$b" | sed 's/[^0-9][^0-9]*/ /g'`
+
+#
+#  configure some build flags depending on what version of
+#  RScheme we are running in
+#
+
+rsv=`$RS --version`
+
+case "$rsv" in
+  0.6*) sis=old ;;
+  *)    sis=new ;;
+esac
+
+case "$rsv" in
+  0.7.3*)    rfp=t ;;
+  *)         rfp=f ;;
+esac
+
+cat <<EOF
+,(use paths)
+
+(define *save-image-signature* '$sis)
+(define *relative-file-paths* #$rfp)
+(define *dist-path* (string->dir "$dist_path"))
+(define *rscheme-build* "$b")
+(define *rscheme-version* "$v")
+(define *rscheme-build-vlist* '($vlist))
+EOF
+
+## ie, mkcfg > src/tmp/buildcfg.scm

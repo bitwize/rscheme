@@ -1,0 +1,139 @@
+		     How to Install this Package
+		     ===========================
+
+This is the Postgres 95 interface package for RScheme.  It is an
+optional part of RScheme.  This document describes how to install it
+once a fully configured and installed RScheme system is present.  The
+configuration described in this file utilizes the dynamic module
+linking feature of the RScheme system.
+
+(1) prerequisites
+
+  (a) 
+
+    You must have installed RScheme, with the `rsc' compiler (the
+    `make rsc' target from RScheme's src/ directory)
+
+  (b)
+
+    You must have Postgres 95 installed.  The configure script assumes
+    it is in /usr/local/pgsql (I haven't figured out how to tell the
+    script to accept a different path as an option yet, so you can just
+    munge the resulting Makefile if it's really somewhere else...)
+
+    If you're on Debian, the required packages are:
+       postgres95
+       postgres95-dev
+       libpq1          <-- NOTE THIS
+    I've tested this on version 1.09-1 of those packages.
+
+  (c)
+
+    This package makes use of Postgres 95's date/time structures,
+    which didn't get installed when I installed PG 95 on my system.
+    I had the sources in /usr/src/pgsql, and had to do something like:
+
+	ln -s /usr/src/pgsql/src/include/utils/datetime.h  \
+	      /usr/local/pgsql/include/utils
+
+    to get datetime.h to show up in the right place.
+
+(2) enabling dynamic linking
+
+    ** NOTE:  This applies to Linux ELF; I'm not sure yet how this might
+    **        apply to other systems
+
+    To enable dynamic linking, modify your preamble.mak located in:
+
+	$RSCHEME_DIR/resource/buildenv/preamble.mak
+
+    to have a `-rdynamic' flag in the set of LDX_FLAGS, leading to something
+    like:
+
+      LDX_FLAGS=-rdynamic -L$(INSTALL_DIR)/lib -lrs ...
+
+
+    Recompile your RScheme shell.  This _particular_ package
+    requires that syscalls be present, so I use the `rstore' fasl'd
+    shell (ie, the `make fasl_rstore' target from RScheme's src/
+    directory).  If you run `make fasl_rstore' after tweaking
+    preamble.mak, it will relink the `rstore' shell and install it.
+
+(3) configuration
+
+    ** NOTE:  This configuration concept is brand new, so please forgive
+    **        any rough edges, and suggestions are welcome!
+
+    run `./configure'
+
+    This will create `Makefile' from `Makefile.in'.
+
+    Of note is that the configure script will search your path for the
+    program `rsc', which is the RScheme offline module compiler.  The
+    RScheme install directory will be presumed to be the parent of the
+    directory in which `rsc' is found.  That is, if RScheme is installed
+    the usual default way, then it will be in /usr/local/lib/rs/0.7-0.9
+    (for example).  Then rsc will be found at:
+
+	/usr/local/lib/rs/0.7-0.9/bin/rsc
+
+    If you want to use a location other than the one `configure' will
+    find, specify a `--prefix=RSCHEME_DIR' option to configure.
+
+(4) compilation
+
+    run `make'
+
+    This will invoke `rsc' to compile the module, invoke a recursive
+    `make' on the pg95/ subdirectory, which is where the modules'
+    C files were put by rsc, and link the object files into libpg95.so
+
+(5) test
+
+    rstore -m ./pg95.mif test.scm
+    Copyright (C) 1995-1997 Donovan Kolbly <d.kolbly@rosette.com>
+    RScheme comes with ABSOLUTELY NO WARRANTY.
+    type ",warranty" for details; type ",help" for some help
+    loading C module pg95: ./libpg95.so
+    top[0]=>
+             ...
+
+(6) installation
+
+    run `make install'
+
+    This will install the three components (the .mif file, the .mx file,
+    and the lib.so file) into $RSCHEME_DIR/resource/modules, which is
+    where the system expects to find them.
+
+(7) use and enjoy!
+
+    Now, any time you use the pg95 module from an RScheme program,
+    it will dynamically link in the code along with the module.
+
+    ** NOTE:  The current implementation breaks if you save an image
+    **        and then try to reload it (CR 568)
+
+    % rstore test.scm
+    RScheme (v0.7.1b14, 97.02.27-02:43)
+    Copyright (C) 1995-1997 Donovan Kolbly <d.kolbly@rosette.com>
+    RScheme comes with ABSOLUTELY NO WARRANTY.
+    type ",warranty" for details; type ",help" for some help
+    loading C module pg95: ./libpg95.so
+    top[0]=>(sql/create-table c "ppl" 
+	      '((name (varchar 10) :index) 
+	        (b_day date :index) 
+	        (age int)))
+    top[1]=>(sql/insert c "ppl" '("lane" "4-28-1995" 29))
+    top[2]=>(dumptbl c "ppl")
+    1 tuples, each 3 fields
+    field "name": type 1043
+    field "b_day": type 1082
+    field "age": type 23
+
+    0::"lane":"04-28-1995":"29"
+    top[3]=>
+
+-- Donovan Kolbly                       Rosette Webworks Inc.
+   459-8745 x 26			d.kolbly@rosette.com
+					http://www.rosette.com/~donovan/

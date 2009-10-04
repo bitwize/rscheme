@@ -1,0 +1,18 @@
+default:: configure timebase/configure
+
+configure: configure.in
+	autoconf
+
+timebase/configure: timebase/configure.in
+	cd timebase && autoconf
+
+install::	configure
+	./configure --with-rs=$(INSTALL_DIR)/bin/rs
+	make all
+
+clean::
+	if test -f Makefile ; then make clean ; fi
+	if test -f timebase/Makefile ; then cd timebase ; make clean ; fi
+
+distclean:: clean
+	rm -f Makefile configure timebase/configure config.cache

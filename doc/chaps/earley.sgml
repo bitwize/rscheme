@@ -1,0 +1,391 @@
+{chapter}
+{DocInfo}
+  {ReleaseInfo}doc/chaps/earley.sgml 1.2 (2004-06-24 13:03:29){/ReleaseInfo}
+{/DocInfo}
+{Title}Embedded Earley Parser{/Title}
+
+{Para}
+&rs; includes a general-purpose parser based on the work of
+Earley and my own dissertation.  The parser is part of the
+base system in order to support the parsing of the full range
+of Scheme numerics, as well as to allow it's use in dealing
+with other syntactic forms that so often arise in particular
+application areas.
+
+{Para}
+
+The basic object that controls the parser is a grammar, which is
+simply a collection of productions.  
+
+Each production defines the allowed expansions for a non-terminal
+grammar symbol, and how to interpret an occurrence of the form in the
+input.  A production, then, consists of three parts:
+
+{/Para}
+
+{itemizedlist}
+  {listitem}{formalpara}{title}left-hand side{/title}
+            {para} The non-terminal for which a form is being
+                   defined.{/listitem}
+  {listitem}{formalpara}{title}right-hand side{/title}
+            {para} A sequence of {parameter}n{/parameter} 
+                   non-terminals, terminals,
+                   and grammatical operators which is to comprise
+                   a valid expansion of the left-hand side.{/listitem}
+  {listitem}{formalpara}{title}action{/title}
+            {para} A procedure of {parameter}n{/parameter}
+                   arguments which computes the
+                   {emphasis}meaning{/emphasis} to associate
+                   with an occurrence of this form.{/listitem}
+{/itemizedlist}
+
+{Para}
+
+A grammar is constructed from a Scheme datum using the
+{userinput}make-grammar{/userinput} procedure.  Each grammar contains
+a special non-terminal called {userinput}start{/userinput}.  See
+{XRef linkend="sect.earley.gram"} for detailed information on
+how to construct a grammar.
+
+{Para}
+
+Once a grammar has been assembled, the procedure
+{userinput}parse-using-grammar{/userinput} is used to interpret a
+stream of tokens with respect to the grammar.
+
+{Sect1 id="sect.earley.gram"}
+{Title}Constructing a Grammar{/Title}
+
+{Para}
+The argument to make-grammar is a list of productions.
+{/Para}
+
+{para}
+{phrase role="nt"}grammar-spec{/phrase} ::= {phrase role="token"}({/phrase} {replaceable}production{/replaceable} ...{phrase role="token"}){/phrase}
+{/para}
+
+{Para}
+Each production consists of a non-terminal name, denoted by a
+symbol, a list of items representing the expansion, and an optional
+action.
+
+{para}
+{phrase role="nt"}production{/phrase} ::= {phrase role="token"}({/phrase} {phrase role="tokenclass"}SYMBOL{/phrase} {phrase role="token"}({/phrase} {replaceable}item{/replaceable} ...{phrase role="token"}){/phrase} [{replaceable}action{/replaceable}]{phrase role="token"}){/phrase}
+
+{Para} Each item is either a non-terminal, a terminal, or a
+list whose first element is a grammatical convenience operator.
+
+{Sect2}{Title}Grammar Non-Terminals{/Title}
+
+{Para}
+A non-terminal is reference by it's name, which is a symbol.
+The meaning associated to a non-terminal is the meaning parsed
+by it's expansion.
+
+{para}
+{phrase role="nt"}item{/phrase} ::= {phrase role="tokenclass"}SYMBOL{/phrase}
+
+{Sect2}{Title}Grammar Terminals{/Title}
+
+{Para} Terminal nodes can be defined in several ways.  The most
+general and powerful is to supply a procedure of one argument.  The
+procedure is passed a token from the input sequence being parsed, and
+should return non-&f; if and only if the token matches whatever
+criteria is intended.  The meaning associated with a terminal
+recognized this way is whatever value is returned by the procedure.
+
+{para}
+{phrase role="nt"}item{/phrase} ::= {phrase role="token"}({/phrase} {phrase role="token"}terminal{/phrase} {phrase role="tokenclass"}PROCEDURE{/phrase} {phrase role="token"}){/phrase} 
+
+{Para}
+Since the input sequence is often a string (&ie;, a sequence of characters),
+a character may be used to represent a terminal which matches only that
+literal character in the input.  The meaning associated with a CHAR
+terminal is the character itself.
+
+{para}
+{phrase role="nt"}item{/phrase} ::= {phrase role="tokenclass"}CHAR{/phrase}
+
+{Para} For other kinds of objects, including symbols, which may appear
+in the input token stream, the operator
+{userinput}terminal{/userinput} may be used to represent a literal
+token in the input.  The comparison to recognize the token in the
+input will be made as by {userinput}equal?{/userinput}.  The meaning
+associated with an explicit {userinput}terminal{/userinput} is the input
+token.
+
+{para}
+{phrase role="nt"}item{/phrase} ::= {phrase role="token"}({/phrase} {phrase role="token"}terminal{/phrase} {phrase role="nt"}OBJECT{/phrase}{phrase role="token"}){/phrase} 
+
+{Sect2}{Title}Grammatical Convenience Operators{/Title}
+
+{para}
+The parser also provided several convenience operators for common
+constructs in grammars.
+
+{para}
+An {userinput}or{/userinput} construct matches if one of it's
+constituents matches, and the meaning is the meaning of the matching
+constituent.
+
+{para}
+{phrase role="nt"}item{/phrase} ::= {phrase role="token"}({/phrase} {phrase role="token"}or{/phrase} {phrase role="nt"}item{/phrase} ...{phrase role="token"}){/phrase} 
+
+{para} 
+
+Sequencing constructs match if the constituent sequence matches the
+correct number of times (one or more times for
+{userinput}+{/userinput}, zero or more times for
+{userinput}*{/userinput}, or zero or one time for
+{userinput}?{/userinput}).  
+
+{para}
+The meaning returned for the first two sequencing constructs ({userinput}+{/userinput} and {userinput}*{/userinput})is a list
+of the meanings of the constituents.  For example, if the grammar is
+looking for {userinput}(+ number symbol){/userinput} and the input
+consists of {userinput}1 a 2 b{/userinput}, then the meaning returned
+for the production will be {userinput}((1 a) (2 b)){/userinput}.
+
+{para}
+{phrase role="nt"}item{/phrase} ::= {phrase role="token"}({/phrase} {phrase role="token"}+{/phrase} {phrase role="nt"}item{/phrase} ...{phrase role="token"}){/phrase} 
+
+{para}
+{phrase role="nt"}item{/phrase} ::= {phrase role="token"}({/phrase} {phrase role="token"}*{/phrase} {phrase role="nt"}item{/phrase} ...{phrase role="token"}){/phrase} 
+
+{para}
+The meaning returned for the {quote}optional{/quote} construct ({userinput}?{/userinput}) is a list of the constituent meanings if a match is made, or &f; if no match is made.
+
+{para}
+{phrase role="nt"}item{/phrase} ::= {phrase role="token"}({/phrase} {phrase role="token"}?{/phrase} {phrase role="nt"}item{/phrase} ...{phrase role="token"}){/phrase} 
+
+
+{sect1}{title}Scanner Integration{/title}
+{para}
+The parser relies on a separate procedure, called a
+{firstterm}scanner{/firstterm}, to supply tokens to the parser.
+Supplying a list of pre-scanned tokens to
+{function}parse-using-grammar{/function} is one way to drive the
+parser.  Alternatively, a thunk (procedure of zero arguments) can be
+supplied.  The thunk is called to supply tokens one a time until
+it returns &f;, which is interpreted as the end of the input.
+
+{para}
+A common idiom in Scheme programming is that of an iterator procedure
+and a separate {quote}seed{/quote} value.  The iterator returns the next
+value plus a new seed.  This idiom is readily adapted to the use of
+a thunk argument:
+{/para}
+
+{programlisting}
+(define (parse-from-seed iter-proc init-seed grammar)
+  (parse-using-grammar
+    (lambda ()
+      (bind ((token next-seed (iter-proc init-seed)))
+        (set! init-seed next-seed)
+        token))
+    grammar))
+{/programlisting}
+
+{sect1}{title}Examples{/title}
+
+{para}
+This section presents some examples of using the Earley parser.
+
+{sect2}{title}String Parsing{/title}
+
+{para}
+This example shows how to use the embedded Earley parsing
+for a simple parsing task over input strings.  The parsing
+task is to recognize decimal numbers.
+{/para}
+
+{programlisting}
+
+,(use earley)                   ; include the Earley parser
+
+(define *number-grammar*        ; define a grammar
+  (make-grammar
+    `((start (number))
+      ;;
+      (number (whole))
+      (number (whole #\. decimal) ,(lambda (w t f) (+ w f)))
+      ;;
+      (whole (digit) ,(lambda (d) d))
+      (whole (whole digit) ,(lambda (n d) (+ (* n 10) d)))
+      ;;
+      (decimal (digit decimal) ,(lambda (d n) (/ (+ n d) 10)))
+      (decimal () ,(lambda () 0))
+      ;;
+      (digit ((terminal
+                ,(lambda (ch)
+                   (and (char-numeric? ch)
+                        (vmemq ch '#(#\0 #\1 #\2 #\3 #\4
+                                     #\5 #\6 #\7 #\8 #\9))))))))))
+
+(define (parse-number str)      ; wrapper procedure
+  (parse-using-grammar (string->list str) *number-grammar*))
+
+{/programlisting}
+
+{sect2}{title}Advanced Token Recognition{/title}
+
+{para}
+
+This example illustrates using a terminal procedure to recognize more
+complex tokens.  Here, we are defining a family of languages which
+involve balanced keyword-annotated blocks.  For example, we want the
+language parameterized with {userinput}(foo bar){/userinput} to be
+able to parse the string {userinput}(begin foo 1 2 3 begin bar 4 end
+end){/userinput}.
+{/para}
+
+{programlisting}
+;;; (earley-example-2.scm)
+,(use earley)                   ; include the Earley parser
+
+(define (build-grammar kwds)    ; a grammar generator
+  (make-grammar
+    `((start (program))
+      (program (leaf))
+      (program ((terminal begin) kwd (* program) (terminal end))
+        ,(lambda (beg kwd body end)
+           (cons kwd (map car body))))
+      (kwd ((terminal ,(lambda (token)
+                          (and (memq token kwds)
+                               token)))))
+      (leaf ((terminal ,(lambda (token)
+                          (and (number? token) token))))))))
+
+{/programlisting}
+
+{informalexample}
+{screen}
+$ rsf -q earley-example-2.scm
+top[0]=>(define *a* (build-grammar '(foo bar)))
+top[1]=>(parse-using-grammar '(begin foo 1 2 end) *a*)
+value[0] := ((foo 1 2))
+value[1] := success
+top[2]=>(parse-using-grammar '(begin foo 1 2) *a*)
+value[0] := #f
+value[1] := failed
+value[2] := ()
+{/screen}
+{/informalexample}
+
+{Sect1}{Title}Dealing With Ambiguity{/Title}
+
+{Para}
+The Earley parser as originally defined can handle ambiguous parsers
+while avoiding exponential space complexity.  However, since this
+implementation computes meaning along the way, ambiguous grammars
+force the generation of all possible results and hence should be used
+with utmost caution.{/para}
+
+{programlisting}
+(define *g* (make-grammar
+    `((start (seq))
+      (seq (item seq) ,(lambda (i s) (cons (cons 'L i) s)))
+      (seq (seq item) ,(lambda (s i) (append s (list (cons 'R i)))))
+      (seq () ,(lambda () '()))
+      (item (#\x)))))
+{/programlisting}
+
+{para} In this case, the parser will return the status
+{userinput}ambiguous{/userinput}, one of the answers as the
+primary value, and all of the answers as the third arguments:
+
+{/para}
+
+{informalexample}
+{screen}
+$ rsf -q earley-example-3.scm
+top[11]=>(parse-using-grammar (string->list "xx") *g*)
+value[0] := (((L . #\x) (R . #\x)))
+value[1] := ambiguous
+value[2] := ((((L . #\x) (R . #\x))) (((L . #\x) (R . #\x))) (...
+{/screen}
+{/informalexample}
+
+{Sect2}{Title}Handling Precedence and Associativity{/Title}
+
+{Para}
+Because the Earley algorithm is a general parser for all grammars,
+things like operator precedence and associativity are handled by
+specifying the grammar with the appropriate hierarchical structure.
+
+{Para}
+
+For example, consider the usual case of arithmetic operators in
+computer languages with {quote}conventional{/quote} syntax (&ie;, not
+Lisp syntax).  Multiplicative operators like * are almost always
+higher precedence than additive operators like +, and most operators
+are left-associative.  Hence, {userinput}x+y+z*2{/userinput} is parsed
+as {userinput}(x+y)+(z*2){/userinput} (or, as Scheme programmers would
+read it, {userinput}(+ (+ x y) (* z 2)){/userinput}).  However,
+usually the exponentiation operator is right-associative so that
+{userinput}x^y^2{/userinput} is parsed as {userinput}(expt x (expt y
+2)){/userinput}.
+
+{Para}
+
+Situations like this are easily handled by specifying the productions
+in the grammar to describe the valid nestings.  For example, the
+precedence relationship between + and * implies that an expression
+should never have a sum underneath a product in the parse tree.  So,
+this constraint is expressed explicitly in the grammar:
+{/para}
+
+<!-- {blockquote role="grammar"}-->
+
+{simpara}
+{replaceable}sum{/replaceable} {phrase role="is"}::={/phrase}
+{replaceable}sum{/replaceable}
+{token}+{/token} 
+{replaceable}product{/replaceable}
+{/simpara}
+
+{simpara}{phrase role="alt"}|{/phrase} {replaceable}product{/replaceable}
+{/simpara}
+
+<!-- {/blockquote} -->
+
+{para}
+
+Note how the recursive invocation of sum is to on the left-hand side
+of the + summation.  This forces the grammar to expand sums to the
+left, thereby implementing left associativity.
+{/para}
+
+{programlisting}
+,(use earley)
+
+(define (primary-token token)
+  (cond
+   ((char-alphabetic? token) 
+    (string->symbol (string token)))
+   ((char-numeric? token) 
+    (string->number (string token)))
+   (else #f)))
+
+(define *expr-grammar*
+  (make-grammar
+   `((start (expr))
+
+     (expr (#\( expr #\)) ,(lambda (l e r) e))
+     (expr (sum))
+
+     (sum (sum #\+ product) ,(lambda (l op r) (list '+ l r)))
+     (sum (product))
+     
+     (product (product #\* power) ,(lambda (l op r) (list '* l r)))
+     (product (power))
+
+     (power (primary #\^ power) ,(lambda (l op r) (list 'expt l r)))
+     (power (primary))
+
+     (primary ((terminal ,primary-token))))))
+
+(define (parse-expr (str <string>))
+  (parse-using-grammar (string->list str)
+                       *expr-grammar*))
+{/programlisting}

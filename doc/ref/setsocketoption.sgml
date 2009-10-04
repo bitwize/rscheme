@@ -1,0 +1,51 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}set-socket-option{/RefName}
+  {RefPurpose}Sets a socket option.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/set-socket-option/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/fd/ {Parameter/level/ {Parameter/option/ {Parameter/value/{/ParamDef}{ParamDef role="returns"}
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}fd{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}level{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<symbol>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}option{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<symbol>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}value{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<object>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Sets a socket option using {Phrase Role="var"}setsockopt(){/Phrase}.  The required type of 
+{Parameter}value{/Parameter} depends on the option being set.{/para}
+{/RefSect1}
+{/RefEntry}

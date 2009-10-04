@@ -1,0 +1,26 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}use{/RefName}
+  {RefPurpose}Import module to current environment.{/RefPurpose}
+  {RefClass role="Type"}replcmd{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/unquote/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/module/{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+The {Phrase Role="var"}use{/Phrase} REPL command is used to import the exported variables
+of other modules.  {Parameter}module{/Parameter} gives the name of the module
+whose variables are to be bound in the current environment.{/para}
+{para}
+If the named module is not currently linked, the system will
+attempt to locate the corresponding mif file and link the module,
+before importing it.{/para}
+{/RefSect1}
+{/RefEntry}

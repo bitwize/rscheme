@@ -1,0 +1,204 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    packages/rstore/mmglue.lnx
+ *
+ *          Copyright (C)1995 Donovan Kolbly <donovan@tkg.com>
+ *          as part of the RScheme project, licensed for free use
+ *
+ * Version: 1.15
+ * Date:    2007-01-28 11:49:55
+ * Build:   v0.7.3.4-b7u, 2007-05-30
+ *
+ * Purpose: ** Linux ** memory management glue
+ *------------------------------------------------------------------------*/
+
+#include <features.h>
+#ifndef __GLIBC__
+#include <asm/signal.h>
+#include <asm/sigcontext.h>
+#endif
+#if PLATFORM_ARCH_PPC
+#include <asm/elf.h>
+/*   anybody know a better way to get this...?
+ *   even defining __KERNEL__ doesn't seem to get it...
+*/
+#define PT_DAR		41
+#endif
+
+#if PLATFORM_ARCH_X86_64
+#define sigcontext_struct sigcontext
+#endif
+
+static void raw_mm_free( void *base, size_t bytes )
+{
+  munmap( base, bytes );
+}
+
+static void *raw_mm_alloc( size_t bytes, enum mm_mode mode )
+{
+caddr_t p;
+
+  p = mmap( NULL, 
+	    bytes + MM_PAGE_SIZE, 
+	    prot[mode], 
+	    MAP_ANON|MAP_PRIVATE, -1, 0 );
+  if (p != (caddr_t)0xffffffff)
+    {
+      return (void *)((((unsigned long)p) + MM_PAGE_SIZE - 1) & ~MM_PAGE_MASK);
+    }
+  return NULL;
+}
+
+#if PLATFORM_ARCH_S390
+static void handler( int sig, siginfo_t *info, void *unused )
+{
+  mmc_access_failed( (void *)info->si_addr );
+}
+#else
+static void handler( int sig, struct sigcontext_struct SCP )
+{
+  void *at;
+
+#if PLATFORM_ARCH_PPC
+  /* requires the fix to:
+       /usr/src/linux/arch/osfmach3_ppc/server/trap.c
+     which I checked into the CVS repository at globegate
+     on 1998-12-05 12:03:04
+  */
+  elf_greg_t *rr = (void *)SCP.regs;
+  at = (void *)rr[PT_DAR];
+#else
+#if PLATFORM_ARCH_I386 || PLATFORM_ARCH_X86_64
+  at = (void *)SCP.cr2;
+#else
+#if PLATFORM_ARCH_ALPHA
+  /* is this really right...? */
+  at = (void *)SCP.sc_fp_trigger_inst;
+#else
+ #if PLATFORM_ARCH_M68K
+   /* adaption of a code snippet from boehm-gc
+      (thanks to Roman Zippel <zippel@linux-m68k.org>)
+   */
+   int format = (SCP.sc_formatvec >> 12) & 0xf;
+   unsigned long *framedata = (unsigned long *)(&SCP + 1);
+   unsigned long ea;
+   
+   if (format == 0xa || format == 0xb) {
+     /* 68020/030 */
+     ea = framedata[2];
+   } else if (format == 7) {
+     /* 68040 */
+     ea = framedata[3];
+     if (framedata[1] & 0x08000000) {
+       /* correct addr on misaligned access */
+       ea = (ea+4095)&(~4095);
+     }
+   } else if (format == 4) {
+     /* 68060 */
+     ea = framedata[0];
+     if (framedata[1] & 0x08000000) {
+       /* correct addr on misaligned access */
+       ea = (ea+4095)&(~4095);
+     }
+   }
+   mmc_access_failed( (void *)ea );
+#else
+  /* we don't know how to do this for whatever platform
+     we're running on; this operation needs to be defined... */
+  at = PLEASE_EXTRACT_FAULT_ADDRESS( SCP );
+#endif /* M68K */
+#endif /* ALPHA */
+#endif /* I386 */
+#endif /* PPC */
+  mmc_access_failed( at );
+}
+#endif
+
+void init_mm( void )
+{
+  struct sigaction sa;
+  
+  sa.sa_handler = (void *)handler;
+  sigemptyset( &sa.sa_mask );
+  sa.sa_flags = SA_RESTART;
+  
+  sigaction( SIGSEGV, &sa, NULL );
+}
+
+#ifdef UNIT_TEST
+
+struct backing {
+  void *page;
+  char *data;
+  int status;
+};
+
+struct backing bstore[10];
+unsigned num_bstore = 0;
+
+void mmc_access_failed( void *addr )
+{
+  void *pg = MM_PAGE_BASE_ADDR(addr);
+  unsigned i;
+
+  for (i=0; i<num_bstore; i++)
+    if (bstore[i].page == pg)
+      {
+	if (bstore[i].status == 0)
+	  {
+	    printf( "loading page [%d] %p\n", i, pg );
+	    /* load it */
+	    mm_set_prot( pg, MM_PAGE_SIZE, MM_MODE_READ_WRITE );
+	    strcpy( pg, bstore[i].data );
+	    mm_set_prot( pg, MM_PAGE_SIZE, MM_MODE_READ_ONLY );
+	    bstore[i].status = 1;
+	    return;
+	  }
+	else
+	  {
+	    printf( "marking page [%d] %p dirty\n", i, pg );
+	    /* mark it dirty */
+	    bstore[i].status = 2;
+	    mm_set_prot( pg, MM_PAGE_SIZE, MM_MODE_READ_WRITE );
+	    return;
+	  }
+      }
+  printf( "\n*** page %p not found\n", pg );
+  exit(1);
+}
+
+int main( int argc, const char **argv )
+{
+  char *p1, *p2, *p3, *p4;
+
+  init_mm();
+
+/*  printf( "psdanger = %d / %d / %d\n",
+	  psdanger(-1), psdanger(0), psdanger(SIGDANGER) ); */
+  p1 = mm_alloc( MM_PAGE_SIZE, MM_MODE_NO_ACCESS );
+/*  printf( "psdanger = %d / %d / %d\n",
+	  psdanger(-1), psdanger(0), psdanger(SIGDANGER) );*/
+
+  bstore[0].page = p1;
+  bstore[0].status = 0;
+  bstore[0].data = "Foo the bar";
+  num_bstore = 1;
+
+  p2 = mm_alloc( MM_PAGE_SIZE, MM_MODE_NO_ACCESS );
+  p3 = mm_alloc( 500 * MM_PAGE_SIZE, MM_MODE_NO_ACCESS );
+  p4 = mm_alloc( 500 * MM_PAGE_SIZE, MM_MODE_NO_ACCESS );
+
+/*  printf( "psdanger = %d / %d / %d\n",
+	  psdanger(-1), psdanger(0), psdanger(SIGDANGER) ); */
+  printf( "p1 => %#x (status %d)\n", p1, bstore[0].status );
+  printf( "p2 => %#x\n", p2 );
+  printf( "p3 => %#x\n", p3 );
+  printf( "p4 => %#x\n", p4 );
+  printf( "p1 contains '%s'\n", p1+1 );
+  printf( "p1 => %#x (status %d)\n", p1, bstore[0].status );
+  p1[1] = 'X';
+  printf( "p1 contains '%s'\n", p1 );
+  printf( "p1 => %#x (status %d)\n", p1, bstore[0].status );
+  return 0;
+}
+
+#endif

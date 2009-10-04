@@ -1,0 +1,390 @@
+#ifndef GEN2_CI
+#define GEN2_CI
+#include <assert.h>
+#include <rtgc/gen.hh>
+
+// This file contains all of the inline function definitions for the
+// generational part of the garbage collector.  See the file gen.hh
+// for more information on the generational code, and the file gen.cc
+// for the non-inline functions.
+
+#undef LINK_TYPE
+#ifdef INLINES
+#define LINK_TYPE inline 
+#else
+#define LINK_TYPE
+#endif
+
+//****************************************************************************
+// generation::any_more_grays
+//
+// This routine scans all of the size classes for a given generation and
+// determines if there are any gray objects.  1 is returned if there are
+// any grays, and 
+
+LINK_TYPE int generation::any_more_grays(void)
+{
+    INT_32 j;
+
+    for(j=0;
+	j<NUM_SIZE_CLASSES;
+	j++)
+    {
+	// if any color_set contains any grays, then the entire generation
+	// is said to contain grays.  Simply return true.
+
+	if (get_color_set(j)->any_grays()) {
+	    return(1);
+	}
+    }
+    return(0);
+}
+
+//***************************************************************************
+// generation::scan_root
+//
+// This routine incrementally scans the list of pointers that are present
+// on the runtime stack.  For each pointer found, the routine finds the 
+// object manager for the object that it points to, and then tells that
+// object manager to gray that object.
+//
+// This routine returns 0 if we have scanned the entire stack, and 1 if
+// we have not.
+
+LINK_TYPE int generation::scan_root(void) {
+    gc_obj_addr next_root;
+    gc_object_base *object;
+
+
+    // first, we scan the stable roots.  If the stable roots have all been
+    // scanned, then next_root will be NULL, and we should go onto the 
+    // quasi-stable roots.
+    //
+    // We use the root scanning routine through scan_root object, to
+    // make an illusion that we have multiple scannsers. This should
+    // be changed in future.
+    while ((next_root = root.abstract_stable_root_next()) != NULL) {
+	// First, we derive the header of this rval object.  There
+	// are two ways of doing this depending on whether the language
+	// system allows derived pointers.  One just subtracts off
+	// the language level header, and the other does a virtual
+	// function call.
+#ifdef NO_DERIVED_POINTERS
+#ifndef NDEBUG
+	object_manager *om;
+	gc_object_base *object1;
+#endif
+	object = (gc_object_base *)
+	  (((char *)next_root)-sizeof(gc_object_base));
+	assert((om = gc.get_object_manager(next_root),
+		object1 = om->derive_start_of_object(next_root),
+		object == object1));
+#else
+	object_manager *om = gc.get_object_manager(next_root);
+	object = om->find_start_of_object(next_root);
+#endif
+	// Next, determine if the rval object is already shaded.
+	if(object->get_gen_num() == this_generation && !object->is_shaded()) {
+	    // If the rval object is not shaded, shade it and do
+	    // some more tracing (by calling generations::collect).
+#ifdef NO_DERIVED_POINTERS
+	    object->get_containing_list()->gray_this_object(object);
+#else
+	    object->get_containing_list(om)->gray_this_object(object);
+#endif
+	    return(1);
+	}
+    }
+
+    // scan the quasi-stable roots
+    // We use the root scanning routine through scan_root object, to
+    // make an illusion that we have multiple scannsers. This should
+    // be changed in future.
+    while ((next_root = root.abstract_quasistable_root_next()) != NULL) {
+	// First, we derive the header of this rval object.  There
+	// are two ways of doing this depending on whether the language
+	// system allows derived pointers.  One just subtracts off
+	// the language level header, and the other does a virtual
+	// function call.
+#ifdef NO_DERIVED_POINTERS
+#ifndef NDEBUG
+	object_manager *om;
+	gc_object_base *object1;
+#endif
+	object = (gc_object_base *)
+	  (((char *)next_root)-sizeof(gc_object_base));
+	assert((om = gc.get_object_manager(next_root),
+		object1 = om->derive_start_of_object(next_root),
+		object == object1));
+#else
+	object_manager *om = gc.get_object_manager(next_root);
+	object = om->find_start_of_object(next_root);
+#endif
+	// Next, determine if the rval object is already shaded.
+	if(object->get_gen_num() == this_generation && !object->is_shaded()) {
+	    // If the rval object is not shaded, shade it and do
+	    // some more tracing (by calling generations::collect).
+#ifdef NO_DERIVED_POINTERS
+	    object->get_containing_list()->gray_this_object(object);
+#else
+	    object->get_containing_list(om)->gray_this_object(object);
+#endif
+	    return(1);
+	}
+    }
+
+    // scan the unstable roots.
+    // We use the root scanning routine through scan_root object, to
+    // make an illusion that we have multiple scannsers. This should
+    // be changed in future.
+    while ((next_root = root.abstract_unstable_root_next()) != NULL) {
+	// First, we derive the header of this rval object.  There
+	// are two ways of doing this depending on whether the language
+	// system allows derived pointers.  One just subtracts off
+	// the language level header, and the other does a virtual
+	// function call.
+#ifdef NO_DERIVED_POINTERS
+#ifndef NDEBUG
+	object_manager *om;
+	gc_object_base *object1;
+#endif
+	object = (gc_object_base *)
+	  (((char *)next_root)-sizeof(gc_object_base));
+	assert((om = gc.get_object_manager(next_root),
+		object1 = om->derive_start_of_object(next_root),
+		object == object1));
+#else // NO_DERIVED_POINTERS
+	object_manager *om = gc.get_object_manager(next_root);
+	object = om->find_start_of_object(next_root);
+#endif // NO_DERIVED_POINTERS
+	// Next, determine if the rval object is already shaded.
+	if(object->get_gen_num() == this_generation && !object->is_shaded()) {
+	    // If the rval object is not shaded, shade it and do
+	    // some more tracing (by calling generations::collect).
+#ifdef NO_DERIVED_POINTERS
+	    object->get_containing_list()->gray_this_object(object);
+#else
+	    object->get_containing_list(om)->gray_this_object(object);
+#endif
+	    return(1);
+	}
+    }
+    return(0);
+}
+
+
+
+//***************************************************************************
+// generation::scan_root_atomic
+//
+// When we believe that we have finished one garbage collection cycle,
+// we still need to scan the stack one more time to be sure that we
+// have found all of the reachable objects.  We call this termination.
+// This routine is essentially the same as the routine scan_stack (see
+// immediately above), except that the scanning is atomic.
+
+LINK_TYPE int generation::scan_root_atomic(void) {
+    int created_a_gray = 0;
+    void *next_root;
+    gc_object_base *object;
+    // First, we have to reset all of the root iterators (if we don't
+    // then they will be pointing wherever scan_stack() left them.
+
+    // We use the root scanning routine through scan_root object, to
+    // make an illusion that we have multiple scannsers. This should
+    // be changed in future.
+    root.abstract_stable_root_reset();
+    root.abstract_quasistable_root_reset();
+    root.abstract_unstable_root_reset();
+
+    // We use the root scanning routine through scan_root object, to
+    // make an illusion that we have multiple scannsers. This should
+    // be changed in future.
+    while ((next_root = root.abstract_stable_root_next()) != NULL) {
+	// First, we derive the header of this rval object.  There
+	// are two ways of doing this depending on whether the language
+	// system allows derived pointers.  One just subtracts off
+	// the language level header, and the other does a virtual
+	// function call.
+
+#ifdef NO_DERIVED_POINTERS
+#ifndef NDEBUG
+	object_manager *om;
+	gc_object_base *object1;
+#endif
+	object = (gc_object_base *)
+	  (((char *)next_root)-sizeof(gc_object_base));
+	assert((om = gc.get_object_manager(next_root),
+		object1 = om->derive_start_of_object(next_root),
+		object == object1));
+#else  // Derived pointers
+	object_manager *om = gc.get_object_manager(next_root);
+	object = om->find_start_of_object(next_root);
+#endif // no derived pointers
+
+	// Next, determine if the rval object is already shaded.
+	if(object->get_gen_num() == this_generation && !object->is_shaded()) {
+	    // If the rval object is not shaded, shade it and do
+	    // some more tracing (by calling generations::collect).
+
+#ifdef NO_DERIVED_POINTERS
+	    object->get_containing_list()->gray_this_object(object);
+#else
+	    object->get_containing_list(om)->gray_this_object(object);
+#endif
+
+	    created_a_gray = 1;
+	}
+    }
+
+    // We use the root scanning routine through scan_root object, to
+    // make an illusion that we have multiple scannsers. This should
+    // be changed in future.
+    while ((next_root = root.abstract_quasistable_root_next()) != NULL) {
+	// First, we derive the header of this rval object.  There
+	// are two ways of doing this depending on whether the language
+	// system allows derived pointers.  One just subtracts off
+	// the language level header, and the other does a virtual
+	// function call.
+#ifdef NO_DERIVED_POINTERS
+#ifndef NDEBUG
+	object_manager *om;
+	gc_object_base *object1;
+#endif
+	object = (gc_object_base *)
+	  (((char *)next_root)-sizeof(gc_object_base));
+	assert((om = gc.get_object_manager(next_root),
+		object1 = om->derive_start_of_object(next_root),
+		object == object1));
+#else
+	object_manager *om = gc.get_object_manager(next_root);
+	object = om->find_start_of_object(next_root);
+#endif
+	// Next, determine if the rval object is already shaded.
+	if(object->get_gen_num() == this_generation && !object->is_shaded()) {
+	    // If the rval object is not shaded, shade it and do
+	    // some more tracing (by calling generations::collect).
+#ifdef NO_DERIVED_POINTERS
+	    object->get_containing_list()->gray_this_object(object);
+#else
+	    object->get_containing_list(om)->gray_this_object(object);
+#endif
+	    created_a_gray = 1;
+	}
+    }
+
+    // We use the root scanning routine through scan_root object, to
+    // make an illusion that we have multiple scannsers. This should
+    // be changed in future.
+    while ((next_root = root.abstract_unstable_root_next()) != NULL) {
+	// First, we derive the header of this rval object.  There
+	// are two ways of doing this depending on whether the language
+	// system allows derived pointers.  One just subtracts off
+	// the language level header, and the other does a virtual
+	// function call.
+#ifdef NO_DERIVED_POINTERS
+#ifndef NDEBUG
+	object_manager *om;
+	gc_object_base *object1;
+#endif
+	object = (gc_object_base *)
+	  (((char *)next_root)-sizeof(gc_object_base));
+	assert((om = gc.get_object_manager(next_root),
+		object1 = om->derive_start_of_object(next_root),
+		object == object1));
+#else
+	object_manager *om = gc.get_object_manager(next_root);
+	object = om->find_start_of_object(next_root);
+#endif
+	// Next, determine if the rval object is already shaded.
+	if(object->get_gen_num() == this_generation && !object->is_shaded()) {
+	    // If the rval object is not shaded, shade it and do
+	    // some more tracing (by calling generations::collect).
+#ifdef NO_DERIVED_POINTERS
+	    object->get_containing_list()->gray_this_object(object);
+#else
+	    object->get_containing_list(om)->gray_this_object(object);
+#endif
+	    created_a_gray = 1;
+	}
+    }
+    return(created_a_gray);
+}
+
+
+#ifdef GENERATIONAL
+//**********************************************************************
+// generation::promote_into
+// promote_into() takes an object as an argument and promot it into
+// this generation. It also takes the size class as its argument to
+// get the color set to insert into.  The main task is adjusting the
+// object flags and inserting it at the correct place of the object
+// lists. This function assumes the object is already removed from a
+// list in the one-step younger generation.
+LINK_TYPE void generation::promote_into(gc_object_base *object,int size_class)
+{
+    // Adjust generation and containing color set.
+    object->set_gen_num(this_generation);
+    assert(object->get_gen_num()
+	   == get_color_set(size_class)->get_gen_of_this_set());
+    
+    object->set_containing_list(get_color_set(size_class));
+    assert(object->get_containing_list() == get_color_set(size_class)); 
+    
+#ifdef BLACK_PROMOTION
+    // Step n and black means that it's in the n'th cycle.
+    // Step (n - 1) and white means that it's in the n'th cycle.
+    // This object is black, so set it to 1. 
+    object->set_step(1);
+    // shade it and insert it in an appropriate place.
+    object->set_color(get_current_shade_color());
+    get_color_set(size_class)->insert_as_black(object); 
+#else // If promoting black&white
+    // get_tracing_phase is 0 if the tracing is in the first phase,
+    // otherwise positive. 
+    if(get_tracing_phase()){
+	// Step n and black means that it's in the n'th cycle.
+	// Step (n - 1) and white means that it's in the n'th cycle.
+	// This object is black, so set it to 1. 
+	object->set_step(1);
+	// If the tracing is in the second phase, the promoted object
+	// becomes black. 
+	object->set_color(get_current_shade_color());
+	get_color_set(size_class)->insert_as_black(object); 
+    }else{
+	// Step n and black means that it's in the n'th cycle.
+	// Step (n - 1) and white means that it's in the n'th cycle.
+	// This object is white, so set it to 0. 
+	object->set_step(0);
+	// If the tracing is in the first phase, color it white.
+	object->set_color(colors(!(int)get_current_shade_color()));
+	get_color_set(size_class)->insert_as_white(object);
+    }
+#endif
+//#ifdef BLACK_PROMOTION
+//    // Call client to find pointers in object. The callback function is for 
+//    // black promotion.
+//    gc.follow_pointers_by(object, &garbage_collector::black_promotion_tracing);
+//#else 
+//    // tracing_phase is 0 if the tracing is in the first phase,
+//    // otherwise positive.
+//    if(tracing_phase){
+//	// If the tracing is in the second phase, do some work for
+//	// black promotion.
+//	gc.follow_pointers_by(object,
+//			      &garbage_collector::black_promotion_tracing);
+//    }else{
+//	// If the tracing phase is in the first one, call the client to
+//	// find pointers in object and do some job with a callback funtion
+//	// white_promotion_tracing.
+//	gc.follow_pointers_by(object,
+//			      &garbage_collector::white_promotion_tracing);
+//    }
+//#endif    
+}
+
+#endif // generational
+
+#endif //GEN2_CI
+
+

@@ -1,0 +1,51 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}cons{/RefName}
+  {RefPurpose}Construct a new pair from two objects{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/cons/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/a/ {Parameter/b/{/ParamDef}{ParamDef role="returns"}
+{Parameter}p{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}a{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<object>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}b{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<object>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}p{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<pair>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This is the standard lisp constructor.  {Parameter}a{/Parameter} will be
+the {FirstTerm Role="defn"}car{/FirstTerm} of the resulting pair, while
+{Parameter}b{/Parameter} will be the {FirstTerm Role="defn"}cdr{/FirstTerm}.{/para}
+{/RefSect1}
+{/RefEntry}

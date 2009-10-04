@@ -1,0 +1,49 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}exec*{/RefName}
+  {RefPurpose}Transform current process into a new program.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/exec*/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/path/ {Parameter/argv/ {Parameter/env/{/ParamDef}{ParamDef role="returns"}
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}path{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}argv{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<vector>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}env{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<vector>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Tail-call a process.  This is a wrapper for
+the standard execve() system call,
+which transforms the current process into a new program, supplying
+an explicit argv and environ to the new process.{/para}
+{para}
+Signals an error if the exec fails.{/para}
+{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,40 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}exec{/RefName}
+  {RefPurpose}Exec a new program.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/exec/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/path/ {Parameter/arg/{/ParamDef}{ParamDef role="returns"}
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}path{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}arg{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>s/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Execs a new program (a wrapper for the execv() system call).
+The new program's environment is the same as the current
+process's environment.{/para}
+{/RefSect1}
+{/RefEntry}

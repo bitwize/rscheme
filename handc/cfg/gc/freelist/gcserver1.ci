@@ -1,0 +1,95 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/cfg/gc/freelist/gcserver1.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.3
+ * File mod date:    1997-11-29 23:10:52
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ *------------------------------------------------------------------------*/
+
+#ifndef _CI_GCSERVER
+#define _CI_GCSERVER
+
+#include "gcstruct.h"
+
+extern int gc_cycle_bytes, gc_space_left;
+extern MEMSizeClass size_classes[NUM_SIZE_CLASSES];
+extern MEMSizeClass other_size_class;
+
+void MEMCollectGarbage( size_t ensure_space );
+
+CI_DECL void gc_safe_point( size_t headroom_bytes )
+{
+    if ((gc_space_left < (int)headroom_bytes) || (gc_cycle_bytes == 0))
+	MEMCollectGarbage(headroom_bytes);
+}
+
+/* do nothing -- my gc is stop-and-mark-sweep */
+CI_DECL void write_barrier_NDP( gc_obj_addr lobject, 
+				 pos_ptr_addr lvalue, gc_obj_addr robject ) {}
+
+CI_DECL void write_barrier_rval_white( pos_ptr_addr lval ) {}
+CI_DECL void write_barrier_lval_fresh(pos_ptr_addr lvalue, gc_obj_addr robject) {}
+CI_DECL void write_barrier( pos_ptr_addr lval, gc_obj_addr robject ) {}
+
+CI_DECL void write_barrier_rval_white_NDP( gc_obj_addr lobject, pos_ptr_addr lval ) {}
+CI_DECL void write_barrier_lval_fresh_NDP( gc_obj_addr lobject, pos_ptr_addr lval, gc_obj_addr robj ) {}
+
+CI_DECL gc_obj_addr gc_alloc_from_size_class( size_t bytes, void *sz_c )
+{
+MEMHeader *p;
+MEMHeader *MEMGrabMore( size_t bytes, MEMSizeClass *sz );
+MEMSizeClass *c = (MEMSizeClass *)sz_c;
+
+    gc_space_left -= bytes;
+
+    p = c->free;
+    if (!p)
+	p = MEMGrabMore( bytes, (MEMSizeClass *)c );
+    
+    c->free = p->next;
+    p->next = c->alloced;
+#ifdef DEBUG_BACKTRACK
+    p->actual_size = bytes;
+    p->extra_flag = 0;
+#endif /* DEBUG_BACKTRACK */
+    c->alloced = p;
+    p->black_flag = 0;
+    return p+1;
+}
+
+CI_DECL void *gc_get_size_class( size_t bytes )
+{
+    if (bytes >= NUM_SIZE_CLASSES * BYTES_PER_SIZE_CLASS)
+	return &other_size_class;
+
+    return &size_classes[ bytes / BYTES_PER_SIZE_CLASS ];
+}
+
+CI_DECL gc_obj_addr gc_alloc( size_t bytes )
+{
+    return gc_alloc_from_size_class( bytes, gc_get_size_class( bytes ) );
+}
+
+#ifdef VALIDATE_BLOCKS
+CI_DECL void validate_block( gc_obj_addr item )
+{
+MEMHeader *h;
+
+    h = &((MEMHeader *)item)[-1];
+    assert( (h->black_flag == 1) || (h->black_flag == 0) );
+}
+#endif
+
+void MEMInit( void );
+
+CI_DECL void init_gc( int argc, const char **argv )
+{
+    MEMInit();
+}
+
+#endif /* _CI_GCSERVER */

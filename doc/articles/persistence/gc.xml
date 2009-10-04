@@ -1,0 +1,384 @@
+
+<sect1>
+<title>Garbage Collection</title>
+
+<para>
+This section describes the garbage collection issues and implementation
+involved with both the persistent object store and how it interacts
+with the transient heap.  
+</para>
+
+<note><para> There are some limitations on the use of the persistent
+garbage collector.  Currently, it does not understand lazy pointers
+(although lazy pointers are disabled in the current pstore
+implementation anyway).  Also, it does not correctly handle the entry
+slot of an allocation area.  If using explicit allocation areas to
+manage storage, the application must be sure to maintain a pointer to
+each persistent allocation area in use or else it may be erroneously
+reclaimed.  </para></note>
+
+<para>
+Because the separation of the two heaps
+is largely transparent to the application, the system must ensure
+GC correctness in the presence of many cross-heap pointers and in
+the presence of adversarial mutator (application) activity.
+</para>
+
+<para>
+Correctness is defined as never reclaiming an object that could
+possibly still be used by the application.  An object could possibly
+be used if there is some path to it from a root.  In RScheme, the
+roots consist of the virtual machine registers, the stack cache,
+and the root vectors for each loadable module.
+</para>
+
+<para>
+In RScheme, the transient and persistent garbage collections are both
+<emphasis>incremental</emphasis>.  This means that the application
+continues to run while GC activity happens behind the scenes.  This
+greatly complicates the implementation (especially in the presence of
+two heaps!)  but provides the considerable benefit of allowing the
+application to avoid any long pauses.  In order to achieve
+incrementality, RScheme uses a <emphasis>write barrier</emphasis> to
+notice when application activity might interfere with the correctness
+of an ongoing garbage collection cycle.
+</para>
+
+<!--
+<para>
+Because there are two kinds of heaps to consider, each with their own
+separate garabage collection cycles, a correct GC design must pay
+special attention to pointers between the two heaps.
+-->
+
+<para>
+A persistent store does not, by default, have garbage collection
+enabled for it.  To turn on GC for a persistent store, call
+<code>(start-online-compacter <replaceable>pstore</replaceable>)</code>.
+Online compaction and GC is only applicable to pstores that have two
+LSS volumes, because part of the process involves compacting the
+underlying LSS.
+</para>
+
+
+<!--
+<para>
+A persistent store in use by an application may be garbage collected
+<emphasis>on the fly</emphasis>, that is, while the application is
+using the store.  The approach used is to leverage the revertable
+commit points of the underlying LSS to perform a <emphasis>snapshot at
+beginning</emphasis> garbage collection.
+</para>
+
+<para>
+At the same time, the application might perniciously store into an
+uncommitted pstore the only pointer to a transient data structure.
+The system must ensure that the transient data structure is not
+reclaimed as long as the persistent object is itself reachable.
+</para>
+-->
+
+<sect2><title>Transient Garbage Collection</title>
+
+<para>
+It is possible for an uncommited persistent object store to hold the
+only pointer to a transient object.  Hence, correctness requires that
+the system keep track of pointers from persistent objects into the
+transient heap.  This type of tracking is typical for any generational
+garbage collector, and these kinds of pointers represent
+<emphasis>intergenerational pointers</emphasis>.  Here, the
+uncommitted state of the persistent store acts as an older generation
+which may contain pointers into a younger generation.
+</para>
+
+<para>
+As an example, consider <xref linkend="fig.intergen"/>.  Persistent object f contains the
+only reference to transient object h, and persistent object k the only
+reference to transient object l.  If the system did not notice that f
+has a pointer to h, then the storage for h might be reclaimed as
+garbage.  A subsequent traversal through e and f would likely crash
+the system.
+</para>
+
+<para>
+The system handles pointers from the persistent heap by using a write
+barrier on persistent objects.  (This is the GC-level write barrier
+that is usually used to detect attempts to violate the tricolor
+marking invariant, and bears no relation to the page-level write
+protection used to detect dirty pages of the persistent store.)  In
+RScheme's native garabage collector (called "IRC", for "Implicit
+Reclamation Collector"), the write barrier is implemented as a matrix
+lookup-table keyed by the <emphasis>lvalue</emphasis> generation
+number and color on one axis and the <emphasis>rvalue</emphasis> generation
+number and color on the other axis.  Since the transient GC is
+not currently generational, only generation number 0 corresponds
+to the transient heap.  Generation number 7 is used to denote a
+persistent heap.  <xref linkend="fig.wbmatrixgen"/> illustrates
+the different kinds of pointer relationships being created by a WRITE
+operation, and where they fit in the write barrier matrix.
+</para>
+
+<figure id="fig.gcphases">
+<title>The Six Phases of Persistent GC</title>
+  <mediaobject>
+    <imageobject><imagedata fileref="gcphases"/></imageobject>
+    <textobject><phrase>[The six phases of persistent GC: prep, pending, tscan, pscan, reclaim, and idle]</phrase></textobject>
+  </mediaobject>
+</figure>
+
+<figure id="fig.gcdiskusage">
+<title>Experimental Data: Disk Usage During Persistent GC Phases</title>
+  <mediaobject>
+    <imageobject><imagedata fileref="gcdiskusage"/></imageobject>
+    <textobject><phrase>[A graph showing the disk space occupied by two volumes as the persistent GC proceeds]</phrase></textobject>
+  </mediaobject>
+</figure>
+
+<para>
+We wait for a commit on the pscan to reclaim transition so that
+the extraHeapPointers list is flushed.  Otherwise, there could
+be a down-pointer slot in an object that is reclaimed, which would
+cause the transient GC to crash when scanning the extraHeapPointers
+list.
+</para>
+
+<para>
+We have to be careful when deallocating objects.  Consider, for
+example, <xref linkend="fig.gcfreeorder"/>, where a is the root object
+and b and c are both dead objects, and c is the only object on page
+202.  When c is deallocated, page 202 is unmapped from memory.  Then,
+even though b is dead, if a is touched and page 201 is written out,
+the system will try to scan b as if it is live, causing an illegal
+reference to the missing page 202.
+</para>
+
+<para>
+Furthermore, we want to do reclamation incrementally, but yet need to
+provide a consistent persistent view of objects -- specifically, that
+no committed unfreed object refer to a freed object.  Although there
+are solutions that are more efficient in some cases (&eg;, by looking
+for connected subgraphs), the most straightforward approach to handle
+this problem is to free objects in two passes.  In the first pass, all
+pointers are deleted.  In the second pass, the objects themselves are
+deallocated.
+</para>
+
+
+<figure id="fig.gcfreeorder">
+<title>Illustrating the Ordering Problem for Object Reclamation</title>
+  <mediaobject>
+    <imageobject><imagedata fileref="gcfreeorder"/></imageobject>
+    <textobject><phrase>[Two pages in memory with three objects, a and b on one, and c on another]</phrase></textobject>
+  </mediaobject>
+</figure>
+
+<figure id="fig.wbmatrixgen">
+<title>How Pointer Relationships Fit Into the Write Barrier Matrix</title>
+  <mediaobject>
+    <imageobject><imagedata fileref="wbmatrixgen"/></imageobject>
+    <textobject><phrase>[A 4x4 matrix, rvalue horizontally, lvalue vertically, showing the write barrier matrix in terms of generation and color of each pointer]</phrase></textobject>
+  </mediaobject>
+</figure>
+
+<figure id="fig.wbmatrixactive">
+<title>How the Write Barrier Matrix is Configured During the TSCAN Phase</title>
+  <mediaobject>
+    <imageobject><imagedata fileref="wbmatrixactive"/></imageobject>
+    <textobject><phrase>[A write barrier matrix showing that storing a pointer to a WHITE persistent object triggers the write barrier]</phrase></textobject>
+  </mediaobject>
+</figure>
+
+<para>
+When the program stores any pointer to a transient object into a
+persistent object, the WB_PERSISTENT write barrier is tripped, causing
+the location of the slot in persistent storage (the address of that
+slot is known as a pos_ptr_addr) to be stored in the extraHeapPointers
+list.
+</para>
+
+<figure id="fig.extraheapptrs">
+<title>The Use of extraHeapPointers to Track Slots Containing Pointers to Transient Objects</title>
+  <mediaobject>
+    <imageobject><imagedata fileref="extraheapptrs"/></imageobject>
+    <textobject><phrase>[A persistent object, A, having a slot containing a pointer to transient object B]</phrase></textobject>
+  </mediaobject>
+</figure>
+
+
+<para>
+Consider <xref linkend="fig.extraheapptrs"/> for an example, in which
+persistent object A refers to transient object B.  By keeping track of
+the persistent slot that holds a pointer to B, we allow subsequent
+mutation to drop the pointer to B and allow it to be reclaimed in the
+current transient GC cycle.  We can't just mark B as gray because then
+there would be no way to find the pointer to B again in the next
+transient GC cycle.
+</para>
+
+<para>
+Furthermore, we don't want to keep track of the whole persistent
+object A, because it may be a large object containing many pointers to
+scan.
+</para>
+
+<note>
+<para>
+An alternative approach may be to do this at the page level, since
+only dirty pages can contain pointers into the transient heap -- we
+could therefore elide the GC write barrier and use the dirty page
+list.  That would bound the scanning work to the page size.  But then,
+for applications that mutate heavily without pointing to very many
+tranient objects, this would create a heavy load on the transient GC.
+Remember, considering something as part of the root set means it must
+be atomically scanned when the GC cycle is attempting to terminate.
+</para>
+</note>
+
+<para>
+When the transient GC is traversing its roots, it regards each pstore's 
+extraHeapPointers list as part of its root set.
+</para>
+
+<para>
+When the pstore is committed, we know that there are no pointers from
+the pstore into the transient heap other than pivot objects.  Since
+pivot objects live in the pstore's indirects table, we can be certain
+that the only pointer to the transient object is not being held by a
+persistent page.  Thus the extraHeapPointers can be flushed when the
+pstore is successfully committed.
+</para>
+
+<itemizedlist>
+<listitem><formalpara><title>Initialization</title>
+          <para>When a pstore is opened, the write barrier is initialized
+                to trigger with code WB_PERSISTENT on any store of a transient
+                pointer into a persistent object.
+          </para></formalpara>
+</listitem>
+<listitem><formalpara><title>Write Barrier</title>
+          <para>When the write barrier is triggered, the GC code invokes
+                <function>rstore_write_barrier</function> to see if the
+                slot should be added to the extraHeapPointers list.  If the
+                callback returns true (1), then the slot is added.</para>
+</formalpara></listitem>
+<listitem><formalpara><title>Commit</title>
+          <para>When the rstore successfully commits (all pages written out
+                with no non-pivot references to transient objects), the
+                pstore invokes <function>irc_pstore_gen_did_commit</function>
+                to flush the extraHeapPointers list.  If the GC happens to
+                be in the middle of scanning the extraHeapPointers, the scan
+                is canceled.</para>
+</formalpara></listitem>
+</itemizedlist>
+
+<sect3><title>Write Barrier Processing</title>
+
+<para>
+Because the transient GC allocates white and it is known that the
+(transient) write barrier is unnecessary for writes into white
+objects, the IRC exposes the notion of "fresh" objects, which are
+objects that have been allocated since the last safe point.  There are
+special write operators for initializing writes
+(<function>gvec_write_init</function>) and for writes to fresh objects
+(<function>gvec_write_fresh</function>).  Under IRC, these operators
+are no-ops, avoiding the cost of the write barrier check for the very
+common operation of initializing a new object.  Unfortunately, in the
+presence of a persistent store, the assumption of a noop write barrier
+for fresh objects is not true.
+</para>
+
+<para>
+Fortunately, whenever an object is allocated from the persistent
+store, it is done through the specialized
+<function>alloc_in_area()</function> function.  So, to support the
+persistent store, any procedure using <function>alloc_in_area()</function>
+must do initializing writes with non-pointer (&ie;, immob) objects
+and use the full <function>gvec_write()</function> API to supply
+any pointer values.
+</para>
+
+<para>
+It would be redundant to store a given persistent slot in the
+extraHeapPointers list more than once.  However, the write barrier is
+configured to trigger on <emphasis>every</emphasis> store into the
+persistent heap.  In order to eliminate redundant slot references in
+the extraHeapPointers list, the pstore keeps track of which slots have
+already been added to the list.  This is done in two different ways,
+depending on the size of the object.  For small objects (no more than
+24 slots), a 24-bit field in the object header is used.  For larger
+objects, a "card" indexed bitmap is employed.
+</para>
+</sect3>
+</sect2>
+
+<sect2><title>Online Persistent Garbage Collection</title>
+
+<para>
+RScheme includes a facility for performing a garbage collection
+cycle of the persistent object store while the store is currently
+open.  This enables the implementation of long-running servers
+while preserving the ability to reclaim garbage within the store.
+</para>
+
+<para>
+The implementation must make sure not to reclaim objects that are referenced
+only by the transient heap (&ie;, are not reachable from the persistent
+root).
+</para>
+
+<para>
+Consider <xref linkend="fig.intergen"/>.
+</para>
+
+<figure id="fig.intergen">
+  <title>Data Structures Spanning Transient and Persistent Heaps</title>
+  <mediaobject>
+    <imageobject><imagedata fileref="intergen"/></imageobject>
+    <textobject><phrase>[Two data structures, (a b c d) rooted in the transient heap, (e f g h i j k l) rooted in the persistent heap, each spanning both the transient and persistent heaps]</phrase></textobject>
+  </mediaobject>
+</figure>
+
+<figure id="fig.gcstart1">
+  <title>A state of the persistent and transient heaps before GC starts</title>
+  <mediaobject>
+    <imageobject><imagedata fileref="gcstart1"/></imageobject>
+    <textobject><phrase>[A transient heap with references to persistent objects]</phrase></textobject>
+  </mediaobject>
+</figure>
+
+<!--
+<figure id="fig.gcstart1_draw1">
+  <title>A state of the persistent and transient heaps after (a b) have been scanned</title>
+  <mediaobject>
+    <imageobject><imagedata fileref="gcstart1_draw1"/></imageobject>
+    <textobject><phrase>[A transient heap with references to persistent objects]</phrase></textobject>
+  </mediaobject>
+</figure>
+
+<figure id="fig.gcstart1_draw2">
+  <title>A state of the persistent and transient heaps after pointers have been rearranged</title>
+  <mediaobject>
+    <imageobject><imagedata fileref="gcstart1_draw2"/></imageobject>
+    <textobject><phrase>[A transient heap with references to persistent objects]</phrase></textobject>
+  </mediaobject>
+</figure>
+
+<figure id="fig.gcstart1_draw3">
+  <title>A state of the persistent and transient heaps after finishing GC without noticing the tricolor marking violation.</title>
+  <mediaobject>
+    <imageobject><imagedata fileref="gcstart1_draw3"/></imageobject>
+    <textobject><phrase>[A transient heap with references to persistent objects]</phrase></textobject>
+  </mediaobject>
+</figure>
+-->
+
+</sect2>
+
+</sect1>
+
+<!--
+;;; Local Variables:
+;;; sgml-doctype: "ref.sect1"
+;;; sgml-parent-document: ("persistence.xml" "chapter" ("sect1") "sect1")
+;;; End:
+-->

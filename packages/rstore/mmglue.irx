@@ -1,0 +1,102 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    packages/rstore/mmglue.irx
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest info.
+ *
+ * File version:     1.4
+ * File mod date:    2000-11-21 23:25:05
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ * Owned by module:  rstore
+ *
+ * Purpose:          SGI IRIX *** Memory management glue
+ *
+ *  With many thanks to:
+ *      Chris Lee <chrislee@gs157.sp.cs.cmu.edu>
+ *  and Mike Rilee <mrilee@hannibal.gsfc.nasa.gov>
+ *------------------------------------------------------------------------*/
+
+#include <unistd.h>
+#include <sys/signal.h>
+#include <fcntl.h>
+
+
+static void raw_mm_free( void *base, size_t bytes )
+{
+  munmap( base, bytes );
+}
+
+static int null_fd = -2;
+
+static void *raw_mm_alloc( size_t bytes, enum mm_mode mode )
+{
+  caddr_t p;
+
+  if (null_fd == -2)
+  {
+    /* note that if this open fails, we won't try again, and
+     * we will use fd -1 in mmap.  This is intended to be a
+     * graceful fallback to mapping anonymous regions if /dev/zero
+     * isn't there
+     */
+    null_fd = open( "/dev/zero", O_RDWR );
+  }
+
+  p = mmap( NULL, 
+            bytes + MM_PAGE_SIZE, 
+            prot[mode], 
+            MAP_PRIVATE, null_fd, 0 );
+  if ( p != (caddr_t)-1 )
+    {
+      return (void *)((((unsigned long)p) + MM_PAGE_SIZE - 1) & ~MM_PAGE_MASK);
+    }
+  return NULL;
+}
+
+/* I don't have documentation on the calling convention
+   for the signal handler.  In most systems, the signature
+   looks something like   ( int sig, struct sigcontext SC )
+   but for some reason there's an extra 16 bytes on this
+   architecture (Irix 5.3)
+   (the really odd thing is that the last 2 32-bit words seem
+   to contain the address of the `struct sigcontext' itself,
+   so the protocol may be something like:
+
+     struct handler_extras {
+        UINT_32  skip[2];
+        struct sigcontext *SCP1;
+        struct sigcontext *SCP2;
+     }
+*/
+
+struct h_frame {
+   UINT_32  skip[4];
+   struct sigcontext SCP;
+};
+
+static void handler( int sig, struct h_frame hf )
+{
+  /* this also generates a warning, because sc_badvaddr is 64
+   * bits, but we only want 32.  I am assuming that the
+   * 64-bit SGI addresses (when running in 32-bit compatibility
+   * mode) are always < 2^32
+   */
+  mmc_access_failed( (void *)hf.SCP.sc_badvaddr );
+}
+
+void init_mm( void )
+{
+  struct sigaction sa;
+  
+  sa.sa_handler = (void *)handler;
+  sigemptyset( &sa.sa_mask );
+  sa.sa_flags = SA_RESTART;
+  
+  sigaction( SIGSEGV, &sa, NULL );
+
+  if ( MM_PAGE_SIZE % sysconf(_SC_PAGESIZE) ) {
+    fprintf(stderr,"IRIX init_mm(): Invalid page size assumed!\n");
+    exit(1);
+  }
+}

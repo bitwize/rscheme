@@ -1,0 +1,26 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    modules/imageio/imageio.mcf
+ |
+ |          Copyright (C)1995 Donovan Kolbly <donovan@tkg.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.7
+ | Date:    1997-11-20 23:20:12
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ `------------------------------------------------------------------------|#
+
+((imageio
+	"$dist/imageio"
+	"$install/resource/modules")
+
+ (require-c-header "<string.h>")
+
+ (open primops *scheme* iolib low-scheme objsys mathlib tables corelib sort)
+
+ (other-files "imaglod.ci" "compres.ci" "uncompr.ci")
+ (c-files imagsav refsload)
+ (h-files imaglue)
+ (files refanchor glue marshall refsmgr schema user codeanch)
+
+ (export :local))

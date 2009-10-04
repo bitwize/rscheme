@@ -1,0 +1,50 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}list-tail{/RefName}
+  {RefPurpose}Returns the {Parameter}k{/Parameter}-th cdr of a list.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/list-tail/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/l/ {Parameter/k/{/ParamDef}{ParamDef role="returns"}
+{Parameter}r{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}l{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<list>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}k{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}r{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<list>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Returns the {Parameter}k{/Parameter}-th cdr of a given list.
+Signals an error if the list is not long enough.{/para}
+{/RefSect1}
+{/RefEntry}

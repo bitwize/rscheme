@@ -1,0 +1,45 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}string->date{/RefName}
+  {RefPurpose}Parse a date in standard format (YYYY.MM.DD) into a date object{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/string->date/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/string/{/ParamDef}{ParamDef role="returns"}
+{Parameter}date{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}string{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}date{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<date>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function is the inverse of {Phrase Role="var"}date->string{/Phrase}, parsing
+a string representation of a date into the corresponding date
+object.{/para}
+{/RefSect1}
+{/RefEntry}

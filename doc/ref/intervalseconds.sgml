@@ -1,0 +1,43 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}interval->seconds{/RefName}
+  {RefPurpose}Get number of seconds in interval.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/interval->seconds/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/dt/{/ParamDef}{ParamDef role="returns"}
+{Parameter}sec{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}dt{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<interval>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}sec{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<real>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Converts an interval to a number of seconds.{/para}
+{/RefSect1}
+{/RefEntry}

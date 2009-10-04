@@ -1,0 +1,63 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}fd-select{/RefName}
+  {RefPurpose}Test for operations.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/fd-select/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/delayms/ {Parameter/set/{/ParamDef}{ParamDef role="returns"}
+{Parameter}readable{/Parameter} {Parameter}writable{/Parameter} {Parameter}haveexception{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}delayms{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}set{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fd-select-set>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}readable{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<list>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}writable{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<list>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}haveexception{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<list>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Uses the {Phrase Role="var"}select(){/Phrase} system function to determine which of the file
+descriptors in the given {Parameter}set{/Parameter} can be operated on.  Returns three
+lists of file descriptors.{/para}
+{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,51 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}pathname->os-path{/RefName}
+  {RefPurpose}Converts a pathname object to the corresponding string{/RefPurpose}
+  {RefClass role="Type"}generic{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/pathname->os-path/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/pathname/{/ParamDef}{ParamDef role="returns"}
+{Parameter}string{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}pathname{/Term}
+    {ListItem}{para}
+A pathname object (an instance of {ClassName/<file-name>/ 
+or {ClassName/<directory-name>/){/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}string{/Term}
+    {ListItem}{para}
+The string form of the pathname.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This generic function is applied to a pathname to 
+compute the native representation of the given path, suitable
+to passing to functions that actually operate on the file system,
+such as {Phrase Role="var"}open-input-file{/Phrase} and {Phrase Role="var"}stat{/Phrase}.{/para}
+{para}
+In unix, directory names are returned {Emphasis}without{/Emphasis} a trailing slash.{/para}
+{para}
+Special root locations are expanded to their current value.{/para}
+{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,138 @@
+INSTALL
+
+RScheme Install Notes
+
+RScheme 0.7.3.2
+===============
+
+Building The Basic System
+-------------------------
+This distribution of RScheme includes both Scheme source and enough C
+code to bootstrap into a fully functional RScheme system.
+
+The instructions in this section should get you up and running RScheme.
+
+The basic steps are
+
+    % cd .../rs-0.7.3.2
+    % make stage1
+    % cd src
+    % ./configure
+    % make all
+
+(Note: The stage1 build starts by running configure.  See "Stage1 Options"
+below if configure needs help on your system.)
+
+This will get the base system library (librs.a) compiled and
+installed, by default in /usr/local/lib/rs/0.7.3.2 (if you do not have
+permissions to install in /usr/local/lib, or you want to install it
+elsewhere, give the --prefix=PREFIX option to configure, where PREFIX
+is the absolute directory name of the place to install RScheme)
+
+The executable "shell" program rs (ie, the normal interactive RScheme
+program that comes up with a read-eval-print loop) is installed
+in ${PREFIX}/bin/rs.  You can either link this executable into
+a directory in your path, or add ${PREFIX}/bin to your path.
+
+Building the Off-line Module Compiler
+-------------------------------------
+
+If you are doing module development (which includes building the optional
+packages as mentioned in the next section), you should also build the 
+off-line module compiler, `rsc':
+
+    src% make rsc
+
+This creates and installs `rsc' into $(PREFIX)/bin/rsc
+
+Building Optional Packages
+--------------------------
+[Note: Building packages as described here will implicity build
+the offline compiler, rsc]
+
+After having installed the base system and basic interactive shell,
+you can build and install the optional packages that you wish to use.
+
+The configuration script automatically chooses a default set of
+optional packages to be built.  Usually, this default set is as
+many packages as it expects to work.  In this case, you can
+use:
+
+   % make packages
+
+Alternatively, if you want to build fewer packages, or think one
+might work that the configuration script did not include in the
+default set, you may override the PACKAGES make variable to supply
+the set of packages to build:
+
+   % make PACKAGES="fasl syscalls unixm rstore x11" packages
+
+After having compiled all the packages of interest, you should
+construct an executable which has all the corresponding code
+linked in.  If you build the fasl package, this is as simple as:
+
+    % make fasl_shell
+
+which implicitly includes all the optional packages that have
+been built and installed.
+
+This creates and installs an executable called "fshell" which is a
+fast-loading shell (REPL) with the given modules linked into the image
+with their corresponding C code.
+
+These are the packages you might find useful:
+
+	syscalls (basic system call interfaces)
+	unixm    (unix-specific system call interfaces)
+	rstore   (persistent store)
+	calendar (date operations)
+	sets     (set operations like 'union' and 'intersection')
+	x11	 (simple Xlib interface; uses libgd for drawing to
+		  in-memory images)
+	db	 (Berkeley db interface)
+	fasl	 (fasl-loading images)
+	threads  (advanced thread support)
+
+The `fasl' and `rstore' packages have some fairly intense system
+dependencies, so they may not work on your system.
+
+Additional modules (that are part of the base system and are not
+packages) that you might want to link into your shell are:
+
+	debugger (procedure-level tracepoints and breakpoints)
+
+Recompiling from sources
+------------------------
+
+As distributed, RScheme has already been compiled from its scheme sources
+into C code.  However, many intermediate files are stripped out to reduce
+the distribution size, so the system actually rebuilds itself at install
+time (that is what the "make stage1" step does).
+
+If you feel like tweaking the scheme or C sources (mostly in modules/ and
+handc/, respectively), you can do so, and use "make stage1" to rebuild 
+src/ from those sources.
+
+(Appendix) Stage1 Options
+-------------------------
+
+The stage1 build starts with a configuration step; if configure is
+unable to determine the type of your system, or requires other flags,
+you can set those options via the CONFIG_OPTS makefile flag.
+
+For example, in order to build on Windows NT with the GNU Win32 tools,
+use:
+
+    % make CONFIG_OPTS="--host=i386-gnuwin32" stage1
+
+(which is not to imply that the WindowsNT build works, but it at
+least gets most of the way :-))
+
+
+For another example, Mac OS X wants:
+
+    % make CONFIG_OPTS="--host=ppc-rhapsody" stage1
+
+-- Donovan Kolbly                       RScheme Development Group
+     			                d.kolbly@rscheme.org
+					http://www.rscheme.org/~donovan/

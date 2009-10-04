@@ -1,0 +1,118 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/cfg/gcadapt/irc/gcclient2.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.14
+ * File mod date:    2003-10-13 13:02:07
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ * Purpose:          IRC adapator / client-side traversal functions
+ *------------------------------------------------------------------------*/
+
+#ifndef _CI_GCCLIENT2
+#define _CI_GCCLIENT2
+
+#include <rscheme/linktype.h>
+#include <rscheme/regs.h>
+#include <rscheme/smemory.h>
+#include <rscheme/vinsns.h>
+#include <rscheme/irctypes.h>
+#include <rscheme/traverse.h>
+
+CI_DECL int next_ptr( void *ircInfo, UINT_8 *travActions, obj item )
+{
+  void *ptr;
+
+  ptr = PTR_TO_GCPTR(item);
+  if (IRC_TRAV(travActions,ptr))
+    return IRC_foundPointer( ircInfo, ptr );
+  else
+    return 0;
+}
+
+CI_DECL void next_obj( void *ircInfo, UINT_8 *travActions, obj *pitem )
+{
+  obj item = *pitem;
+
+  if (OBJ_ISA_PTR(item))
+    {
+#if INCLUDE_READ_BARRIER
+      if (EQ(PTR_TO_HDRPTR(item)->pob_class,ZERO))
+	{
+	  *pitem = item = read_barrier(item);
+	  assert( PTR_P(item) );
+	}
+#endif
+      if (next_ptr( ircInfo, travActions, item ))
+        {
+#if INCLUDE_PSTORE_UNMAPPER
+          *pitem = UNMAPPED_OBJ;
+#endif /* INCLUDE_PSTORE_UNMAPPER */
+        }
+    }
+}
+
+#if INCLUDE_PSTORE_UNMAPPER
+obj irc_current_scan;
+#endif /* INCLUDE_PSTORE_UNMAPPER */
+
+extern void gc_find_pointers_hook( obj item,
+                                   void *ircInfo, 
+                                   UINT_8 *travActions, 
+                                   obj type );
+
+CI_DECL void IRC_clientFindPointers( void *ircInfo, 
+				     void *client_object, 
+				     UINT_8 *travActions )
+{
+obj item, the_class, type;
+obj *p, *limit;
+extern rs_bool CLASS_P( obj );
+
+    item = GCPTR_TO_PTR(client_object);
+    the_class = CLASSOF_PTR(item);
+
+#if INCLUDE_PSTORE_UNMAPPER
+    irc_current_scan = item;
+#endif /* INCLUDE_PSTORE_UNMAPPER */
+
+#if INCLUDE_READ_BARRIER
+    if (EQ(the_class,ZERO))
+      {
+	/* scan the object we've been replaced with, instead */
+	next_obj( ircInfo,
+		  travActions, 
+		  (obj *)&PTR_TO_HDRPTR(item)->pob_size );
+	return;
+      }
+#endif
+
+    assert( CLASS_P(the_class) );
+    next_ptr( ircInfo, travActions, the_class );
+    type = gvec_read( the_class, SLOT(1) );
+
+    assert( OBJ_ISA_FIXNUM(type) );
+
+    if (EQ(type,ZERO))
+    {
+        p = (obj *)PTR_TO_DATAPTR(item);
+	limit = (obj *)((char *)p + SIZEOF_PTR(item));
+	while (p < limit)
+	{
+	  next_obj( ircInfo, travActions, p++ );
+	}
+    }
+    else if (EQ(type,int2fx(1))) /* a bvec */
+    {
+      return;
+    }
+    else
+    {
+      gc_find_pointers_hook( item, ircInfo, travActions, type );
+    }
+}
+
+#endif /* _CI_GCCLIENT2 */

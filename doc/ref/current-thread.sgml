@@ -1,0 +1,32 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}current-thread{/RefName}
+  {RefPurpose}Return the currently running thread.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/current-thread/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+{/ParamDef}{ParamDef role="returns"}
+{Parameter}thread{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}thread{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<thread>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Returns the currently running thread.{/para}
+{/RefSect1}
+{/RefEntry}

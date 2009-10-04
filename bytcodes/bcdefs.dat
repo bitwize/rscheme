@@ -1,0 +1,728 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    bytcodes/bcdefs.dat
+ |
+ |          Copyright (C)1995 Donovan Kolbly <donovan@tkg.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.18
+ | Date:    2005-01-20 19:45:26
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ `------------------------------------------------------------------------|#
+
+;; this definitions file is input to the
+;; bytecode definition processor, which in
+;; turn generates two outputs:
+;;	the bytecode interpreter fragments file, bcfrags.ci
+;;      the bytecode code generator file, bcgen.scm
+
+(bytecode (return n)
+ (cond
+  ((eq? n 0)
+   (assign-code '(return 0) () "RETURN0();"))
+  ((eq? n 1)
+   (assign-code '(return 1) () "RETURN1();"))
+  (else
+   (assign-code (n) "RETURN(n);"))))
+
+#| generates:
+	(define (emit-return n)
+	    (cond ((eq? n 0) (emit-byte-code 37))
+		    ((eq? n 1) (emit-byte-code 38))
+		    (#t (emit-byte-code 39)
+			(assert (byte-sized? n))
+			(emit-byte-code n))))
+   and:
+   	case 37: RETURN0(); break;
+	case 38: RETURN1(); break;
+	case 39: { UINT_8 n; n = *pc++; RETURN(n); } break;
+|#
+
+;; well, on to it...
+
+(bytecode (literal slot)
+  ;; just add one to the literal slot, because bytecoded code
+  ;; has the program in LITERAL(0) (LITERAL(0) ==> SLOT(2))
+  (case slot
+    ((0)  (assign-code '(literal 0) () "PUSH( LITERAL(0+1) );"))
+    ((1)  (assign-code '(literal 1) () "PUSH( LITERAL(1+1) );"))
+    ((2)  (assign-code '(literal 2) () "PUSH( LITERAL(2+1) );"))
+    ((3)  (assign-code '(literal 3) () "PUSH( LITERAL(3+1) );"))
+    ((4)  (assign-code '(literal 4) () "PUSH( LITERAL(4+1) );"))
+    ((5)  (assign-code '(literal 5) () "PUSH( LITERAL(5+1) );"))
+    (else 
+     (if (> slot 255)
+         (assign-code ((slot slot <uint-16>)) "PUSH( LITERAL(slot+1) );")
+         (assign-code (slot) "PUSH( LITERAL(slot+1) );")))))
+
+(bytecode (closure slot)
+  (if (> slot 255)
+      (assign-code ((slot slot <uint-16>)) "PUSH( CLOSURE(slot+1) );")
+      (assign-code (slot) "PUSH( CLOSURE(slot+1) );")))
+
+(bytecode (apply n)
+  (case n
+    ((0)  (assign-code '(apply 0) ()  "APPLY(0,POP());"))
+    ((1)  (assign-code '(apply 1) ()  "APPLY(1,POP());"))
+    ((2)  (assign-code '(apply 2) ()  "APPLY(2,POP());"))
+    ((3)  (assign-code '(apply 3) ()  "APPLY(3,POP());"))
+    ((4)  (assign-code '(apply 4) ()  "APPLY(4,POP());"))
+    (else (assign-code (n) "APPLY(n,POP());"))))
+
+(bytecode (reg-set n)
+  (case n
+    ((0) (assign-code '(reg-set 0) () "REG0 = POP();"))
+    ((1) (assign-code '(reg-set 1) () "REG1 = POP();"))
+    ((2) (assign-code '(reg-set 2) () "REG2 = POP();"))
+    (else
+     ;; if the LHS is a low-numbered reg, we have to
+     ;; use reg_set() because REG(n) only works for n>=10
+     (if (< n 10)
+	 (assign-code (n) "reg_set( n, POP() );")
+         (if (> n 255)
+             (assign-code ((n n <uint-16>)) "REG(n) = POP();")
+             (assign-code (n) "REG(n) = POP();"))))))
+
+(bytecode (reg-ref n)
+  (case n
+    ((0) (assign-code '(reg-ref 0) () "PUSH( REG0 );"))
+    ((1) (assign-code '(reg-ref 1) () "PUSH( REG1 );"))
+    ((2) (assign-code '(reg-ref 2) () "PUSH( REG2 );"))
+    (else
+     ;; if the source is a low-numbered reg, we have to
+     ;; use reg_ref() because REG(n) only works for n>=10
+     (if (< n 10)
+	 (assign-code (n) "PUSH( reg_ref(n) );")
+         (if (> n 255)
+             (assign-code ((n n <uint-16>)) "PUSH( REG(n) );")
+             (assign-code (n) "PUSH( REG(n) );"))))))
+
+;; only called for from != to
+(bytecode (reg-xfer from to)
+  (case (if (<= to 255) from #f)
+    ((0) (case to
+	   ((1) (assign-code '(reg-xfer 0 1) () "REG1 = REG0;"))
+	   ((2) (assign-code '(reg-xfer 0 2) () "REG2 = REG0;"))
+	   ((3) (assign-code '(reg-xfer 0 3) () "REG3 = REG0;"))
+	   (else (if (< to 10)
+		     (assign-code '(reg-xfer 0 to) (to) "reg_set( to, REG0 );")
+		     (assign-code '(reg-xfer 0 to) (to) "REG(to) = REG0;")))))
+    ((1) (case to
+	   ((0) (assign-code '(reg-xfer 1 0) () "REG0 = REG1;"))
+	   ((2) (assign-code '(reg-xfer 1 2) () "REG2 = REG1;"))
+	   ((3) (assign-code '(reg-xfer 1 3) () "REG3 = REG1;"))
+	   (else (if (< to 10)
+		     (assign-code '(reg-xfer 1 to) (to) "reg_set( to, REG1 );")
+		     (assign-code '(reg-xfer 1 to) (to) "REG(to) = REG1;")))))
+    ((2) (case to
+	   ((0) (assign-code '(reg-xfer 2 0) () "REG0 = REG2;"))
+	   ((1) (assign-code '(reg-xfer 2 1) () "REG1 = REG2;"))
+	   ((3) (assign-code '(reg-xfer 2 3) () "REG3 = REG2;"))
+	   (else (if (< to 10)
+		     (assign-code '(reg-xfer 2 to) (to) "reg_set( to, REG2 );")
+		     (assign-code '(reg-xfer 2 to) (to) "REG(to) = REG2;")))))
+    ((3) (case to
+	   ((0) (assign-code '(reg-xfer 3 0) () "REG0 = REG3;"))
+	   ((1) (assign-code '(reg-xfer 3 1) () "REG1 = REG3;"))
+	   ((2) (assign-code '(reg-xfer 3 2) () "REG2 = REG3;"))
+	   (else (if (< to 10)
+		     (assign-code '(reg-xfer 3 to) (to)
+				  "reg_set( to, REG3 );")
+		     (assign-code '(reg-xfer 3 to) (to)
+				  "REG(to) = REG3;")))))
+    (else (case (if (<= from 255) to #f)
+	    ((0) (if (< from 10)
+		     (assign-code '(reg-xfer from 0) (from)
+				  "REG0 = reg_ref(from);")
+		     (assign-code '(reg-xfer from 0) (from)
+				  "REG0 = REG(from);")))
+	    ((1) (if (< from 10)
+		     (assign-code '(reg-xfer from 1) (from)
+				  "REG1 = reg_ref(from);")
+		     (assign-code '(reg-xfer from 1)(from)
+				  "REG1 = REG(from);")))
+	    ((2) (if (< from 10)
+		     (assign-code '(reg-xfer from 2) (from)
+				  "REG2 = reg_ref(from);")
+		     (assign-code '(reg-xfer from 2) (from)
+				  "REG2 = REG(from);")))
+	    ((3) (if (< from 10)
+		     (assign-code '(reg-xfer from 3) (from)
+				  "REG3 = reg_ref(from);")
+		     (assign-code '(reg-xfer from 3) (from)
+				  "REG3 = REG(from);")))
+	    (else
+             (cond
+              ((and (< from 10) (< to 10))
+               (assign-code (from to) "reg_set( to, reg_ref( from ) );"))
+              ((and (< from 10) (<= to 255))
+               (assign-code (from to) "REG(to) = reg_ref( from );"))
+              ((< from 10)
+               (assign-code (from (to to <uint-16>))
+                            "REG(to) = reg_ref( from );"))
+              ((and (<= from 255) (< to 10))
+               (assign-code (from to) "reg_set( to, REG(from) );"))
+              ((and (<= from 255) (< to 255))
+               (assign-code (from to) "REG(to) = REG(from);"))
+              ((<= from 255)
+               (assign-code (from (to to <uint-16>)) "REG(to) = REG(from);"))
+              ((< to 10)
+               (assign-code ((from from <uint-16>) to) "reg_set( to, REG(from) );"))
+              ((<= to 255)
+               (assign-code ((from from <uint-16>) to) "REG(to) = REG(from);"))
+              (else
+               (assign-code ((from from <uint-16>) 
+                             (to to <uint-16>)) "REG(to) = REG(from);"))))))))
+
+(bytecode (pop)
+  (assign-code () "POP();"))
+
+(bytecode (lex-ref frame slot)
+  (case frame
+    ((0)
+     (case slot
+       ((0)
+	(assign-code '(lex-ref 0 0) ()
+	   "PUSH( LEXREF0(0) );"))
+       ((1)
+	(assign-code '(lex-ref 0 1) ()
+	   "PUSH( LEXREF0(1) );"))
+       ((2)
+	(assign-code '(lex-ref 0 2) ()
+	   "PUSH( LEXREF0(2) );"))
+       (else
+	(assign-code '(lex-ref 0 slot) (slot)
+	   "PUSH( LEXREF0(slot) );"))))
+    ((1)
+     (case slot
+       ((0)
+	(assign-code '(lex-ref 1 0) ()
+	   "PUSH( LEXREF1(0) );"))
+       ((1)
+	(assign-code '(lex-ref 1 1) ()
+	   "PUSH( LEXREF1(1) );"))
+       ((2)
+	(assign-code '(lex-ref 1 2) ()
+	   "PUSH( LEXREF1(2) );"))
+       (else
+	(assign-code '(lex-ref 1 slot) (slot)
+	   "PUSH( LEXREF1(slot) );"))))
+    ((2)
+     (case slot
+       ((0)
+	(assign-code '(lex-ref 2 0) ()
+	   "PUSH( LEXREF2(0) );"))
+       ((1)
+	(assign-code '(lex-ref 2 1) ()
+	   "PUSH( LEXREF2(1) );"))
+       ((2)
+	(assign-code '(lex-ref 2 2) ()
+	   "PUSH( LEXREF2(2) );"))
+       (else
+	(assign-code '(lex-ref 2 slot) (slot)
+	   "PUSH( LEXREF2(slot) );"))))
+    (else
+     (assign-code (frame slot)
+        "PUSH( gvec_read( nth_enclosing_envt(frame), SLOT(slot+1) ) );"))))
+
+(bytecode (lex-set frame slot)
+  (case frame
+    ((0)
+     (case slot
+       ((0)
+	(assign-code '(lex-set 0 0) ()
+	   "LEXSET0(0,POP());"))
+       ((1)
+	(assign-code '(lex-set 0 1) ()
+	   "LEXSET0(1,POP());"))
+       ((2)
+	(assign-code '(lex-set 0 2) ()
+	   "LEXSET0(2,POP());"))
+       (else
+	(assign-code '(lex-set 0 slot) (slot)
+	   "LEXSET0(slot,POP());"))))
+    ((1)
+     (case slot
+       ((0)
+	(assign-code '(lex-set 1 0) ()
+	   "LEXSET1(0,POP());"))
+       ((1)
+	(assign-code '(lex-set 1 1) ()
+	   "LEXSET1(1,POP());"))
+       ((2)
+	(assign-code '(lex-set 1 2) ()
+	   "LEXSET1(2,POP());"))
+       (else
+	(assign-code '(lex-set 1 slot) (slot)
+	   "LEXSET1(slot,POP());"))))
+    ((2)
+     (case slot
+       ((0)
+	(assign-code '(lex-set 2 0) ()
+	   "LEXSET2(0,POP());"))
+       ((1)
+	(assign-code '(lex-set 2 1) ()
+	   "LEXSET2(1,POP());"))
+       ((2)
+	(assign-code '(lex-set 2 2) ()
+	   "LEXSET2(2,POP());"))
+       (else
+	(assign-code '(lex-set 2 slot) (slot)
+	   "LEXSET2(slot,POP());"))))
+    (else
+     (assign-code (frame slot)
+	"gvec_write( nth_enclosing_envt(frame), SLOT(slot+1), POP() );"))))
+
+(bytecode (tl-ref i)
+  (if (> i 255)
+      (assign-code ((i i <uint-16>)) "PUSH( TLREF(i+1) );")
+      (assign-code (i) "PUSH( TLREF(i+1) );")))
+
+(bytecode (tl-set i)
+  (if (> i 255)
+      (assign-code ((i i <uint-16>)) "TLSET((i+1),POP());")
+      (assign-code (i) "TLSET((i+1),POP());")))
+
+(bytecode (immob x)
+  (case x
+    ((#t) (assign-code '(immob #t) () "PUSH( TRUE_OBJ );"))
+    ((#f) (assign-code '(immob #f) () "PUSH( FALSE_OBJ );"))
+    ((()) (assign-code '(immob ()) () "PUSH( NIL_OBJ );"))
+    (else
+     (cond
+      ((ascii-char? x)
+       (assign-code '(immob/char v) ((v (ascii-char->integer x)))
+		    "PUSH( MAKE_ASCII_CHAR(v) );"))
+      ((unicode-char? x)
+       (assign-code '(immob/unicode v) ((v (unicode-char->integer x) 
+				       <uint-16>))
+		    "PUSH( MAKE_UNICODE_CHAR(v) );"))
+      ((unique-obj? x)
+       (assign-code '(immob/unique v) ((v (get-immob-value x)))
+		    "PUSH( MAKE_UNIQ_OBJ(v) );"))
+      (else
+       (assign-code '(immob/bits hi lo) ((hi (obj-high-bits x) <uint-16>)
+					 (lo (obj-low-bits x) <uint-16>))
+		    "PUSH( OBJ( (hi<<16) + lo ) );"))))))
+
+(include "primops.dat")
+
+(bytecode (make-primop num-args)
+  ;; make's first argument is the class to be made
+  (assign-code '(make n) ((n (- num-args 1)))
+    "{ unsigned i;"
+    "  obj r = alloc( SLOT(n), TOP(n) );"
+    "  for (i=n; i>0;)"
+    "  { i--; gvec_write_init( r, SLOT(i), POP() ); }"
+    "  POP(); /* the class */"
+    "  PUSH(r); }"))
+
+;; this handles "special" primops
+;; -- that is, primop AML insns whose
+;;    translation to bytecodes is a symbol
+
+(bytecode (special-primop op num-args)
+  (case op
+    ;; special-case cons, car, and cdr to be single-byte codes
+    ((cons)
+     (assert (= num-args 2))
+     (assign-code '(cons) ()
+       "{ obj h, t;"
+       "  t = POP();"
+       "  h = POP();"
+       "  PUSH( cons( h, t ) ); }"))
+    ((car)
+     (assert (= num-args 1))
+     (assign-code '(car) ()
+       "{ CHECK_PAIR(TOP(0));"
+       "  SETTOP(0,pair_car(TOP(0))); }"))
+    ((cdr)
+     (assert (= num-args 1))
+     (assign-code '(cdr) ()
+       "{ CHECK_PAIR(TOP(0));"
+       "  SETTOP(0,pair_cdr(TOP(0))); }"))
+    ((make)
+     ;; special-case make to take variable # arguments
+     (emit-make-primop num-args))
+    (else
+     (error/internal "special-primop not defined: ~s" op))))
+
+;; note that the SET_PARTCONT_REG()'s invocations
+;; don't usually involve a write barrier, because they only
+;; modify the freshly created partial-continuation which
+;; is in the stack cache (see stakcach.h)
+
+(bytecode (save n l)
+  (case n
+    ((0)
+     (assign-code '(save 0 label) ((label (ref-label l) <uint-16>))
+	"{ unsigned i;"
+	"  PUSH_PARTCONT(bci_1,1);"
+	"  SET_PARTCONT_REG(0,int2fx(label)); }"))
+    ((1)
+     (assign-code '(save 1 label) ((label (ref-label l) <uint-16>))
+	"{ "
+	"  PUSH_PARTCONT(bci_1,2);"
+	"  SET_PARTCONT_REG(0,int2fx(label));"
+	"  SET_PARTCONT_REG(1,REG0); }"))
+    ((2)
+     (assign-code '(save 2 label) ((label (ref-label l) <uint-16>))
+	"{ "
+	"  PUSH_PARTCONT(bci_1,3);"
+	"  SET_PARTCONT_REG(0,int2fx(label));"
+	"  SET_PARTCONT_REG(1,REG0);"
+	"  SET_PARTCONT_REG(2,REG1); }"))
+    ((3)
+     (assign-code '(save 3 label) ((label (ref-label l) <uint-16>))
+	"{ "
+	"  PUSH_PARTCONT(bci_1,4);"
+	"  SET_PARTCONT_REG(0,int2fx(label));"
+	"  SET_PARTCONT_REG(1,REG0);"
+	"  SET_PARTCONT_REG(2,REG1);"
+	"  SET_PARTCONT_REG(3,REG2); }"))
+    ((4)
+     (assign-code '(save 4 label) ((label (ref-label l) <uint-16>))
+	"{ "
+	"  PUSH_PARTCONT(bci_1,5);"
+	"  SET_PARTCONT_REG(0,int2fx(label));"
+	"  SET_PARTCONT_REG(1,REG0);"
+	"  SET_PARTCONT_REG(2,REG1);"
+	"  SET_PARTCONT_REG(3,REG2);"
+	"  SET_PARTCONT_REG(4,REG3); }"))
+    ((5)
+     (assign-code '(save 5 label) ((label (ref-label l) <uint-16>))
+	"{ "
+	"  PUSH_PARTCONT(bci_1,6);"
+	"  SET_PARTCONT_REG(0,int2fx(label));"
+	"  SET_PARTCONT_REG(1,REG0);"
+	"  SET_PARTCONT_REG(2,REG1);"
+	"  SET_PARTCONT_REG(3,REG2);"
+	"  SET_PARTCONT_REG(4,REG3);"
+	"  SET_PARTCONT_REG(5,REG4); }"))
+    (else
+     (if (> n 255)
+         (assign-code '(save num label) ((num n <uint-16>)
+                                         (label (ref-label l) <uint-16>))
+            "{ unsigned i;"
+            "  PUSH_PARTCONT(bci_1,(num+1));"
+            "  SET_PARTCONT_REG(0,int2fx(label));"
+            "  for (i=0; i<num; i++)"
+            "  {"
+            "    SET_PARTCONT_REG(i+1,reg_ref(i));"
+            "  } }")
+         (assign-code '(save num label) ((num n) 
+                                         (label (ref-label l) <uint-16>))
+            "{ unsigned i;"
+            "  PUSH_PARTCONT(bci_1,(num+1));"
+            "  SET_PARTCONT_REG(0,int2fx(label));"
+            "  for (i=0; i<num; i++)"
+            "  {"
+            "    SET_PARTCONT_REG(i+1,reg_ref(i));"
+            "  } }")))))
+
+(bytecode (restore n)
+  (case n
+    ((0)
+     (assign-code '(restore 0) ()
+	"{"
+	"  RESTORE_CONT_REG();"
+	"}"))
+    ((1)
+     (assign-code '(restore 1) ()
+	"{ REG0 = PARTCONT_REG(1);"
+	"  RESTORE_CONT_REG();"
+	"}"))
+    ((2)
+     (assign-code '(restore 2) ()
+	"{ REG0 = PARTCONT_REG(1);"
+	"  REG1 = PARTCONT_REG(2);"
+	"  RESTORE_CONT_REG();"
+	"}"))
+    ((3)
+     (assign-code '(restore 3) ()
+	"{ REG0 = PARTCONT_REG(1);"
+	"  REG1 = PARTCONT_REG(2);"
+	"  REG2 = PARTCONT_REG(3);"
+	"  RESTORE_CONT_REG();"
+	"}"))
+    ((4)
+     (assign-code '(restore 4) ()
+	"{ REG0 = PARTCONT_REG(1);"
+	"  REG1 = PARTCONT_REG(2);"
+	"  REG2 = PARTCONT_REG(3);"
+	"  REG3 = PARTCONT_REG(4);"
+	"  RESTORE_CONT_REG();"
+	"}"))
+    ((5)
+     (assign-code '(restore 5) ()
+	"{ REG0 = PARTCONT_REG(1);"
+	"  REG1 = PARTCONT_REG(2);"
+	"  REG2 = PARTCONT_REG(3);"
+	"  REG3 = PARTCONT_REG(4);"
+	"  REG4 = PARTCONT_REG(5);"
+	"  RESTORE_CONT_REG();"
+	"}"))
+    (else
+     (if (> n 255)
+         (assign-code ((num n <uint-16>))
+            "{ unsigned i;"
+            "  REG0 = PARTCONT_REG(1);"
+            "  REG1 = PARTCONT_REG(2);"
+            "  REG2 = PARTCONT_REG(3);"
+            "  REG3 = PARTCONT_REG(4);"
+            "  REG4 = PARTCONT_REG(5);"
+            "  REG5 = PARTCONT_REG(6);"
+            "  for (i=6; i<num; i++)"
+            "     reg_set( i, PARTCONT_REG(i+1) );"
+            "  RESTORE_CONT_REG();"
+            "}")
+         (assign-code ((num n))
+            "{ unsigned i;"
+            "  REG0 = PARTCONT_REG(1);"
+            "  REG1 = PARTCONT_REG(2);"
+            "  REG2 = PARTCONT_REG(3);"
+            "  REG3 = PARTCONT_REG(4);"
+            "  REG4 = PARTCONT_REG(5);"
+            "  REG5 = PARTCONT_REG(6);"
+            "  for (i=6; i<num; i++)"
+            "     reg_set( i, PARTCONT_REG(i+1) );"
+            "  RESTORE_CONT_REG();"
+            "}")))))
+
+(bytecode (jump n l)
+   (assign-code '(jump label) ((label (ref-label l) <uint-16>))
+      "if (rsprof_active) rsprof_mt_jumps();"
+      "pc = base + label;"))
+
+;;
+;;  BJUMP in the bci is implemented so that it is best if 
+;;  there is usually no interrupt
+;;  (ie, the registers have to be shifted & REG0 set to=>label
+;;       on interrupt)
+;;  however, it may still be a good idea to optimize the
+;;  instruction decoding...
+
+(bytecode (bjump n l)
+   (assign-code '(bjump n label) (n (label (ref-label l) <uint-16>))
+      "BJUMP(n,label);"))
+
+(bytecode (branch-if-false l)
+   (assign-code '(branch-if-false label) ((label (ref-label l) <uint-16>))
+      "pc = POPT(raw_bool) ? pc : base + label;"))
+
+(bytecode (check= n)
+  (case n
+    ((0)  (assign-code '(check= 0) () "COUNT_ARGS(0);"))
+    ((1)  (assign-code '(check= 1) () "COUNT_ARGS(1);"))
+    ((2)  (assign-code '(check= 2) () "COUNT_ARGS(2);"))
+    ((3)  (assign-code '(check= 3) () "COUNT_ARGS(3);"))
+    ((4)  (assign-code '(check= 4) () "COUNT_ARGS(4);"))
+    (else (assign-code (n) "COUNT_ARGS(n);"))))
+
+(bytecode (check>= n)
+   (if (> n 0)
+       (assign-code (n) "COUNT_ARGS_AT_LEAST(n);")))
+
+(bytecode (set-false< n)
+   (case n
+     ((0))
+     ((1) (assign-code '(set-false< 1) () "PAD_WITH_FALSE1();"))
+     ((2) (assign-code '(set-false< 2) () "PAD_WITH_FALSE2();"))
+     (else (assign-code (n) "PAD_WITH_FALSE(n);"))))
+
+(bytecode (collect> n)
+   (case n
+     ((0) (assign-code '(collect> 0) () "COLLECT0();"))
+     ((1) (assign-code '(collect> 1) () "COLLECT1();"))
+     ((2) (assign-code '(collect> 2) () "COLLECT2();"))
+     ((3) (assign-code '(collect> 3) () "COLLECT3();"))
+     (else (assign-code (n) "COLLECT(n);"))))
+
+(bytecode (unbind)
+   (assign-code () "POPENVT();"))
+
+(bytecode (bind-first-regs n)
+   (case n
+     ((1)
+      (assign-code '(bind-first-regs 1) ()
+        "{ BEGIN_BIND1();"
+	"   BIND_ARG(0,REG0);"
+	"  END_BIND }"))
+     ((2)
+      (assign-code '(bind-first-regs 2) ()
+        "{ BEGIN_BIND2();"
+	"   BIND_ARG(0,REG0);"
+	"   BIND_ARG(1,REG1);"
+	"  END_BIND }"))
+     ((3)
+      (assign-code '(bind-first-regs 3) ()
+        "{ BEGIN_BIND3();"
+	"   BIND_ARG(0,REG0);"
+	"   BIND_ARG(1,REG1);"
+	"   BIND_ARG(2,REG2);"
+	"  END_BIND }"))
+     ((4)
+      (assign-code '(bind-first-regs 4) ()
+        "{ BEGIN_BIND4();"
+	"   BIND_ARG(0,REG0);"
+	"   BIND_ARG(1,REG1);"
+	"   BIND_ARG(2,REG2);"
+	"   BIND_ARG(3,REG3);"
+	"  END_BIND }"))
+     ((5)
+      (assign-code '(bind-first-regs 5) ()
+        "{ BEGIN_BIND5();"
+	"   BIND_ARG(0,REG0);"
+	"   BIND_ARG(1,REG1);"
+	"   BIND_ARG(2,REG2);"
+	"   BIND_ARG(3,REG3);"
+	"   BIND_ARG(4,REG4);"
+	"  END_BIND }"))
+     (else
+      (assign-code (n)
+	"{ unsigned i;"
+	"  BEGIN_BIND(n);"
+	"  for (i=0; i<n; i++)"
+	"   BIND_ARG(i,reg_ref(i));"
+	"  END_BIND }"))))
+
+(bytecode (bind n)
+   (case n
+     ((1)
+      (assign-code '(bind 1) ()
+        "{ BEGIN_BIND1();"
+	"   BIND_ARG(0,POP());"
+	"  END_BIND }"))
+     ((2)
+      (assign-code '(bind 2) ()
+        "{ BEGIN_BIND2();"
+	"   BIND_ARG(1,POP());"
+	"   BIND_ARG(0,POP());"
+	"  END_BIND }"))
+     ((3)
+      (assign-code '(bind 3) ()
+        "{ BEGIN_BIND3();"
+	"   BIND_ARG(2,POP());"
+	"   BIND_ARG(1,POP());"
+	"   BIND_ARG(0,POP());"
+	"  END_BIND }"))
+     ((4)
+      (assign-code '(bind 4) ()
+        "{ BEGIN_BIND4();"
+	"   BIND_ARG(3,POP());"
+	"   BIND_ARG(2,POP());"
+	"   BIND_ARG(1,POP());"
+	"   BIND_ARG(0,POP());"
+	"  END_BIND }"))
+     ((5)
+      (assign-code '(bind 5) ()
+        "{ BEGIN_BIND5();"
+	"   BIND_ARG(4,POP());"
+	"   BIND_ARG(3,POP());"
+	"   BIND_ARG(2,POP());"
+	"   BIND_ARG(1,POP());"
+	"   BIND_ARG(0,POP());"
+	"  END_BIND }"))
+     (else
+      (assign-code (n)
+	"{ unsigned i;"
+	"  BEGIN_BIND(n);"
+	"  for (i=n; i>0;)"
+	"  { obj t = POP();"
+	"    i--; "
+	"    BIND_ARG(i,t);"
+	"  }"
+	"  END_BIND }"))))
+
+(bytecode (raw-int n)
+  (if (and (>= n 0) (< n 256))
+      (if (eq? n 0)
+	  (assign-code '(raw-int 0) () "PUSHT(raw_int,0);")
+	  (if (eq? n 1)
+	      (assign-code '(raw-int 1) () "PUSHT(raw_int,1);")
+	      (assign-code '(raw-int/UINT_8 n) (n)
+			   "PUSHT(raw_int,n);")))
+      (if (and (< n 0) (> n -257))
+	  (assign-code '(raw-int/-UINT_8 n) ((n (+ n 256)))
+	     "PUSHT(raw_int,n-256);")
+	  (if (and (>= n -32768) (< n 32768))
+	      (assign-code '(raw-int/INT_16 n) ((n n <int-16>))
+		  "PUSHT(raw_int,n);")
+	      (assign-code '(raw-int/INT_32 n) ((n n <int-32>))
+		  "PUSHT(raw_int,n);")))))
+
+(bytecode (fixnum n)
+  (if (and (>= n 0) (< n 256))
+      (case n
+	((0)  (assign-code '(fixnum 0) () "PUSH(ZERO);"))
+	((1)  (assign-code '(fixnum 1) () "PUSH(int2fx(1));"))
+	(else (assign-code '(fixnum/UINT_8 n) (n)
+			   "PUSH(int2fx(n));")))
+      (if (and (< n 0) (> n -257))
+	  (assign-code '(fixnum/-UINT_8 n) ((n (+ n 256)))
+	     "PUSH(int2fx(n-256));")
+	  (if (and (>= n -32768) (< n 32768))
+	      (assign-code '(fixnum/INT_16 n) ((n n <int-16>))
+		  "PUSH(int2fx(n));")
+	      (assign-code '(fixnum/INT_32 n) ((n n <int-32>))
+		  "PUSH(int2fx(n));")))))
+
+(bytecode (raw-bool r)
+  (if r
+      (assign-code '(raw-bool #t) () "PUSHT(raw_bool,YES);")
+      (assign-code '(raw-bool #f) () "PUSHT(raw_bool,NO);")))
+
+(bytecode (this-function)
+  (assign-code () "PUSH(THIS_FUNCTION());"))
+
+(bytecode (use-function-envt)
+  (assign-code () "USE_FUNCTION_ENVT();"))
+
+(bytecode (use-empty-envt)
+  (assign-code () "USE_EMPTY_ENVT();"))
+
+;;;
+
+(bytecode (gvec-load index)
+  (assign-code ((ix index))
+    "SETTOP(0,gvec_ref(TOP(0),SLOT(ix)));"))
+
+(bytecode (gvec-store index)
+  (assign-code ((ix index))
+    "{ obj rhs = POP();"
+    "  obj lhs = POP();"
+    "  gvec_set( lhs, SLOT(ix), rhs ); }"))
+
+(bytecode (applyf n)
+  (case n
+    ((0)  (assign-code '(applyf 0) ()  "APPLYF(0,POP());"))
+    ((1)  (assign-code '(applyf 1) ()  "APPLYF(1,POP());"))
+    ((2)  (assign-code '(applyf 2) ()  "APPLYF(2,POP());"))
+    ((3)  (assign-code '(applyf 3) ()  "APPLYF(3,POP());"))
+    ((4)  (assign-code '(applyf 4) ()  "APPLYF(4,POP());"))
+    (else (assign-code '(applyf n) (n) "APPLYF(n,POP());"))))
+
+(bytecode (applyg n)
+ (case n
+   ((1) (assign-code '(applyg 1) () "APPLYG(1,POP());"))
+   ((2) (assign-code '(applyg 2) () "APPLYG(2,POP());"))
+   ((3) (assign-code '(applyg 3) () "APPLYG(3,POP());"))
+   (else (assign-code '(applyg n) (n) "APPLYG(n,POP());"))))
+
+(bytecode (tl-ref/bound i)
+  (case i
+    ;; the "+1" skips the bytecode program slot
+    ((0) (assign-code '(tl-ref/bound 0) () "PUSH( TLREFB(0+1) );"))
+    ((1) (assign-code '(tl-ref/bound 1) () "PUSH( TLREFB(1+1) );"))
+    ((2) (assign-code '(tl-ref/bound 2) () "PUSH( TLREFB(2+1) );"))
+    ((3) (assign-code '(tl-ref/bound 3) () "PUSH( TLREFB(3+1) );"))
+    ((4) (assign-code '(tl-ref/bound 4) () "PUSH( TLREFB(4+1) );"))
+    ((5) (assign-code '(tl-ref/bound 5) () "PUSH( TLREFB(5+1) );"))
+    ((6) (assign-code '(tl-ref/bound 6) () "PUSH( TLREFB(6+1) );"))
+    ((7) (assign-code '(tl-ref/bound 7) () "PUSH( TLREFB(7+1) );"))
+    ((8) (assign-code '(tl-ref/bound 8) () "PUSH( TLREFB(8+1) );"))
+    ((9) (assign-code '(tl-ref/bound 9) () "PUSH( TLREFB(9+1) );"))
+    (else
+     (if (> i 255)
+         (assign-code '(tl-ref/bound (i <uint-16>)) ((i i <uint-16>)) "PUSH( TLREFB(i+1) );")
+         (assign-code '(tl-ref/bound i) (i) "PUSH( TLREFB(i+1) );")))))

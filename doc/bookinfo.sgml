@@ -1,0 +1,48 @@
+   {bookinfo}
+     {title}RScheme{/title}
+     {subtitle/The Implementation/
+
+     {authorGroup}
+       {author}{firstName/Donovan/ {surname/Kolbly/
+       {/author}
+     {/authorGroup}
+
+   {pubsnumber}RS-03-001{/pubsnumber}
+
+   {revhistory}
+     {revision}
+       {revnumber}0.7{/revnumber}
+       {date}2006-02-14{/date}
+       {authorinitials}DK{/authorinitials}
+       {revremark}Incorporated Part II content from the old 
+                  "Design and Implementation" volume.{/revremark}
+     {/revision}
+
+     {revision}
+       {revnumber}0.6{/revnumber}
+       {date}2003-12-11{/date}
+       {authorinitials}DK{/authorinitials}
+       {revremark}Updated thread system chapter, 
+                  together with other fixes and improvements.{/revremark}
+     {/revision}
+
+     {revision}
+       {revnumber}0.5{/revnumber}
+       {date}2003-04-12{/date}
+       {authorinitials}DK{/authorinitials}
+       {revremark}Migration to new doc scheme.{/revremark}
+     {/revision}
+
+     {revision}
+       {revnumber}0.4{/revnumber}
+       {date}1998-12-06{/date}
+       {authorinitials}DK{/authorinitials}
+       {authorinitials}PRW{/authorinitials}
+       {authorinitials}RS{/authorinitials}
+       {authorinitials}QZ{/authorinitials}
+       {revremark}Relatively complete 
+                  and widely distributed version.{/revremark}
+     {/revision}
+   {/revhistory}
+
+   {/bookinfo}

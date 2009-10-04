@@ -1,0 +1,82 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/runtime/vinsns.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.11
+ * File mod date:    1997-11-29 23:10:53
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ *------------------------------------------------------------------------*/
+
+#ifndef _CI_VINSNS
+#define _CI_VINSNS
+
+#include <rscheme/scheme.h>
+
+
+CI_DECL jump_addr apply_tmpl( obj fn, obj tmpl )
+{
+extern _rs_volatile void apply_error( obj );
+
+#ifdef RECORD_CALL_CHAIN
+extern void register_apply( obj closure );
+extern rs_bool do_record_call_chain;
+#endif
+
+    if (rsprof_active)
+      rsprof_mt_calls( fn, tmpl );
+
+    envt_reg = fn;
+    literals_reg = tmpl;
+
+#ifdef RECORD_CALL_CHAIN
+    if (do_record_call_chain)
+	register_apply( fn );
+#endif /* RECORD_CALL_CHAIN */
+    return OBJ_TO_JUMP_ADDR( gvec_read( literals_reg, SLOT(0) ) );
+}
+
+CI_DECL jump_addr apply( obj fn )
+{
+  /* the APPLY() vinsn has already checking that `fn' is FUNCTION_P */
+  return apply_tmpl( fn, gvec_read(fn,SLOT(0)) );
+}
+
+/************************ Binding Environments ************************/
+
+CI_DECL obj enclosing_envt( obj envt )
+{
+    return gvec_read( envt, SLOT(0) );
+}
+
+/************************ Continuations ************************/
+
+/*
+    Load most of the registers from the topmost
+    partial continuation object, and 
+    return the address to continue at.
+    Note that the argument-passing registers
+    and the continuation_reg itself are NOT restored. 
+    That is the caller's responsibility
+
+    Note:  We don't use gvec_read directly here because
+    	   this same function works for the stack cache,
+	   in which case the continuation_reg might not
+	   be a heap pointer (but it has a POINTER_TAG, so it
+	   looks like a pointer)
+*/
+
+CI_DECL jump_addr half_restore( void )
+{
+    if (rsprof_active)
+      rsprof_mt_returns();
+
+    envt_reg = PARTCONT_REF(0);
+    literals_reg = PARTCONT_REF(1);
+    return OBJ_TO_JUMP_ADDR( PARTCONT_REF(2) );
+}
+
+#endif /* _CI_VINSNS */

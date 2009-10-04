@@ -1,0 +1,34 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}sleep{/RefName}
+  {RefPurpose}Sleep for the given amount of time.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/sleep/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/sleep_time/{/ParamDef}{ParamDef role="returns"}
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}sleep_time{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<number>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Sleeps for the given number of seconds (may be a float if
+the system has usleep(), otherwise a rounds it off to the nearest
+whole number of seconds){/para}
+{/RefSect1}
+{/RefEntry}

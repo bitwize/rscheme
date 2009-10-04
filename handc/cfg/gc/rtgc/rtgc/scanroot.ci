@@ -1,0 +1,94 @@
+#ifndef SCANROOT_INLINE
+#include <rtgc/scanroot.hh>
+#include <rtgc/gcclient.h>
+
+LINK_TYPE void abstract_root_set::init(int id)
+{
+    my_id = id;
+    stable_root_reset();
+    quasistable_root_reset();
+    unstable_root_reset();
+}
+
+// Abstract version of stable_root_reset()
+LINK_TYPE void abstract_root_set::abstract_stable_root_reset(void){
+    // Actually reset the root scanning pointer only when the serving ID
+    // matches to this instance.
+    if(my_id == stable_id){
+	stable_root_reset();
+    }
+
+    stable_root_index = 0;    
+}
+
+// Abstract version of stable_root_next()
+LINK_TYPE gc_obj_addr abstract_root_set::abstract_stable_root_next(void){
+    // If the last call of stable_root_next is from another instance,
+    // first adjust the scanning pointer to the place we want to read. 
+    if(my_id != stable_id){
+	stable_id = my_id;
+	stable_root_reset();
+	for(int i = 0; i < stable_root_index; i++){
+	    stable_root_next();
+	}
+    }
+    // Don't forget to increment the counter.
+    stable_root_index++;
+    return(stable_root_next());
+}	
+
+// Abstract version of quasistable_root_reset()
+LINK_TYPE void abstract_root_set::abstract_quasistable_root_reset(void){
+    // Actually reset the root scanning pointer only when the serving ID
+    // matches to this instance.
+    if(my_id == quasistable_id){
+	quasistable_root_reset();
+    }
+
+    quasistable_root_index = 0;    
+}
+
+// Abstract version of quasistable_root_next()
+LINK_TYPE gc_obj_addr abstract_root_set::abstract_quasistable_root_next(void){
+    // If the last call of quasistable_root_next is from another instance,
+    // first adjust the scanning pointer to the place we want to read. 
+    if(my_id != quasistable_id){
+	quasistable_id = my_id;
+	quasistable_root_reset();
+	for(int i = 0; i < quasistable_root_index; i++){
+	    quasistable_root_next();
+	}
+    }
+    // Don't forget to increment the counter.
+    quasistable_root_index++;
+    return(quasistable_root_next());
+}	
+
+// Abstract version of unstable_root_reset()
+LINK_TYPE void abstract_root_set::abstract_unstable_root_reset(void){
+    // Actually reset the root scanning pointer only when the serving ID
+    // matches to this instance.
+    if(my_id == unstable_id){
+	unstable_root_reset();
+    }
+
+    unstable_root_index = 0;    
+}
+
+// Abstract version of unstable_root_next()
+LINK_TYPE gc_obj_addr abstract_root_set::abstract_unstable_root_next(void){
+    // If the last call of unstable_root_next is from another instance,
+    // first adjust the scanning pointer to the place we want to read. 
+    if(my_id != unstable_id){
+	unstable_id = my_id;
+	unstable_root_reset();
+	for(int i = 0; i < unstable_root_index; i++){
+	    unstable_root_next();
+	}
+    }
+    // Don't forget to increment the counter.
+    unstable_root_index++;
+    return(unstable_root_next());
+}	
+
+#endif // SCANROOT_INLINE

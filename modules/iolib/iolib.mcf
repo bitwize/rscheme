@@ -1,0 +1,40 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    modules/iolib/iolib.mcf
+ |
+ |          Copyright (C)1995 Donovan Kolbly <donovan@tkg.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.20
+ | Date:    2003-11-04 15:37:19
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ | Purpose: I/O Library Module Control File (MCF)
+ `------------------------------------------------------------------------|#
+
+((iolib "$dist/iolib" 
+	"$install/resource/modules")
+ (open primops *scheme* tables low-scheme objsys mathlib corelib paths
+       earley)
+
+ (pub-h-files stdiox)
+ (h-files cports)
+ (c-files stdiox escapstr)
+ (c-files op_str op_bstr parsefmt)
+
+ (files classes stdio current)
+ (files input output stdout stdin strout bstrout)
+ (files curlybrc scan scanchar read)
+ (files format writers strin)
+ (files print)
+ (files conven) ;; convenience functions (some required by R4RS)
+ (files filter)
+ (files unicode uniqobj)
+ (files disperrs pprint)
+ (files process)
+ (files readstr)
+ (files readapp)
+ ;;
+ (bytecode-extension 10 "stdio")
+ (export :local)
+ (fluid *input-port* *output-port* *error-port*)
+ (fluid *console-input-port* *console-output-port* *console-error-port*))

@@ -1,0 +1,57 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}pg95-get-value{/RefName}
+  {RefPurpose}Get the value of a particular field in a particular tuple of a result.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/pg95-get-value/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/result/ {Parameter/tuple-num/ {Parameter/field-num/{/ParamDef}{ParamDef role="returns"}
+{Parameter}value{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}result{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<pg95-result>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}tuple-num{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}field-num{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}value{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/, or {UserInput}#f{/UserInput}{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Returns the value of a particular field in a particular tuple of a
+result array.  The value returned is a string representation, and will
+be {UserInput}#f{/UserInput} if the value of the field is null.{/para}
+{/RefSect1}
+{/RefEntry}

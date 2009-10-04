@@ -1,0 +1,360 @@
+{Chapter}
+{Title}Program Structure{/Title}
+{Para}
+{Para}
+RScheme is a language with {FirstTerm Role="defn"}modules{/FirstTerm}, and modules
+form the basis of a program's structure.  That is,
+a program is simply a collection of modules, together with an
+entry point{footnote}{Para}&rs; also has an interactive form
+evalutation interface.  This environment, too, is in
+a module, as we'll see later.{/footnote}.
+Some modules are required because the runtime system and
+application environment depend on their presence.  Most
+modules, however, are optional, and are only included
+when necessary.
+{Para}
+A {FirstTerm Role="defn"}module{/FirstTerm} is primarily a name space for variables.
+That is, a module contains a particular set of mappings from
+names (identifiers) to variables (program definitions).
+A module specifies its {FirstTerm Role="defn"}interface{/FirstTerm} in the form of
+its set of {FirstTerm Role="defn"}exported variables{/FirstTerm}.
+Modules also specify which other modules they depend on,
+or {FirstTerm Role="defn"}import{/FirstTerm}.
+{Para}
+The content of a module is structured as a set
+of {FirstTerm Role="defn"}definitions{/FirstTerm} plus a sequence of 
+{FirstTerm Role="defn"/top-level expressions/.
+{Para}
+Definitions are used to create module variables, while
+top-level expressions are used to provide code to be 
+executed when the module is {FirstTerm Role="defn"}loaded{/FirstTerm}.
+{Para}
+When &rs; starts up, by default it presents an
+interactive environment known as the read-eval-print loop,
+or REPL for short.  It is so called because the basic 
+behavior of the REPL is to {Emphasis/read/ an expression,
+{Emphasis/evaluate/ it, {Emphasis/print/ the result of the evaluation
+(that is, the value returned by the expression), and
+{Emphasis/loop/ back to the beginning to do it again.
+Unlike some interactive language environments, &rs;
+doesn't {Emphasis/interpret/ the expressions in order to evaluate
+them.  Instead, the expressions are compiled to bytecodes
+and the compile code is executed by the usual bytecode
+interpreter.
+{Para}
+The evaluation of expressions by the REPL is intended to simulate
+the occurrence of forms in a module.  
+{Para}
+The system
+has access to several modules that are suitable
+for normal interactive use.  The default
+module for interactive use is the {UserInput/user/ module.
+Also available is the {UserInput/usual-inlines/ module.
+{Para}
+Note that although we go to great lengths to simulate
+module semantics in interaction, receiving an expression
+at a time makes this simulation imperfect.  For example,
+when all the definitions for a module are conceptually seen at once,
+top-level expressions can reference variables that are defined
+{Emphasis/later/ in the source of the module.  This is impractical
+in the interactive environment because the user expects
+the expressions to be executed 
+as soon as they are entered;  the user would find it disturbing
+if the system waited for later definitions to be encountered
+before the expressions are executed.
+{Para}
+Since most definitions are simply means for defining
+variables whose values are the value returned by evaluating
+expressions, expressions are the focus of most of this syntax
+description.
+{Para}
+Like most languages, expressions in &rs; return a value.
+Unlike many, however, (a) most constructs are expressions,
+including control, block, and binding constructs, and (b)
+expressions may return more than one value or zero values.
+{Para}
+Many expressions return very familiar values, although perhaps
+in an unfamiliar syntax:
+{/Para}
+{InformalExample Role="Evals"}
+{Para}
+{UserInput Role="ToEval"}(+ 1 2){/} {ComputerOutput Role="EvalsTo"/3/
+{/Para}
+{/InformalExample}
+{Para}
+In this book, we use the above typographical convention to
+indicate that the expression {UserInput/(+ 1 2)/, when evaluated,
+returns the value {UserInput/3/.  
+More precisely, the string to the left of the arrow is intended
+to be a prototypical expression as it might appear in a program, while
+the string to the right is the
+{FirstTerm Role="defn"}print form{/FirstTerm} of the object (value) returned when
+that expression is evaluated.
+{Para}
+Note that the right hand side is the print form of the resulting object(s),
+and {Emphasis/not/ the expression necessary to create those objects.
+In other words, the left hand side denotes a program, and the right
+hand side denotes data.  The arrow may be regarded as the {Quote/evaluates to/
+operator.
+
+{Sect1}
+{Title}Lexical structure{/Title}
+{Para}
+Like most programming languages, &rs; has
+a {Emphasis/lexical/ structure which underlies its syntactic
+structure.
+{/Para}
+{Table}
+  {Title}Token examples{/Title}
+  {TGroup COLS=2}
+   {THead}
+    {Row}{Entry/Example/{Entry/Description/
+   {/THead}
+   {TBody}
+    {Row}
+     {Entry}{/Entry}
+     {Entry}whitespace; used to seperate tokens.  
+All the ASCII whitespace characters are valid
+token delimiters (ie, space, newline, carriage
+return, form feed, vertical tab).{/Entry}
+    {/Row}
+
+    {Row}
+     {Entry}{UserInput/34/{/Entry}
+     {Entry}numbers{/Entry}
+    {/Row}
+
+    {Row}
+     {Entry}{UserInput/foo:/{/Entry}
+     {Entry}keywords{/Entry}
+    {/Row}
+
+    {Row}
+     {Entry}{UserInput/foo/{/Entry}
+     {Entry}symbols{/Entry}
+    {/Row}
+
+    {Row}
+     {Entry}{UserInput/"foo"/{/Entry}
+     {Entry}strings{/Entry}
+    {/Row}
+
+    {Row}
+     {Entry}{UserInput/#t/ {UserInput/#f/{/Entry}
+     {Entry}booleans{/Entry}
+    {/Row}
+
+    {Row}
+     {Entry}{UserInput/#key/ {UserInput/#rest/{/Entry}
+     {Entry}syntactic keywords{/Entry}
+    {/Row}
+    {Row}
+     {Entry}{UserInput/#\f/{/Entry}
+     {Entry}characters{/Entry}
+    {/Row}
+    {Row}
+     {Entry}{UserInput/(a b)/{/Entry}
+     {Entry}lists{/Entry}
+    {/Row}
+    {Row}
+     {Entry}{UserInput/#(a b)/{/Entry}
+     {Entry}vectors{/Entry}
+    {/Row}
+
+    {Row}
+     {Entry}{UserInput/'x/{/Entry}
+     {Entry}quotation shorthand{/Entry}
+    {/Row}
+
+    {Row}
+     {Entry}{UserInput/`x/{/Entry}
+     {Entry}quasiquotation shorthand{/Entry}
+    {/Row}
+
+    {Row}
+     {Entry}{UserInput/,x/{/Entry}
+     {Entry}unquote shorthand{/Entry}
+    {/Row}
+   {/TBody}
+  {/TGroup}
+{/Table}
+<!>
+{Sect1}
+{Title}Naming conventions{/Title}
+{Para}
+The lexical flexibility for symbols in &rs; could be
+a curse if used indiscriminantly.  Therefore, through
+experience and historical precedent, some
+conventions for variable names have been developed.
+(Note that in programs, identifiers are represented by
+what would be symbols in data)
+{Para}
+Many permissible special characters are simply
+not used.  The period and percent sign are particularly
+discouraged{footnote}{Para}Although the period is currently being
+used as a level separator in a hierarchical namespace of
+modules.{/footnote}.  This convention will be particularly
+important in &rs; because in an alternative Java-like syntax
+(under development), many valid scheme symbols are not
+identifiers (due to the use of special characters for
+operators).
+{Para}
+Although &rs; is case sensitive, names are
+usually in all lower case with dashes to separate words.
+<!--
+{notice}{Para}
+This conflicts with some of the rationale outlined in the
+first convention - that of compatibility with a Java-like
+syntax - because a dash is invariably the subtraction operator
+in such a syntax.  We'll probably deal with this issue by
+having rules for automatically converting lexical conventions.
+In this case, the scheme variable {UserInput/foo-bar-baz/ will be named
+by the Java-like identifier {UserInput/fooBarBaz/, while {UserInput/<foo-bar>/
+will be named by {UserInput/FooBar/.
+{/notice}
+-->
+{Para}
+Some specific naming conventions are used
+to distinguish different kinds of variables.
+{/Para}
+{Table}
+ {Title}Examples of identifiers following conventions{/Title}
+
+ {TGroup COLS=2}
+  {THead}
+   {Row}
+    {Entry}Identifier{/Entry}
+    {Entry}Description{/Entry}
+   {/Row}
+  {/THead}
+
+  {TBody}
+{Row}{Entry}{UserInput/*foo*/{/Entry}{Entry}normal, mutable module variable{/Entry}
+{Row}{Entry}{UserInput/<foo>/{/Entry}{Entry}class variable{/Entry}
+{Row}{Entry}{UserInput/foo/{/Entry}{Entry}function or special form{/Entry}
+{Row}{Entry}{UserInput/foo!/{/Entry}
+     {Entry}{?debugon} function or special form with side-effects
+            (pronounced {Quote/bang/, 
+            as in {UserInput/set!/ which is read {Quote/set-bang/){?debugoff}
+           {/Entry}
+{Row}{Entry}{UserInput/foo?/{/Entry}{Entry}predicate or boolean-returning function{/Entry}
+{Row}{Entry}{UserInput/$foo/{/Entry}{Entry}constant{/Entry}
+
+  {/TBody}
+ {/TGroup}
+{/Table}
+<!-- it appears that one of jade, the modular stylesheets, or jadetex
+cannot handle footnotes within tables (it generates a missing \endgroup).
+Hence, I've put the extended remarks about the `!' convention down
+here)
+ -->
+
+{Para}
+With respect to the notational convention for side-effects, the use of
+an exclamation mark ({UserInput/!/) suffix,
+not all functions with side-effects
+are so marked.
+This convention applies primarily to low-level functions or functions
+whose primary purpose is to have side effects, such as
+{UserInput/vector-set!/ and {UserInput/delq!/.
+{Para}
+{Sect1}
+{Title}Expression Structure{/Title}
+{Para}
+Despite the apprent similarity between data and programs
+(their source representations are nearly identical), not all
+data are valid expressions.
+{Para}
+Expressions are defined recursively, as is usual for 
+programming language specifications.
+{Para}
+{Sect2}
+{Title}Simple Expressions{/Title}
+{Sect3}
+{Title}Literals{/Title}
+{Para}
+The simplest expression is a {FirstTerm Role="defn"}literal{/FirstTerm} expression.
+Literal expressions are also known as self-evaluating
+data, because the value of a literal expression is the
+corresponding datum.  Characters, strings, numbers, booleans,
+and keywords are all valid literal expressions.
+<!>
+{/Para}
+{InformalExample Role="Evals"}
+ {Para}{UserInput Role="ToEval"/1/ {ComputerOutput Role="EvalsTo"/1/{/Para}
+ {Para}{UserInput Role="ToEval"/"foo"/ {ComputerOutput Role="EvalsTo"/"foo"/{/Para}
+ {Para}{UserInput Role="ToEval"/bob:/ {ComputerOutput Role="EvalsTo"/bob:/{/Para}
+{/InformalExample}
+<!>
+{Para}
+{Sect3}
+{Title}Variable References{/Title}
+{Para}
+The next simplest expression is the {FirstTerm Role="defn"}variable reference{/FirstTerm}.
+An identifier is an
+expression which means {Quote}look up and return the current value
+of the variable with this name{/Quote}.
+{Para}
+{Sect3}
+{Title}Procedure Calls{/Title}
+{Para}
+The third kind of expression is the function call, or
+{FirstTerm Role="defn"}combination{/FirstTerm}.  Syntactically, a function call expression
+is an open parenthesis followed by
+one or more expressions followed by a close parenthesis.  
+{Para}
+There must be at least one expression between
+the parentheses, because the value of the first expression
+is the function to be called.  The remaining expressions are
+all evaluated and their values are the arguments to the 
+function.
+{Para}
+The earlier example expression, {UserInput/(+ 1 2)/ 
+illustrates the three kinds of expressions, in order of execution:
+literal, variable reference, and procedure call.
+{Para}
+{UserInput/1/ and {UserInput/2/ are literal
+expressions which evaluate to the numbers 1 and 2, respectively.
+{Para}
+Then, {UserInput/+/ is
+an expression which means {Quote}look up and return the value of the variable
+named {UserInput/+/{/Quote}.
+{Para}
+Finally, the whole thing is a combination which means to call
+the procedure returned by the first expression (typically,
+the value of the variable named {UserInput/+/ is a function which
+adds its arguments together) with the arguments {UserInput/1/
+and {UserInput/2/.  The usual addition function would return 3
+in this case.
+{Para}
+{Sect2}
+{Title}Special Forms{/Title}
+{Para}
+The fourth kind of expression is really a large class of every
+other kind of expression, and are called {FirstTerm Role="defn"}special form{/FirstTerm}s.
+Any identifier or parenthesized sequence of forms starting with
+an identifier is potentially a special form.  The only way to tell
+is to know whether or not the variable named by the identifier
+is a special form compiler{footnote}{Para}There are several
+kinds of special form compilers:  syntax extensions, rewriter
+macros, and primitive compilers{/footnote}.
+{Para}
+{Sect3}
+{Title}Binding constructs{/Title}
+{Para}
+A useful common class of special forms are those
+used to introduce new program variables.  These
+are known as {FirstTerm Role="defn"/binding constructs/.
+{Para}
+{Phrase Role="var"}let{/Phrase}, {Phrase Role="var"}letrec{/Phrase}, {Phrase Role="var"}bind{/Phrase}, et.al.
+{Para}
+{Sect3}
+{Title}Conditional constructs{/Title}
+{Para}
+{Phrase Role="var"}if{/Phrase}, {Phrase Role="var"}or{/Phrase}, {Phrase Role="var"}and{/Phrase}, et.al.
+{Para}
+{Sect3}
+{Title}Procedural abstraction{/Title}
+{Para}
+{Phrase Role="var"}lambda{/Phrase}.
+{Para}

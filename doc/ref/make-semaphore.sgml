@@ -1,0 +1,44 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}make-semaphore{/RefName}
+  {RefPurpose}Create a new semaphore object, with initial count of {Parameter}n{/Parameter}.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/make-semaphore/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/n/{/ParamDef}{ParamDef role="returns"}
+{Parameter}sem{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}n{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<integer>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}sem{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<semaphore>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Creates a new semaphore synchronization object, with an initial
+count of {Parameter}n{/Parameter}.  If omitted, {Parameter}n{/Parameter} defaults to 0.{/para}
+{/RefSect1}
+{/RefEntry}

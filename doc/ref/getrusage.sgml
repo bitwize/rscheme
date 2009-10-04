@@ -1,0 +1,38 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}getrusage{/RefName}
+  {RefPurpose}Get process resource usage.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/getrusage/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+{/ParamDef}{ParamDef role="returns"}
+{Parameter}usage{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}usage{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<vector>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Currently there is no way to get the rusage of a child process.{/para}
+{para}
+The vector contains 8 elements, which are: process user time
+(an <interval>), process system time (an <interval>), 
+average memory (shared), average memory (unshared in data segment),
+input operations, output operations, number of messages sent, 
+and number of messages received.{/para}
+{/RefSect1}
+{/RefEntry}

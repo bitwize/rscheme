@@ -1,0 +1,38 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}rename{/RefName}
+  {RefPurpose}Rename a file.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/rename/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/oldpath/ {Parameter/newpath/{/ParamDef}{ParamDef role="returns"}
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}oldpath{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}newpath{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Changes a filename, like unix {UserInput}mv{/UserInput}.{/para}
+{/RefSect1}
+{/RefEntry}

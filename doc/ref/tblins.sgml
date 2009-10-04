@@ -1,0 +1,60 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}table-insert!{/RefName}
+  {RefPurpose}Associates a key with a value in a table{/RefPurpose}
+  {RefClass role="Type"}generic{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/table-insert!/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/table/ {Parameter/key/ {Parameter/value/{/ParamDef}{ParamDef role="returns"}
+{Parameter}prev-value{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}table{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<table>/ to be extended{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}key{/Term}
+    {ListItem}{para}
+The key to insert.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}value{/Term}
+    {ListItem}{para}
+The value to be associated with the key.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}prev-value{/Term}
+    {ListItem}{para}
+The value previously associated with given key, or {UserInput}#f{/UserInput} if the
+key was not present in the table.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This generic function on tables is used to insert entries
+into a table.{/para}
+{para}
+The given key must be compatible with the table, or an error is
+signalled.{/para}
+{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,39 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}set-car!{/RefName}
+  {RefPurpose}Set the car of a pair.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/set-car!/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/p/ {Parameter/a/{/ParamDef}{ParamDef role="returns"}
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}p{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<pair>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}a{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<object>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Side effects the given pair, {Parameter}p{/Parameter}, so that its car is {Parameter}a{/Parameter}.
+Returns no values.{/para}
+{/RefSect1}
+{/RefEntry}

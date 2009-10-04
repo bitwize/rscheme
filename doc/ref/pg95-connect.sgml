@@ -1,0 +1,70 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}pg95-connect{/RefName}
+  {RefPurpose}Underlying function to connect to PG95{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/pg95-connect/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/host/ {Parameter/port/ {Parameter/opts/ {Parameter/tty/ {Parameter/database/{/ParamDef}{ParamDef role="returns"}
+{Parameter}cnxn{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}host{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}port{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}opts{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}tty{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}database{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}cnxn{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<pg95-connection>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function, like {Phrase Role="var"}postgres-connect{/Phrase}, connects to a postgres 95
+database.  However, the arguments are explicit rather than being keywords.
+The string arguments should be empty strings if the intention is to pass
+NULL to the {Parameter}PQsetdb(){/Parameter} function (which is the default).{/para}
+{/RefSect1}
+{/RefEntry}

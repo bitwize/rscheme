@@ -1,0 +1,15 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}files{/RefName}
+  {RefPurpose}Specify scheme files to be included in module{/RefPurpose}
+  {RefClass role="Type"}mcf{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/files/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/file/{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{/RefSynopsisDiv}
+{/RefEntry}

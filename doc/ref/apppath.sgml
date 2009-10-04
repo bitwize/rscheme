@@ -1,0 +1,54 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}append-path{/RefName}
+  {RefPurpose}Append a pathname onto a directory{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/append-path/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/dirname/ {Parameter/filename/{/ParamDef}{ParamDef role="returns"}
+{Parameter}new-filename{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}dirname{/Term}
+    {ListItem}{para}
+A directory name (an instance of {ClassName/<directory-name>/).{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}filename{/Term}
+    {ListItem}{para}
+A file name (an instance of {ClassName/<file-name>/).{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}new-filename{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<file-name>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function computes the pathname that results when the
+given {Parameter}filename{/Parameter} is interpreted relative to the given
+{Parameter}dirname{/Parameter}.{/para}
+{para}
+If {Parameter}filename{/Parameter} is an absolute path, then it is returned.  Otherwise,
+a new file name object is constructed.{/para}
+{/RefSect1}
+{/RefEntry}

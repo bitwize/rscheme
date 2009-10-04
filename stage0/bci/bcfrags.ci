@@ -1,0 +1,4183 @@
+BCI_CASE(0)
+    debug_bytecode_printf(( "return 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	RETURN0();
+    BCI_BREAK;
+BCI_CASE(1)
+    debug_bytecode_printf(( "return 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	RETURN1();
+    BCI_BREAK;
+BCI_CASE(2)
+    debug_bytecode_printf(( "return n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	RETURN(n);
+    }
+    BCI_BREAK;
+BCI_CASE(3)
+    debug_bytecode_printf(( "literal 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LITERAL(0+1) );
+    BCI_BREAK;
+BCI_CASE(4)
+    debug_bytecode_printf(( "literal 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LITERAL(1+1) );
+    BCI_BREAK;
+BCI_CASE(5)
+    debug_bytecode_printf(( "literal 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LITERAL(2+1) );
+    BCI_BREAK;
+BCI_CASE(6)
+    debug_bytecode_printf(( "literal 3: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LITERAL(3+1) );
+    BCI_BREAK;
+BCI_CASE(7)
+    debug_bytecode_printf(( "literal 4: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LITERAL(4+1) );
+    BCI_BREAK;
+BCI_CASE(8)
+    debug_bytecode_printf(( "literal 5: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LITERAL(5+1) );
+    BCI_BREAK;
+BCI_CASE(9)
+    debug_bytecode_printf(( "literal (slot slot <uint-16>): " ));
+     {
+      UINT_16 slot;
+      slot = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " slot = %u", slot ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LITERAL(slot+1) );
+    }
+    BCI_BREAK;
+BCI_CASE(10)
+    debug_bytecode_printf(( "literal slot: " ));
+     {
+      UINT_8 slot;
+      slot = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " slot = %u", slot ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LITERAL(slot+1) );
+    }
+    BCI_BREAK;
+BCI_CASE(11)
+    debug_bytecode_printf(( "closure (slot slot <uint-16>): " ));
+     {
+      UINT_16 slot;
+      slot = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " slot = %u", slot ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( CLOSURE(slot+1) );
+    }
+    BCI_BREAK;
+BCI_CASE(12)
+    debug_bytecode_printf(( "closure slot: " ));
+     {
+      UINT_8 slot;
+      slot = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " slot = %u", slot ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( CLOSURE(slot+1) );
+    }
+    BCI_BREAK;
+BCI_CASE(13)
+    debug_bytecode_printf(( "apply 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	APPLY(0,POP());
+    BCI_BREAK;
+BCI_CASE(14)
+    debug_bytecode_printf(( "apply 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	APPLY(1,POP());
+    BCI_BREAK;
+BCI_CASE(15)
+    debug_bytecode_printf(( "apply 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	APPLY(2,POP());
+    BCI_BREAK;
+BCI_CASE(16)
+    debug_bytecode_printf(( "apply 3: " ));
+    debug_bytecode_printf(( "\n" ));
+	APPLY(3,POP());
+    BCI_BREAK;
+BCI_CASE(17)
+    debug_bytecode_printf(( "apply 4: " ));
+    debug_bytecode_printf(( "\n" ));
+	APPLY(4,POP());
+    BCI_BREAK;
+BCI_CASE(18)
+    debug_bytecode_printf(( "apply n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	APPLY(n,POP());
+    }
+    BCI_BREAK;
+BCI_CASE(19)
+    debug_bytecode_printf(( "reg-set 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	REG0 = POP();
+    BCI_BREAK;
+BCI_CASE(20)
+    debug_bytecode_printf(( "reg-set 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	REG1 = POP();
+    BCI_BREAK;
+BCI_CASE(21)
+    debug_bytecode_printf(( "reg-set 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	REG2 = POP();
+    BCI_BREAK;
+BCI_CASE(22)
+    debug_bytecode_printf(( "reg-set n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	reg_set( n, POP() );
+    }
+    BCI_BREAK;
+BCI_CASE(23)
+    debug_bytecode_printf(( "reg-set (n n <uint-16>): " ));
+     {
+      UINT_16 n;
+      n = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	REG(n) = POP();
+    }
+    BCI_BREAK;
+BCI_CASE(24)
+    debug_bytecode_printf(( "reg-set n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	REG(n) = POP();
+    }
+    BCI_BREAK;
+BCI_CASE(25)
+    debug_bytecode_printf(( "reg-ref 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( REG0 );
+    BCI_BREAK;
+BCI_CASE(26)
+    debug_bytecode_printf(( "reg-ref 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( REG1 );
+    BCI_BREAK;
+BCI_CASE(27)
+    debug_bytecode_printf(( "reg-ref 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( REG2 );
+    BCI_BREAK;
+BCI_CASE(28)
+    debug_bytecode_printf(( "reg-ref n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( reg_ref(n) );
+    }
+    BCI_BREAK;
+BCI_CASE(29)
+    debug_bytecode_printf(( "reg-ref (n n <uint-16>): " ));
+     {
+      UINT_16 n;
+      n = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( REG(n) );
+    }
+    BCI_BREAK;
+BCI_CASE(30)
+    debug_bytecode_printf(( "reg-ref n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( REG(n) );
+    }
+    BCI_BREAK;
+BCI_CASE(31)
+    debug_bytecode_printf(( "reg-xfer 0 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	REG1 = REG0;
+    BCI_BREAK;
+BCI_CASE(32)
+    debug_bytecode_printf(( "reg-xfer 0 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	REG2 = REG0;
+    BCI_BREAK;
+BCI_CASE(33)
+    debug_bytecode_printf(( "reg-xfer 0 3: " ));
+    debug_bytecode_printf(( "\n" ));
+	REG3 = REG0;
+    BCI_BREAK;
+BCI_CASE(34)
+    debug_bytecode_printf(( "reg-xfer 0 to: " ));
+     {
+      UINT_8 to;
+      to = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " to = %u", to ));
+    debug_bytecode_printf(( "\n" ));
+	reg_set( to, REG0 );
+    }
+    BCI_BREAK;
+BCI_CASE(35)
+    debug_bytecode_printf(( "reg-xfer 0 to: " ));
+     {
+      UINT_8 to;
+      to = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " to = %u", to ));
+    debug_bytecode_printf(( "\n" ));
+	REG(to) = REG0;
+    }
+    BCI_BREAK;
+BCI_CASE(36)
+    debug_bytecode_printf(( "reg-xfer 1 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	REG0 = REG1;
+    BCI_BREAK;
+BCI_CASE(37)
+    debug_bytecode_printf(( "reg-xfer 1 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	REG2 = REG1;
+    BCI_BREAK;
+BCI_CASE(38)
+    debug_bytecode_printf(( "reg-xfer 1 3: " ));
+    debug_bytecode_printf(( "\n" ));
+	REG3 = REG1;
+    BCI_BREAK;
+BCI_CASE(39)
+    debug_bytecode_printf(( "reg-xfer 1 to: " ));
+     {
+      UINT_8 to;
+      to = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " to = %u", to ));
+    debug_bytecode_printf(( "\n" ));
+	reg_set( to, REG1 );
+    }
+    BCI_BREAK;
+BCI_CASE(40)
+    debug_bytecode_printf(( "reg-xfer 1 to: " ));
+     {
+      UINT_8 to;
+      to = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " to = %u", to ));
+    debug_bytecode_printf(( "\n" ));
+	REG(to) = REG1;
+    }
+    BCI_BREAK;
+BCI_CASE(41)
+    debug_bytecode_printf(( "reg-xfer 2 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	REG0 = REG2;
+    BCI_BREAK;
+BCI_CASE(42)
+    debug_bytecode_printf(( "reg-xfer 2 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	REG1 = REG2;
+    BCI_BREAK;
+BCI_CASE(43)
+    debug_bytecode_printf(( "reg-xfer 2 3: " ));
+    debug_bytecode_printf(( "\n" ));
+	REG3 = REG2;
+    BCI_BREAK;
+BCI_CASE(44)
+    debug_bytecode_printf(( "reg-xfer 2 to: " ));
+     {
+      UINT_8 to;
+      to = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " to = %u", to ));
+    debug_bytecode_printf(( "\n" ));
+	reg_set( to, REG2 );
+    }
+    BCI_BREAK;
+BCI_CASE(45)
+    debug_bytecode_printf(( "reg-xfer 2 to: " ));
+     {
+      UINT_8 to;
+      to = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " to = %u", to ));
+    debug_bytecode_printf(( "\n" ));
+	REG(to) = REG2;
+    }
+    BCI_BREAK;
+BCI_CASE(46)
+    debug_bytecode_printf(( "reg-xfer 3 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	REG0 = REG3;
+    BCI_BREAK;
+BCI_CASE(47)
+    debug_bytecode_printf(( "reg-xfer 3 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	REG1 = REG3;
+    BCI_BREAK;
+BCI_CASE(48)
+    debug_bytecode_printf(( "reg-xfer 3 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	REG2 = REG3;
+    BCI_BREAK;
+BCI_CASE(49)
+    debug_bytecode_printf(( "reg-xfer 3 to: " ));
+     {
+      UINT_8 to;
+      to = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " to = %u", to ));
+    debug_bytecode_printf(( "\n" ));
+	reg_set( to, REG3 );
+    }
+    BCI_BREAK;
+BCI_CASE(50)
+    debug_bytecode_printf(( "reg-xfer 3 to: " ));
+     {
+      UINT_8 to;
+      to = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " to = %u", to ));
+    debug_bytecode_printf(( "\n" ));
+	REG(to) = REG3;
+    }
+    BCI_BREAK;
+BCI_CASE(51)
+    debug_bytecode_printf(( "reg-xfer from 0: " ));
+     {
+      UINT_8 from;
+      from = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " from = %u", from ));
+    debug_bytecode_printf(( "\n" ));
+	REG0 = reg_ref(from);
+    }
+    BCI_BREAK;
+BCI_CASE(52)
+    debug_bytecode_printf(( "reg-xfer from 0: " ));
+     {
+      UINT_8 from;
+      from = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " from = %u", from ));
+    debug_bytecode_printf(( "\n" ));
+	REG0 = REG(from);
+    }
+    BCI_BREAK;
+BCI_CASE(53)
+    debug_bytecode_printf(( "reg-xfer from 1: " ));
+     {
+      UINT_8 from;
+      from = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " from = %u", from ));
+    debug_bytecode_printf(( "\n" ));
+	REG1 = reg_ref(from);
+    }
+    BCI_BREAK;
+BCI_CASE(54)
+    debug_bytecode_printf(( "reg-xfer from 1: " ));
+     {
+      UINT_8 from;
+      from = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " from = %u", from ));
+    debug_bytecode_printf(( "\n" ));
+	REG1 = REG(from);
+    }
+    BCI_BREAK;
+BCI_CASE(55)
+    debug_bytecode_printf(( "reg-xfer from 2: " ));
+     {
+      UINT_8 from;
+      from = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " from = %u", from ));
+    debug_bytecode_printf(( "\n" ));
+	REG2 = reg_ref(from);
+    }
+    BCI_BREAK;
+BCI_CASE(56)
+    debug_bytecode_printf(( "reg-xfer from 2: " ));
+     {
+      UINT_8 from;
+      from = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " from = %u", from ));
+    debug_bytecode_printf(( "\n" ));
+	REG2 = REG(from);
+    }
+    BCI_BREAK;
+BCI_CASE(57)
+    debug_bytecode_printf(( "reg-xfer from 3: " ));
+     {
+      UINT_8 from;
+      from = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " from = %u", from ));
+    debug_bytecode_printf(( "\n" ));
+	REG3 = reg_ref(from);
+    }
+    BCI_BREAK;
+BCI_CASE(58)
+    debug_bytecode_printf(( "reg-xfer from 3: " ));
+     {
+      UINT_8 from;
+      from = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " from = %u", from ));
+    debug_bytecode_printf(( "\n" ));
+	REG3 = REG(from);
+    }
+    BCI_BREAK;
+BCI_CASE(59)
+    debug_bytecode_printf(( "reg-xfer from to: " ));
+     {
+      UINT_8 from;
+      UINT_8 to;
+      from = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " from = %u", from ));
+      to = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " to = %u", to ));
+    debug_bytecode_printf(( "\n" ));
+	reg_set( to, reg_ref( from ) );
+    }
+    BCI_BREAK;
+BCI_CASE(60)
+    debug_bytecode_printf(( "reg-xfer from to: " ));
+     {
+      UINT_8 from;
+      UINT_8 to;
+      from = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " from = %u", from ));
+      to = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " to = %u", to ));
+    debug_bytecode_printf(( "\n" ));
+	REG(to) = reg_ref( from );
+    }
+    BCI_BREAK;
+BCI_CASE(61)
+    debug_bytecode_printf(( "reg-xfer from (to to <uint-16>): " ));
+     {
+      UINT_8 from;
+      UINT_16 to;
+      from = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " from = %u", from ));
+      to = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " to = %u", to ));
+    debug_bytecode_printf(( "\n" ));
+	REG(to) = reg_ref( from );
+    }
+    BCI_BREAK;
+BCI_CASE(62)
+    debug_bytecode_printf(( "reg-xfer from to: " ));
+     {
+      UINT_8 from;
+      UINT_8 to;
+      from = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " from = %u", from ));
+      to = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " to = %u", to ));
+    debug_bytecode_printf(( "\n" ));
+	reg_set( to, REG(from) );
+    }
+    BCI_BREAK;
+BCI_CASE(63)
+    debug_bytecode_printf(( "reg-xfer from to: " ));
+     {
+      UINT_8 from;
+      UINT_8 to;
+      from = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " from = %u", from ));
+      to = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " to = %u", to ));
+    debug_bytecode_printf(( "\n" ));
+	REG(to) = REG(from);
+    }
+    BCI_BREAK;
+BCI_CASE(64)
+    debug_bytecode_printf(( "reg-xfer from (to to <uint-16>): " ));
+     {
+      UINT_8 from;
+      UINT_16 to;
+      from = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " from = %u", from ));
+      to = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " to = %u", to ));
+    debug_bytecode_printf(( "\n" ));
+	REG(to) = REG(from);
+    }
+    BCI_BREAK;
+BCI_CASE(65)
+    debug_bytecode_printf(( "reg-xfer (from from <uint-16>) to: " ));
+     {
+      UINT_16 from;
+      UINT_8 to;
+      from = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " from = %u", from ));
+      to = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " to = %u", to ));
+    debug_bytecode_printf(( "\n" ));
+	reg_set( to, REG(from) );
+    }
+    BCI_BREAK;
+BCI_CASE(66)
+    debug_bytecode_printf(( "reg-xfer (from from <uint-16>) to: " ));
+     {
+      UINT_16 from;
+      UINT_8 to;
+      from = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " from = %u", from ));
+      to = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " to = %u", to ));
+    debug_bytecode_printf(( "\n" ));
+	REG(to) = REG(from);
+    }
+    BCI_BREAK;
+BCI_CASE(67)
+    debug_bytecode_printf(( "reg-xfer (from from <uint-16>) (to to <uint-16>): " ));
+     {
+      UINT_16 from;
+      UINT_16 to;
+      from = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " from = %u", from ));
+      to = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " to = %u", to ));
+    debug_bytecode_printf(( "\n" ));
+	REG(to) = REG(from);
+    }
+    BCI_BREAK;
+BCI_CASE(68)
+    debug_bytecode_printf(( "pop: " ));
+    debug_bytecode_printf(( "\n" ));
+	POP();
+    BCI_BREAK;
+BCI_CASE(69)
+    debug_bytecode_printf(( "lex-ref 0 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LEXREF0(0) );
+    BCI_BREAK;
+BCI_CASE(70)
+    debug_bytecode_printf(( "lex-ref 0 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LEXREF0(1) );
+    BCI_BREAK;
+BCI_CASE(71)
+    debug_bytecode_printf(( "lex-ref 0 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LEXREF0(2) );
+    BCI_BREAK;
+BCI_CASE(72)
+    debug_bytecode_printf(( "lex-ref 0 slot: " ));
+     {
+      UINT_8 slot;
+      slot = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " slot = %u", slot ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LEXREF0(slot) );
+    }
+    BCI_BREAK;
+BCI_CASE(73)
+    debug_bytecode_printf(( "lex-ref 1 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LEXREF1(0) );
+    BCI_BREAK;
+BCI_CASE(74)
+    debug_bytecode_printf(( "lex-ref 1 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LEXREF1(1) );
+    BCI_BREAK;
+BCI_CASE(75)
+    debug_bytecode_printf(( "lex-ref 1 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LEXREF1(2) );
+    BCI_BREAK;
+BCI_CASE(76)
+    debug_bytecode_printf(( "lex-ref 1 slot: " ));
+     {
+      UINT_8 slot;
+      slot = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " slot = %u", slot ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LEXREF1(slot) );
+    }
+    BCI_BREAK;
+BCI_CASE(77)
+    debug_bytecode_printf(( "lex-ref 2 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LEXREF2(0) );
+    BCI_BREAK;
+BCI_CASE(78)
+    debug_bytecode_printf(( "lex-ref 2 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LEXREF2(1) );
+    BCI_BREAK;
+BCI_CASE(79)
+    debug_bytecode_printf(( "lex-ref 2 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LEXREF2(2) );
+    BCI_BREAK;
+BCI_CASE(80)
+    debug_bytecode_printf(( "lex-ref 2 slot: " ));
+     {
+      UINT_8 slot;
+      slot = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " slot = %u", slot ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( LEXREF2(slot) );
+    }
+    BCI_BREAK;
+BCI_CASE(81)
+    debug_bytecode_printf(( "lex-ref frame slot: " ));
+     {
+      UINT_8 frame;
+      UINT_8 slot;
+      frame = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " frame = %u", frame ));
+      slot = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " slot = %u", slot ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( gvec_read( nth_enclosing_envt(frame), SLOT(slot+1) ) );
+    }
+    BCI_BREAK;
+BCI_CASE(82)
+    debug_bytecode_printf(( "lex-set 0 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	LEXSET0(0,POP());
+    BCI_BREAK;
+BCI_CASE(83)
+    debug_bytecode_printf(( "lex-set 0 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	LEXSET0(1,POP());
+    BCI_BREAK;
+BCI_CASE(84)
+    debug_bytecode_printf(( "lex-set 0 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	LEXSET0(2,POP());
+    BCI_BREAK;
+BCI_CASE(85)
+    debug_bytecode_printf(( "lex-set 0 slot: " ));
+     {
+      UINT_8 slot;
+      slot = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " slot = %u", slot ));
+    debug_bytecode_printf(( "\n" ));
+	LEXSET0(slot,POP());
+    }
+    BCI_BREAK;
+BCI_CASE(86)
+    debug_bytecode_printf(( "lex-set 1 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	LEXSET1(0,POP());
+    BCI_BREAK;
+BCI_CASE(87)
+    debug_bytecode_printf(( "lex-set 1 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	LEXSET1(1,POP());
+    BCI_BREAK;
+BCI_CASE(88)
+    debug_bytecode_printf(( "lex-set 1 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	LEXSET1(2,POP());
+    BCI_BREAK;
+BCI_CASE(89)
+    debug_bytecode_printf(( "lex-set 1 slot: " ));
+     {
+      UINT_8 slot;
+      slot = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " slot = %u", slot ));
+    debug_bytecode_printf(( "\n" ));
+	LEXSET1(slot,POP());
+    }
+    BCI_BREAK;
+BCI_CASE(90)
+    debug_bytecode_printf(( "lex-set 2 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	LEXSET2(0,POP());
+    BCI_BREAK;
+BCI_CASE(91)
+    debug_bytecode_printf(( "lex-set 2 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	LEXSET2(1,POP());
+    BCI_BREAK;
+BCI_CASE(92)
+    debug_bytecode_printf(( "lex-set 2 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	LEXSET2(2,POP());
+    BCI_BREAK;
+BCI_CASE(93)
+    debug_bytecode_printf(( "lex-set 2 slot: " ));
+     {
+      UINT_8 slot;
+      slot = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " slot = %u", slot ));
+    debug_bytecode_printf(( "\n" ));
+	LEXSET2(slot,POP());
+    }
+    BCI_BREAK;
+BCI_CASE(94)
+    debug_bytecode_printf(( "lex-set frame slot: " ));
+     {
+      UINT_8 frame;
+      UINT_8 slot;
+      frame = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " frame = %u", frame ));
+      slot = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " slot = %u", slot ));
+    debug_bytecode_printf(( "\n" ));
+	gvec_write( nth_enclosing_envt(frame), SLOT(slot+1), POP() );
+    }
+    BCI_BREAK;
+BCI_CASE(95)
+    debug_bytecode_printf(( "tl-ref (i i <uint-16>): " ));
+     {
+      UINT_16 i;
+      i = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " i = %u", i ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( TLREF(i+1) );
+    }
+    BCI_BREAK;
+BCI_CASE(96)
+    debug_bytecode_printf(( "tl-ref i: " ));
+     {
+      UINT_8 i;
+      i = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " i = %u", i ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( TLREF(i+1) );
+    }
+    BCI_BREAK;
+BCI_CASE(97)
+    debug_bytecode_printf(( "tl-set (i i <uint-16>): " ));
+     {
+      UINT_16 i;
+      i = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " i = %u", i ));
+    debug_bytecode_printf(( "\n" ));
+	TLSET((i+1),POP());
+    }
+    BCI_BREAK;
+BCI_CASE(98)
+    debug_bytecode_printf(( "tl-set i: " ));
+     {
+      UINT_8 i;
+      i = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " i = %u", i ));
+    debug_bytecode_printf(( "\n" ));
+	TLSET((i+1),POP());
+    }
+    BCI_BREAK;
+BCI_CASE(99)
+    debug_bytecode_printf(( "immob #t: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( TRUE_OBJ );
+    BCI_BREAK;
+BCI_CASE(100)
+    debug_bytecode_printf(( "immob #f: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( FALSE_OBJ );
+    BCI_BREAK;
+BCI_CASE(101)
+    debug_bytecode_printf(( "immob (): " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( NIL_OBJ );
+    BCI_BREAK;
+BCI_CASE(102)
+    debug_bytecode_printf(( "immob/char v: " ));
+     {
+      UINT_8 v;
+      v = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " v = %u", v ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( MAKE_ASCII_CHAR(v) );
+    }
+    BCI_BREAK;
+BCI_CASE(103)
+    debug_bytecode_printf(( "immob/unicode v: " ));
+     {
+      UINT_16 v;
+      v = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " v = %u", v ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( MAKE_UNICODE_CHAR(v) );
+    }
+    BCI_BREAK;
+BCI_CASE(104)
+    debug_bytecode_printf(( "immob/unique v: " ));
+     {
+      UINT_8 v;
+      v = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " v = %u", v ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( MAKE_UNIQ_OBJ(v) );
+    }
+    BCI_BREAK;
+BCI_CASE(105)
+    debug_bytecode_printf(( "immob/bits hi lo: " ));
+     {
+      UINT_16 hi;
+      UINT_16 lo;
+      hi = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " hi = %u", hi ));
+      lo = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " lo = %u", lo ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( OBJ( (hi<<16) + lo ) );
+    }
+    BCI_BREAK;
+BCI_CASE(106)
+    debug_bytecode_printf(( "make n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	{ unsigned i;
+	  obj r = alloc( SLOT(n), TOP(n) );
+	  for (i=n; i>0;)
+	  { i--; gvec_write_init( r, SLOT(i), POP() ); }
+	  POP(); /* the class */
+	  PUSH(r); }
+    }
+    BCI_BREAK;
+BCI_CASE(107)
+    debug_bytecode_printf(( "cons: " ));
+    debug_bytecode_printf(( "\n" ));
+	{ obj h, t;
+	  t = POP();
+	  h = POP();
+	  PUSH( cons( h, t ) ); }
+    BCI_BREAK;
+BCI_CASE(108)
+    debug_bytecode_printf(( "car: " ));
+    debug_bytecode_printf(( "\n" ));
+	{ CHECK_PAIR(TOP(0));
+	  SETTOP(0,pair_car(TOP(0))); }
+    BCI_BREAK;
+BCI_CASE(109)
+    debug_bytecode_printf(( "cdr: " ));
+    debug_bytecode_printf(( "\n" ));
+	{ CHECK_PAIR(TOP(0));
+	  SETTOP(0,pair_cdr(TOP(0))); }
+    BCI_BREAK;
+BCI_CASE(110)
+    debug_bytecode_printf(( "save 0 label: " ));
+     {
+      UINT_16 label;
+      label = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " label = %u", label ));
+    debug_bytecode_printf(( "\n" ));
+	{ unsigned i;
+	  PUSH_PARTCONT(bci_1,1);
+	  SET_PARTCONT_REG(0,int2fx(label)); }
+    }
+    BCI_BREAK;
+BCI_CASE(111)
+    debug_bytecode_printf(( "save 1 label: " ));
+     {
+      UINT_16 label;
+      label = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " label = %u", label ));
+    debug_bytecode_printf(( "\n" ));
+	{ 
+	  PUSH_PARTCONT(bci_1,2);
+	  SET_PARTCONT_REG(0,int2fx(label));
+	  SET_PARTCONT_REG(1,REG0); }
+    }
+    BCI_BREAK;
+BCI_CASE(112)
+    debug_bytecode_printf(( "save 2 label: " ));
+     {
+      UINT_16 label;
+      label = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " label = %u", label ));
+    debug_bytecode_printf(( "\n" ));
+	{ 
+	  PUSH_PARTCONT(bci_1,3);
+	  SET_PARTCONT_REG(0,int2fx(label));
+	  SET_PARTCONT_REG(1,REG0);
+	  SET_PARTCONT_REG(2,REG1); }
+    }
+    BCI_BREAK;
+BCI_CASE(113)
+    debug_bytecode_printf(( "save 3 label: " ));
+     {
+      UINT_16 label;
+      label = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " label = %u", label ));
+    debug_bytecode_printf(( "\n" ));
+	{ 
+	  PUSH_PARTCONT(bci_1,4);
+	  SET_PARTCONT_REG(0,int2fx(label));
+	  SET_PARTCONT_REG(1,REG0);
+	  SET_PARTCONT_REG(2,REG1);
+	  SET_PARTCONT_REG(3,REG2); }
+    }
+    BCI_BREAK;
+BCI_CASE(114)
+    debug_bytecode_printf(( "save 4 label: " ));
+     {
+      UINT_16 label;
+      label = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " label = %u", label ));
+    debug_bytecode_printf(( "\n" ));
+	{ 
+	  PUSH_PARTCONT(bci_1,5);
+	  SET_PARTCONT_REG(0,int2fx(label));
+	  SET_PARTCONT_REG(1,REG0);
+	  SET_PARTCONT_REG(2,REG1);
+	  SET_PARTCONT_REG(3,REG2);
+	  SET_PARTCONT_REG(4,REG3); }
+    }
+    BCI_BREAK;
+BCI_CASE(115)
+    debug_bytecode_printf(( "save 5 label: " ));
+     {
+      UINT_16 label;
+      label = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " label = %u", label ));
+    debug_bytecode_printf(( "\n" ));
+	{ 
+	  PUSH_PARTCONT(bci_1,6);
+	  SET_PARTCONT_REG(0,int2fx(label));
+	  SET_PARTCONT_REG(1,REG0);
+	  SET_PARTCONT_REG(2,REG1);
+	  SET_PARTCONT_REG(3,REG2);
+	  SET_PARTCONT_REG(4,REG3);
+	  SET_PARTCONT_REG(5,REG4); }
+    }
+    BCI_BREAK;
+BCI_CASE(116)
+    debug_bytecode_printf(( "save num label: " ));
+     {
+      UINT_16 num;
+      UINT_16 label;
+      num = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " num = %u", num ));
+      label = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " label = %u", label ));
+    debug_bytecode_printf(( "\n" ));
+	{ unsigned i;
+	  PUSH_PARTCONT(bci_1,(num+1));
+	  SET_PARTCONT_REG(0,int2fx(label));
+	  for (i=0; i<num; i++)
+	  {
+	    SET_PARTCONT_REG(i+1,reg_ref(i));
+	  } }
+    }
+    BCI_BREAK;
+BCI_CASE(117)
+    debug_bytecode_printf(( "save num label: " ));
+     {
+      UINT_8 num;
+      UINT_16 label;
+      num = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " num = %u", num ));
+      label = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " label = %u", label ));
+    debug_bytecode_printf(( "\n" ));
+	{ unsigned i;
+	  PUSH_PARTCONT(bci_1,(num+1));
+	  SET_PARTCONT_REG(0,int2fx(label));
+	  for (i=0; i<num; i++)
+	  {
+	    SET_PARTCONT_REG(i+1,reg_ref(i));
+	  } }
+    }
+    BCI_BREAK;
+BCI_CASE(118)
+    debug_bytecode_printf(( "restore 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	{
+	  RESTORE_CONT_REG();
+	}
+    BCI_BREAK;
+BCI_CASE(119)
+    debug_bytecode_printf(( "restore 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	{ REG0 = PARTCONT_REG(1);
+	  RESTORE_CONT_REG();
+	}
+    BCI_BREAK;
+BCI_CASE(120)
+    debug_bytecode_printf(( "restore 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	{ REG0 = PARTCONT_REG(1);
+	  REG1 = PARTCONT_REG(2);
+	  RESTORE_CONT_REG();
+	}
+    BCI_BREAK;
+BCI_CASE(121)
+    debug_bytecode_printf(( "restore 3: " ));
+    debug_bytecode_printf(( "\n" ));
+	{ REG0 = PARTCONT_REG(1);
+	  REG1 = PARTCONT_REG(2);
+	  REG2 = PARTCONT_REG(3);
+	  RESTORE_CONT_REG();
+	}
+    BCI_BREAK;
+BCI_CASE(122)
+    debug_bytecode_printf(( "restore 4: " ));
+    debug_bytecode_printf(( "\n" ));
+	{ REG0 = PARTCONT_REG(1);
+	  REG1 = PARTCONT_REG(2);
+	  REG2 = PARTCONT_REG(3);
+	  REG3 = PARTCONT_REG(4);
+	  RESTORE_CONT_REG();
+	}
+    BCI_BREAK;
+BCI_CASE(123)
+    debug_bytecode_printf(( "restore 5: " ));
+    debug_bytecode_printf(( "\n" ));
+	{ REG0 = PARTCONT_REG(1);
+	  REG1 = PARTCONT_REG(2);
+	  REG2 = PARTCONT_REG(3);
+	  REG3 = PARTCONT_REG(4);
+	  REG4 = PARTCONT_REG(5);
+	  RESTORE_CONT_REG();
+	}
+    BCI_BREAK;
+BCI_CASE(124)
+    debug_bytecode_printf(( "restore (num n <uint-16>): " ));
+     {
+      UINT_16 num;
+      num = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " num = %u", num ));
+    debug_bytecode_printf(( "\n" ));
+	{ unsigned i;
+	  REG0 = PARTCONT_REG(1);
+	  REG1 = PARTCONT_REG(2);
+	  REG2 = PARTCONT_REG(3);
+	  REG3 = PARTCONT_REG(4);
+	  REG4 = PARTCONT_REG(5);
+	  REG5 = PARTCONT_REG(6);
+	  for (i=6; i<num; i++)
+	     reg_set( i, PARTCONT_REG(i+1) );
+	  RESTORE_CONT_REG();
+	}
+    }
+    BCI_BREAK;
+BCI_CASE(125)
+    debug_bytecode_printf(( "restore (num n): " ));
+     {
+      UINT_8 num;
+      num = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " num = %u", num ));
+    debug_bytecode_printf(( "\n" ));
+	{ unsigned i;
+	  REG0 = PARTCONT_REG(1);
+	  REG1 = PARTCONT_REG(2);
+	  REG2 = PARTCONT_REG(3);
+	  REG3 = PARTCONT_REG(4);
+	  REG4 = PARTCONT_REG(5);
+	  REG5 = PARTCONT_REG(6);
+	  for (i=6; i<num; i++)
+	     reg_set( i, PARTCONT_REG(i+1) );
+	  RESTORE_CONT_REG();
+	}
+    }
+    BCI_BREAK;
+BCI_CASE(126)
+    debug_bytecode_printf(( "jump label: " ));
+     {
+      UINT_16 label;
+      label = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " label = %u", label ));
+    debug_bytecode_printf(( "\n" ));
+	if (rsprof_active) rsprof_mt_jumps();
+	pc = base + label;
+    }
+    BCI_BREAK;
+BCI_CASE(127)
+    debug_bytecode_printf(( "bjump n label: " ));
+     {
+      UINT_8 n;
+      UINT_16 label;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+      label = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " label = %u", label ));
+    debug_bytecode_printf(( "\n" ));
+	BJUMP(n,label);
+    }
+    BCI_BREAK;
+BCI_CASE(128)
+    debug_bytecode_printf(( "branch-if-false label: " ));
+     {
+      UINT_16 label;
+      label = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " label = %u", label ));
+    debug_bytecode_printf(( "\n" ));
+	pc = POPT(raw_bool) ? pc : base + label;
+    }
+    BCI_BREAK;
+BCI_CASE(129)
+    debug_bytecode_printf(( "check= 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	COUNT_ARGS(0);
+    BCI_BREAK;
+BCI_CASE(130)
+    debug_bytecode_printf(( "check= 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	COUNT_ARGS(1);
+    BCI_BREAK;
+BCI_CASE(131)
+    debug_bytecode_printf(( "check= 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	COUNT_ARGS(2);
+    BCI_BREAK;
+BCI_CASE(132)
+    debug_bytecode_printf(( "check= 3: " ));
+    debug_bytecode_printf(( "\n" ));
+	COUNT_ARGS(3);
+    BCI_BREAK;
+BCI_CASE(133)
+    debug_bytecode_printf(( "check= 4: " ));
+    debug_bytecode_printf(( "\n" ));
+	COUNT_ARGS(4);
+    BCI_BREAK;
+BCI_CASE(134)
+    debug_bytecode_printf(( "check= n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	COUNT_ARGS(n);
+    }
+    BCI_BREAK;
+BCI_CASE(135)
+    debug_bytecode_printf(( "check>= n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	COUNT_ARGS_AT_LEAST(n);
+    }
+    BCI_BREAK;
+BCI_CASE(136)
+    debug_bytecode_printf(( "set-false< 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	PAD_WITH_FALSE1();
+    BCI_BREAK;
+BCI_CASE(137)
+    debug_bytecode_printf(( "set-false< 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	PAD_WITH_FALSE2();
+    BCI_BREAK;
+BCI_CASE(138)
+    debug_bytecode_printf(( "set-false< n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	PAD_WITH_FALSE(n);
+    }
+    BCI_BREAK;
+BCI_CASE(139)
+    debug_bytecode_printf(( "collect> 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	COLLECT0();
+    BCI_BREAK;
+BCI_CASE(140)
+    debug_bytecode_printf(( "collect> 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	COLLECT1();
+    BCI_BREAK;
+BCI_CASE(141)
+    debug_bytecode_printf(( "collect> 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	COLLECT2();
+    BCI_BREAK;
+BCI_CASE(142)
+    debug_bytecode_printf(( "collect> 3: " ));
+    debug_bytecode_printf(( "\n" ));
+	COLLECT3();
+    BCI_BREAK;
+BCI_CASE(143)
+    debug_bytecode_printf(( "collect> n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	COLLECT(n);
+    }
+    BCI_BREAK;
+BCI_CASE(144)
+    debug_bytecode_printf(( "unbind: " ));
+    debug_bytecode_printf(( "\n" ));
+	POPENVT();
+    BCI_BREAK;
+BCI_CASE(145)
+    debug_bytecode_printf(( "bind-first-regs 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	{ BEGIN_BIND1();
+	   BIND_ARG(0,REG0);
+	  END_BIND }
+    BCI_BREAK;
+BCI_CASE(146)
+    debug_bytecode_printf(( "bind-first-regs 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	{ BEGIN_BIND2();
+	   BIND_ARG(0,REG0);
+	   BIND_ARG(1,REG1);
+	  END_BIND }
+    BCI_BREAK;
+BCI_CASE(147)
+    debug_bytecode_printf(( "bind-first-regs 3: " ));
+    debug_bytecode_printf(( "\n" ));
+	{ BEGIN_BIND3();
+	   BIND_ARG(0,REG0);
+	   BIND_ARG(1,REG1);
+	   BIND_ARG(2,REG2);
+	  END_BIND }
+    BCI_BREAK;
+BCI_CASE(148)
+    debug_bytecode_printf(( "bind-first-regs 4: " ));
+    debug_bytecode_printf(( "\n" ));
+	{ BEGIN_BIND4();
+	   BIND_ARG(0,REG0);
+	   BIND_ARG(1,REG1);
+	   BIND_ARG(2,REG2);
+	   BIND_ARG(3,REG3);
+	  END_BIND }
+    BCI_BREAK;
+BCI_CASE(149)
+    debug_bytecode_printf(( "bind-first-regs 5: " ));
+    debug_bytecode_printf(( "\n" ));
+	{ BEGIN_BIND5();
+	   BIND_ARG(0,REG0);
+	   BIND_ARG(1,REG1);
+	   BIND_ARG(2,REG2);
+	   BIND_ARG(3,REG3);
+	   BIND_ARG(4,REG4);
+	  END_BIND }
+    BCI_BREAK;
+BCI_CASE(150)
+    debug_bytecode_printf(( "bind-first-regs n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	{ unsigned i;
+	  BEGIN_BIND(n);
+	  for (i=0; i<n; i++)
+	   BIND_ARG(i,reg_ref(i));
+	  END_BIND }
+    }
+    BCI_BREAK;
+BCI_CASE(151)
+    debug_bytecode_printf(( "bind 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	{ BEGIN_BIND1();
+	   BIND_ARG(0,POP());
+	  END_BIND }
+    BCI_BREAK;
+BCI_CASE(152)
+    debug_bytecode_printf(( "bind 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	{ BEGIN_BIND2();
+	   BIND_ARG(1,POP());
+	   BIND_ARG(0,POP());
+	  END_BIND }
+    BCI_BREAK;
+BCI_CASE(153)
+    debug_bytecode_printf(( "bind 3: " ));
+    debug_bytecode_printf(( "\n" ));
+	{ BEGIN_BIND3();
+	   BIND_ARG(2,POP());
+	   BIND_ARG(1,POP());
+	   BIND_ARG(0,POP());
+	  END_BIND }
+    BCI_BREAK;
+BCI_CASE(154)
+    debug_bytecode_printf(( "bind 4: " ));
+    debug_bytecode_printf(( "\n" ));
+	{ BEGIN_BIND4();
+	   BIND_ARG(3,POP());
+	   BIND_ARG(2,POP());
+	   BIND_ARG(1,POP());
+	   BIND_ARG(0,POP());
+	  END_BIND }
+    BCI_BREAK;
+BCI_CASE(155)
+    debug_bytecode_printf(( "bind 5: " ));
+    debug_bytecode_printf(( "\n" ));
+	{ BEGIN_BIND5();
+	   BIND_ARG(4,POP());
+	   BIND_ARG(3,POP());
+	   BIND_ARG(2,POP());
+	   BIND_ARG(1,POP());
+	   BIND_ARG(0,POP());
+	  END_BIND }
+    BCI_BREAK;
+BCI_CASE(156)
+    debug_bytecode_printf(( "bind n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	{ unsigned i;
+	  BEGIN_BIND(n);
+	  for (i=n; i>0;)
+	  { obj t = POP();
+	    i--; 
+	    BIND_ARG(i,t);
+	  }
+	  END_BIND }
+    }
+    BCI_BREAK;
+BCI_CASE(157)
+    debug_bytecode_printf(( "raw-int 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSHT(raw_int,0);
+    BCI_BREAK;
+BCI_CASE(158)
+    debug_bytecode_printf(( "raw-int 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSHT(raw_int,1);
+    BCI_BREAK;
+BCI_CASE(159)
+    debug_bytecode_printf(( "raw-int/UINT_8 n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	PUSHT(raw_int,n);
+    }
+    BCI_BREAK;
+BCI_CASE(160)
+    debug_bytecode_printf(( "raw-int/-UINT_8 n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	PUSHT(raw_int,n-256);
+    }
+    BCI_BREAK;
+BCI_CASE(161)
+    debug_bytecode_printf(( "raw-int/INT_16 n: " ));
+     {
+      INT_16 n;
+      n = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " n = %d", n ));
+    debug_bytecode_printf(( "\n" ));
+	PUSHT(raw_int,n);
+    }
+    BCI_BREAK;
+BCI_CASE(162)
+    debug_bytecode_printf(( "raw-int/INT_32 n: " ));
+     {
+      INT_32 n;
+      n = (pc[0]<<24) + (pc[1]<<16) + (pc[2] << 8) + pc[3];
+      pc += 4;
+      debug_bytecode_printf(( " n = %ld", n ));
+    debug_bytecode_printf(( "\n" ));
+	PUSHT(raw_int,n);
+    }
+    BCI_BREAK;
+BCI_CASE(163)
+    debug_bytecode_printf(( "fixnum 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH(ZERO);
+    BCI_BREAK;
+BCI_CASE(164)
+    debug_bytecode_printf(( "fixnum 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH(int2fx(1));
+    BCI_BREAK;
+BCI_CASE(165)
+    debug_bytecode_printf(( "fixnum/UINT_8 n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH(int2fx(n));
+    }
+    BCI_BREAK;
+BCI_CASE(166)
+    debug_bytecode_printf(( "fixnum/-UINT_8 n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH(int2fx(n-256));
+    }
+    BCI_BREAK;
+BCI_CASE(167)
+    debug_bytecode_printf(( "fixnum/INT_16 n: " ));
+     {
+      INT_16 n;
+      n = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " n = %d", n ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH(int2fx(n));
+    }
+    BCI_BREAK;
+BCI_CASE(168)
+    debug_bytecode_printf(( "fixnum/INT_32 n: " ));
+     {
+      INT_32 n;
+      n = (pc[0]<<24) + (pc[1]<<16) + (pc[2] << 8) + pc[3];
+      pc += 4;
+      debug_bytecode_printf(( " n = %ld", n ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH(int2fx(n));
+    }
+    BCI_BREAK;
+BCI_CASE(169)
+    debug_bytecode_printf(( "raw-bool #t: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSHT(raw_bool,YES);
+    BCI_BREAK;
+BCI_CASE(170)
+    debug_bytecode_printf(( "raw-bool #f: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSHT(raw_bool,NO);
+    BCI_BREAK;
+BCI_CASE(171)
+    debug_bytecode_printf(( "this-function: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH(THIS_FUNCTION());
+    BCI_BREAK;
+BCI_CASE(172)
+    debug_bytecode_printf(( "use-function-envt: " ));
+    debug_bytecode_printf(( "\n" ));
+	USE_FUNCTION_ENVT();
+    BCI_BREAK;
+BCI_CASE(173)
+    debug_bytecode_printf(( "use-empty-envt: " ));
+    debug_bytecode_printf(( "\n" ));
+	USE_EMPTY_ENVT();
+    BCI_BREAK;
+BCI_CASE(174)
+    debug_bytecode_printf(( "gvec-load (ix index): " ));
+     {
+      UINT_8 ix;
+      ix = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " ix = %u", ix ));
+    debug_bytecode_printf(( "\n" ));
+	SETTOP(0,gvec_ref(TOP(0),SLOT(ix)));
+    }
+    BCI_BREAK;
+BCI_CASE(175)
+    debug_bytecode_printf(( "gvec-store (ix index): " ));
+     {
+      UINT_8 ix;
+      ix = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " ix = %u", ix ));
+    debug_bytecode_printf(( "\n" ));
+	{ obj rhs = POP();
+	  obj lhs = POP();
+	  gvec_set( lhs, SLOT(ix), rhs ); }
+    }
+    BCI_BREAK;
+BCI_CASE(176)
+    debug_bytecode_printf(( "applyf 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	APPLYF(0,POP());
+    BCI_BREAK;
+BCI_CASE(177)
+    debug_bytecode_printf(( "applyf 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	APPLYF(1,POP());
+    BCI_BREAK;
+BCI_CASE(178)
+    debug_bytecode_printf(( "applyf 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	APPLYF(2,POP());
+    BCI_BREAK;
+BCI_CASE(179)
+    debug_bytecode_printf(( "applyf 3: " ));
+    debug_bytecode_printf(( "\n" ));
+	APPLYF(3,POP());
+    BCI_BREAK;
+BCI_CASE(180)
+    debug_bytecode_printf(( "applyf 4: " ));
+    debug_bytecode_printf(( "\n" ));
+	APPLYF(4,POP());
+    BCI_BREAK;
+BCI_CASE(181)
+    debug_bytecode_printf(( "applyf n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	APPLYF(n,POP());
+    }
+    BCI_BREAK;
+BCI_CASE(182)
+    debug_bytecode_printf(( "applyg 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	APPLYG(1,POP());
+    BCI_BREAK;
+BCI_CASE(183)
+    debug_bytecode_printf(( "applyg 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	APPLYG(2,POP());
+    BCI_BREAK;
+BCI_CASE(184)
+    debug_bytecode_printf(( "applyg 3: " ));
+    debug_bytecode_printf(( "\n" ));
+	APPLYG(3,POP());
+    BCI_BREAK;
+BCI_CASE(185)
+    debug_bytecode_printf(( "applyg n: " ));
+     {
+      UINT_8 n;
+      n = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " n = %u", n ));
+    debug_bytecode_printf(( "\n" ));
+	APPLYG(n,POP());
+    }
+    BCI_BREAK;
+BCI_CASE(186)
+    debug_bytecode_printf(( "tl-ref/bound 0: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( TLREFB(0+1) );
+    BCI_BREAK;
+BCI_CASE(187)
+    debug_bytecode_printf(( "tl-ref/bound 1: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( TLREFB(1+1) );
+    BCI_BREAK;
+BCI_CASE(188)
+    debug_bytecode_printf(( "tl-ref/bound 2: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( TLREFB(2+1) );
+    BCI_BREAK;
+BCI_CASE(189)
+    debug_bytecode_printf(( "tl-ref/bound 3: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( TLREFB(3+1) );
+    BCI_BREAK;
+BCI_CASE(190)
+    debug_bytecode_printf(( "tl-ref/bound 4: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( TLREFB(4+1) );
+    BCI_BREAK;
+BCI_CASE(191)
+    debug_bytecode_printf(( "tl-ref/bound 5: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( TLREFB(5+1) );
+    BCI_BREAK;
+BCI_CASE(192)
+    debug_bytecode_printf(( "tl-ref/bound 6: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( TLREFB(6+1) );
+    BCI_BREAK;
+BCI_CASE(193)
+    debug_bytecode_printf(( "tl-ref/bound 7: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( TLREFB(7+1) );
+    BCI_BREAK;
+BCI_CASE(194)
+    debug_bytecode_printf(( "tl-ref/bound 8: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( TLREFB(8+1) );
+    BCI_BREAK;
+BCI_CASE(195)
+    debug_bytecode_printf(( "tl-ref/bound 9: " ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( TLREFB(9+1) );
+    BCI_BREAK;
+BCI_CASE(196)
+    debug_bytecode_printf(( "tl-ref/bound (i <uint-16>): " ));
+     {
+      UINT_16 i;
+      i = (pc[0] << 8) + pc[1];
+      pc += 2;
+      debug_bytecode_printf(( " i = %u", i ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( TLREFB(i+1) );
+    }
+    BCI_BREAK;
+BCI_CASE(197)
+    debug_bytecode_printf(( "tl-ref/bound i: " ));
+     {
+      UINT_8 i;
+      i = pc[0];
+      pc += 1;
+      debug_bytecode_printf(( " i = %u", i ));
+    debug_bytecode_printf(( "\n" ));
+	PUSH( TLREFB(i+1) );
+    }
+    BCI_BREAK;
+
+BCI_CASE(255)
+    debug_bytecode_printf(( "primop: " ));
+    BCI_PRIMOP_SWITCH(*pc++) {
+BCI_PRIMOP_CASE(0) /* fixnum? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "fixnum? (1 args)\n" ));
+result = (rs_bool)OBJ_ISA_FIXNUM(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(1) /* immob? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "immob? (1 args)\n" ));
+result = (rs_bool)OBJ_ISA_IMMOB(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(2) /* ptr? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "ptr? (1 args)\n" ));
+result = (rs_bool)OBJ_ISA_PTR(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(3) /* boolean? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "boolean? (1 args)\n" ));
+result = (rs_bool)OBJ_ISA_BOOLEAN(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(4) /* null? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "null? (1 args)\n" ));
+result = (rs_bool)NULL_P(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(5) /* pair? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "pair? (1 args)\n" ));
+result = (rs_bool)PAIR_P(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(6) /* class? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "class? (1 args)\n" ));
+result = (rs_bool)CLASS_P(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(7) /* ascii-char? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "ascii-char? (1 args)\n" ));
+result = (rs_bool)OBJ_ISA_ASCII_CHAR(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(8) /* unicode-char? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "unicode-char? (1 args)\n" ));
+result = (rs_bool)OBJ_ISA_UNICODE_CHAR(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(9) /* unique-obj? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "unique-obj? (1 args)\n" ));
+result = (rs_bool)OBJ_ISA_UNIQUE_OBJ(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(10) /* symbol? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "symbol? (1 args)\n" ));
+result = (rs_bool)SYMBOL_P(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(11) /* vector? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "vector? (1 args)\n" ));
+result = (rs_bool)VECTOR_P(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(12) /* string? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "string? (1 args)\n" ));
+result = (rs_bool)STRING_P(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(13) /* double-float? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "double-float? (1 args)\n" ));
+result = (rs_bool)LONGFLOAT_P(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(14) /* eq? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "eq? (2 args)\n" ));
+result = (rs_bool)EQ(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(15) /* not */
+{
+rs_bool result;
+   debug_bytecode_printf(( "not (1 args)\n" ));
+result = (rs_bool)NOT(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(16) /* gvec? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "gvec? (1 args)\n" ));
+result = (rs_bool)GVEC_P(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(17) /* gvec-alloc */
+{
+obj result;
+   debug_bytecode_printf(( "gvec-alloc (3 args)\n" ));
+result = make_gvec(TOPT(obj,2),TOPT(raw_int,1),TOPT(obj,0));
+NPOP(3);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(18) /* gvec-length */
+{
+INT_32 result;
+   debug_bytecode_printf(( "gvec-length (1 args)\n" ));
+result = SIZEOF_PTR(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(19) /* gvec-ref */
+{
+obj result;
+   debug_bytecode_printf(( "gvec-ref (2 args)\n" ));
+result = gvec_ref(TOPT(obj,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(20) /* gvec-set! */
+{
+   debug_bytecode_printf(( "gvec-set! (3 args)\n" ));
+gvec_set(TOPT(obj,2),TOPT(raw_int,1),TOPT(obj,0));
+NPOP(3);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(21) /* bvec? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "bvec? (1 args)\n" ));
+result = (rs_bool)BVEC_P(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(22) /* bvec-alloc */
+{
+obj result;
+   debug_bytecode_printf(( "bvec-alloc (2 args)\n" ));
+result = make_bvec(TOPT(obj,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(23) /* object-class */
+{
+obj result;
+   debug_bytecode_printf(( "object-class (1 args)\n" ));
+result = object_class(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(24) /* instance? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "instance? (2 args)\n" ));
+result = (rs_bool)instance_p(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(25) /* subclass? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "subclass? (2 args)\n" ));
+result = (rs_bool)subclass_p(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(26) /* integer->ascii-char */
+{
+obj result;
+   debug_bytecode_printf(( "integer->ascii-char (1 args)\n" ));
+result = MAKE_ASCII_CHAR(TOPT(raw_int,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(27) /* integer->unicode-char */
+{
+obj result;
+   debug_bytecode_printf(( "integer->unicode-char (1 args)\n" ));
+result = MAKE_UNICODE_CHAR(TOPT(raw_int,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(28) /* ascii-char->integer */
+{
+INT_32 result;
+   debug_bytecode_printf(( "ascii-char->integer (1 args)\n" ));
+result = GET_IMMEDIATE_VALUE(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(29) /* unicode-char->integer */
+{
+INT_32 result;
+   debug_bytecode_printf(( "unicode-char->integer (1 args)\n" ));
+result = GET_IMMEDIATE_VALUE(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(30) /* fixnum->immob */
+{
+obj result;
+   debug_bytecode_printf(( "fixnum->immob (1 args)\n" ));
+result = FX_TO_IMMOB(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(31) /* immob->fixnum */
+{
+obj result;
+   debug_bytecode_printf(( "immob->fixnum (1 args)\n" ));
+result = IMMOB_TO_FX(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(32) /* get-immob-value */
+{
+INT_32 result;
+   debug_bytecode_printf(( "get-immob-value (1 args)\n" ));
+result = GET_IMMEDIATE_VALUE(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(33) /* make-immob */
+{
+obj result;
+   debug_bytecode_printf(( "make-immob (2 args)\n" ));
+result = MAKE_IMMOB(TOPT(raw_int,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(34) /* set-car! */
+{
+   debug_bytecode_printf(( "set-car! (2 args)\n" ));
+pair_set_car(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(35) /* set-cdr! */
+{
+   debug_bytecode_printf(( "set-cdr! (2 args)\n" ));
+pair_set_cdr(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(36) /* fixnum+ */
+{
+obj result;
+   debug_bytecode_printf(( "fixnum+ (2 args)\n" ));
+result = FX_ADD(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(37) /* fixnum- */
+{
+obj result;
+   debug_bytecode_printf(( "fixnum- (2 args)\n" ));
+result = FX_SUB(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(38) /* add1 */
+{
+obj result;
+   debug_bytecode_printf(( "add1 (1 args)\n" ));
+result = ADD1(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(39) /* sub1 */
+{
+obj result;
+   debug_bytecode_printf(( "sub1 (1 args)\n" ));
+result = SUB1(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(40) /* mul2 */
+{
+obj result;
+   debug_bytecode_printf(( "mul2 (1 args)\n" ));
+result = MUL2(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(41) /* div2 */
+{
+obj result;
+   debug_bytecode_printf(( "div2 (1 args)\n" ));
+result = DIV2(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(42) /* fixnum* */
+{
+obj result;
+   debug_bytecode_printf(( "fixnum* (2 args)\n" ));
+result = FX_MUL(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(43) /* fixnum-quotient */
+{
+obj result;
+   debug_bytecode_printf(( "fixnum-quotient (2 args)\n" ));
+result = FX_DIV(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(44) /* float+ */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "float+ (2 args)\n" ));
+result = FLT_ADD(TOPT(raw_float,1),TOPT(raw_float,0));
+NPOP(2);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(45) /* float- */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "float- (2 args)\n" ));
+result = FLT_SUB(TOPT(raw_float,1),TOPT(raw_float,0));
+NPOP(2);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(46) /* float* */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "float* (2 args)\n" ));
+result = FLT_MUL(TOPT(raw_float,1),TOPT(raw_float,0));
+NPOP(2);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(47) /* float/ */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "float/ (2 args)\n" ));
+result = FLT_DIV(TOPT(raw_float,1),TOPT(raw_float,0));
+NPOP(2);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(48) /* float-neg */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "float-neg (1 args)\n" ));
+result = FLT_NEG(TOPT(raw_float,0));
+NPOP(1);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(49) /* fixnum>? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "fixnum>? (2 args)\n" ));
+result = (rs_bool)FX_GT(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(50) /* fixnum>=? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "fixnum>=? (2 args)\n" ));
+result = (rs_bool)FX_GE(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(51) /* fixnum<? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "fixnum<? (2 args)\n" ));
+result = (rs_bool)FX_LT(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(52) /* fixnum<=? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "fixnum<=? (2 args)\n" ));
+result = (rs_bool)FX_LE(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(53) /* float>? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "float>? (2 args)\n" ));
+result = (rs_bool)FLT_GT(TOPT(raw_float,1),TOPT(raw_float,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(54) /* float>=? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "float>=? (2 args)\n" ));
+result = (rs_bool)FLT_GE(TOPT(raw_float,1),TOPT(raw_float,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(55) /* float<? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "float<? (2 args)\n" ));
+result = (rs_bool)FLT_LT(TOPT(raw_float,1),TOPT(raw_float,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(56) /* float<=? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "float<=? (2 args)\n" ));
+result = (rs_bool)FLT_LE(TOPT(raw_float,1),TOPT(raw_float,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(57) /* float=? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "float=? (2 args)\n" ));
+result = (rs_bool)FLT_EQ(TOPT(raw_float,1),TOPT(raw_float,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(58) /* fixnum->raw-int */
+{
+INT_32 result;
+   debug_bytecode_printf(( "fixnum->raw-int (1 args)\n" ));
+result = fx2int(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(59) /* raw-int->fixnum */
+{
+obj result;
+   debug_bytecode_printf(( "raw-int->fixnum (1 args)\n" ));
+result = int2fx(TOPT(raw_int,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(60) /* raw-bool->bool */
+{
+obj result;
+   debug_bytecode_printf(( "raw-bool->bool (1 args)\n" ));
+result = rb_to_bo(TOPT(raw_bool,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(61) /* obj->raw-bool */
+{
+rs_bool result;
+   debug_bytecode_printf(( "obj->raw-bool (1 args)\n" ));
+result = (rs_bool)truish(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(62) /* string->raw-str */
+{
+char * result;
+   debug_bytecode_printf(( "string->raw-str (1 args)\n" ));
+result = string_text(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_str,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(63) /* raw-str->string */
+{
+obj result;
+   debug_bytecode_printf(( "raw-str->string (1 args)\n" ));
+result = make_string(TOPT(raw_str,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(64) /* double-float->raw-float */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "double-float->raw-float (1 args)\n" ));
+result = extract_float(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(65) /* raw-float->double-float */
+{
+obj result;
+   debug_bytecode_printf(( "raw-float->double-float (1 args)\n" ));
+result = make_float(TOPT(raw_float,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(66) /* obj-high-bits */
+{
+obj result;
+   debug_bytecode_printf(( "obj-high-bits (1 args)\n" ));
+result = OBJ_HIGH_HALF_FX(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(67) /* obj-low-bits */
+{
+obj result;
+   debug_bytecode_printf(( "obj-low-bits (1 args)\n" ));
+result = OBJ_LOW_HALF_FX(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(68) /* obj-bits-reform */
+{
+obj result;
+   debug_bytecode_printf(( "obj-bits-reform (2 args)\n" ));
+result = OBJ_FROM_HI_LO(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(69) /* raw-int-bytes->fixnum-words */
+{
+obj result;
+   debug_bytecode_printf(( "raw-int-bytes->fixnum-words (1 args)\n" ));
+result = RIBYTES_TO_FXWORDS(TOPT(raw_int,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(70) /* raw-int-bytes->raw-int-words */
+{
+INT_32 result;
+   debug_bytecode_printf(( "raw-int-bytes->raw-int-words (1 args)\n" ));
+result = RAW_DIV4(TOPT(raw_int,0));
+NPOP(1);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(71) /* raw-int-words->raw-int-bytes */
+{
+INT_32 result;
+   debug_bytecode_printf(( "raw-int-words->raw-int-bytes (1 args)\n" ));
+result = SLOT(TOPT(raw_int,0));
+NPOP(1);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(72) /* fixnum-words->raw-int-bytes */
+{
+INT_32 result;
+   debug_bytecode_printf(( "fixnum-words->raw-int-bytes (1 args)\n" ));
+result = FXWORDS_TO_RIBYTES(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(73) /* bitwise-and */
+{
+obj result;
+   debug_bytecode_printf(( "bitwise-and (2 args)\n" ));
+result = basic_bitwise_and(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(74) /* bitwise-or */
+{
+obj result;
+   debug_bytecode_printf(( "bitwise-or (2 args)\n" ));
+result = basic_bitwise_or(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(75) /* bitwise-xor */
+{
+obj result;
+   debug_bytecode_printf(( "bitwise-xor (2 args)\n" ));
+result = basic_bitwise_xor(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(76) /* bitwise-not */
+{
+obj result;
+   debug_bytecode_printf(( "bitwise-not (1 args)\n" ));
+result = basic_bitwise_not(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(77) /* logical-shift-right */
+{
+obj result;
+   debug_bytecode_printf(( "logical-shift-right (2 args)\n" ));
+result = basic_lshr(TOPT(obj,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(78) /* arithmetic-shift-right */
+{
+obj result;
+   debug_bytecode_printf(( "arithmetic-shift-right (2 args)\n" ));
+result = basic_ashr(TOPT(obj,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(79) /* logical-shift-left */
+{
+obj result;
+   debug_bytecode_printf(( "logical-shift-left (2 args)\n" ));
+result = basic_lshl(TOPT(obj,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(80) /* arithmetic-shift-left */
+{
+obj result;
+   debug_bytecode_printf(( "arithmetic-shift-left (2 args)\n" ));
+result = basic_ashl(TOPT(obj,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(81) /* int-remainder */
+{
+INT_32 result;
+   debug_bytecode_printf(( "int-remainder (2 args)\n" ));
+result = REMDR(TOPT(raw_int,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(82) /* int-modulo */
+{
+INT_32 result;
+   debug_bytecode_printf(( "int-modulo (2 args)\n" ));
+result = MOD(TOPT(raw_int,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(83) /* string->symbol */
+{
+obj result;
+   debug_bytecode_printf(( "string->symbol (1 args)\n" ));
+result = intern(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(84) /* symbol->string */
+{
+obj result;
+   debug_bytecode_printf(( "symbol->string (1 args)\n" ));
+result = symbol_str(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(85) /* string=? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "string=? (2 args)\n" ));
+result = (rs_bool)string_eq(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(86) /* string-ci=? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "string-ci=? (2 args)\n" ));
+result = (rs_bool)string_ci_eq(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(87) /* string-compare */
+{
+INT_32 result;
+   debug_bytecode_printf(( "string-compare (2 args)\n" ));
+result = string_cmp(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(88) /* string-ci-compare */
+{
+INT_32 result;
+   debug_bytecode_printf(( "string-ci-compare (2 args)\n" ));
+result = string_ci_cmp(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(89) /* string-length% */
+{
+INT_32 result;
+   debug_bytecode_printf(( "string-length%% (1 args)\n" ));
+result = string_length(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(90) /* rscheme-global-ref */
+{
+obj result;
+   debug_bytecode_printf(( "rscheme-global-ref (1 args)\n" ));
+result = rscheme_global_ref(TOPT(raw_int,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(91) /* rscheme-global-set! */
+{
+obj result;
+   debug_bytecode_printf(( "rscheme-global-set! (2 args)\n" ));
+result = rscheme_global_set(TOPT(raw_int,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(92) /* string-table-lookup */
+{
+obj result;
+   debug_bytecode_printf(( "string-table-lookup (3 args)\n" ));
+result = stringtable_lookup(TOPT(obj,2),TOPT(obj,1),TOPT(obj,0));
+NPOP(3);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(93) /* string-table-insert! */
+{
+obj result;
+   debug_bytecode_printf(( "string-table-insert! (4 args)\n" ));
+result = stringtable_insert(TOPT(obj,3),TOPT(obj,2),TOPT(obj,1),TOPT(obj,0));
+NPOP(4);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(94) /* string-table-remove! */
+{
+obj result;
+   debug_bytecode_printf(( "string-table-remove! (3 args)\n" ));
+result = stringtable_remove(TOPT(obj,2),TOPT(obj,1),TOPT(obj,0));
+NPOP(3);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(95) /* string-table-probe? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "string-table-probe? (3 args)\n" ));
+result = (rs_bool)stringtable_probe(TOPT(obj,2),TOPT(obj,1),TOPT(obj,0));
+NPOP(3);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(96) /* string-ci-table-lookup */
+{
+obj result;
+   debug_bytecode_printf(( "string-ci-table-lookup (3 args)\n" ));
+result = cistringtable_lookup(TOPT(obj,2),TOPT(obj,1),TOPT(obj,0));
+NPOP(3);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(97) /* string-ci-table-insert! */
+{
+obj result;
+   debug_bytecode_printf(( "string-ci-table-insert! (4 args)\n" ));
+result = cistringtable_insert(TOPT(obj,3),TOPT(obj,2),TOPT(obj,1),TOPT(obj,0));
+NPOP(4);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(98) /* string-ci-table-remove! */
+{
+obj result;
+   debug_bytecode_printf(( "string-ci-table-remove! (3 args)\n" ));
+result = cistringtable_remove(TOPT(obj,2),TOPT(obj,1),TOPT(obj,0));
+NPOP(3);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(99) /* string-ci-table-probe? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "string-ci-table-probe? (3 args)\n" ));
+result = (rs_bool)cistringtable_probe(TOPT(obj,2),TOPT(obj,1),TOPT(obj,0));
+NPOP(3);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(100) /* object-table-lookup */
+{
+obj result;
+   debug_bytecode_printf(( "object-table-lookup (3 args)\n" ));
+result = objecttable_lookup(TOPT(obj,2),TOPT(obj,1),TOPT(obj,0));
+NPOP(3);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(101) /* object-table-insert! */
+{
+obj result;
+   debug_bytecode_printf(( "object-table-insert! (4 args)\n" ));
+result = objecttable_insert(TOPT(obj,3),TOPT(obj,2),TOPT(obj,1),TOPT(obj,0));
+NPOP(4);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(102) /* object-table-remove! */
+{
+obj result;
+   debug_bytecode_printf(( "object-table-remove! (3 args)\n" ));
+result = objecttable_remove(TOPT(obj,2),TOPT(obj,1),TOPT(obj,0));
+NPOP(3);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(103) /* object-table-probe? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "object-table-probe? (3 args)\n" ));
+result = (rs_bool)objecttable_probe(TOPT(obj,2),TOPT(obj,1),TOPT(obj,0));
+NPOP(3);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(104) /* table-install! */
+{
+   debug_bytecode_printf(( "table-install! (4 args)\n" ));
+hashtable_install(TOPT(obj,3),TOPT(obj,2),TOPT(obj,1),TOPT(obj,0));
+NPOP(4);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(105) /* table-chains */
+{
+obj result;
+   debug_bytecode_printf(( "table-chains (1 args)\n" ));
+result = hashtable_chains(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(106) /* table-keys->list */
+{
+obj result;
+   debug_bytecode_printf(( "table-keys->list (1 args)\n" ));
+result = hashtable_keys_to_list(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(107) /* table-values->list */
+{
+obj result;
+   debug_bytecode_printf(( "table-values->list (1 args)\n" ));
+result = hashtable_values_to_list(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(108) /* bvec->hash */
+{
+obj result;
+   debug_bytecode_printf(( "bvec->hash (3 args)\n" ));
+result = bvec_hash(TOPT(obj,2),TOPT(raw_int,1),TOPT(raw_int,0));
+NPOP(3);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(109) /* bvec-ci->hash */
+{
+obj result;
+   debug_bytecode_printf(( "bvec-ci->hash (3 args)\n" ));
+result = bvec_ci_hash(TOPT(obj,2),TOPT(raw_int,1),TOPT(raw_int,0));
+NPOP(3);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(110) /* string->hash */
+{
+obj result;
+   debug_bytecode_printf(( "string->hash (1 args)\n" ));
+result = hash_string(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(111) /* string-ci->hash */
+{
+obj result;
+   debug_bytecode_printf(( "string-ci->hash (1 args)\n" ));
+result = hash_string_ci(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(112) /* integer->hash */
+{
+obj result;
+   debug_bytecode_printf(( "integer->hash (1 args)\n" ));
+result = rehash_fixnum(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(113) /* symbol->hash */
+{
+obj result;
+   debug_bytecode_printf(( "symbol->hash (1 args)\n" ));
+result = symbol_hash(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(114) /* immob->hash */
+{
+obj result;
+   debug_bytecode_printf(( "immob->hash (1 args)\n" ));
+result = obj_hash(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(115) /* tuple->hash */
+{
+obj result;
+   debug_bytecode_printf(( "tuple->hash (2 args)\n" ));
+result = obj_hash2(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(116) /* transient->hash */
+{
+obj result;
+   debug_bytecode_printf(( "transient->hash (1 args)\n" ));
+result = obj_hash(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(117) /* assert-type */
+{
+   debug_bytecode_printf(( "assert-type (1 args)\n" ));
+assert_type(TOPT(raw_bool,0));
+NPOP(1);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(118) /* get-dynamic-state-reg */
+{
+obj result;
+   debug_bytecode_printf(( "get-dynamic-state-reg (0 args)\n" ));
+result = GET_DYNAMIC_STATE_REG();
+NPOP(0);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(119) /* set-dynamic-state-reg! */
+{
+   debug_bytecode_printf(( "set-dynamic-state-reg! (1 args)\n" ));
+SET_DYNAMIC_STATE_REG(TOPT(obj,0));
+NPOP(1);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(120) /* os-file-exists? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "os-file-exists? (1 args)\n" ));
+result = (rs_bool)os_file_exists_p(TOPT(raw_str,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(121) /* vector-ref */
+{
+obj result;
+   debug_bytecode_printf(( "vector-ref (2 args)\n" ));
+result = vector_ref(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(122) /* vector-set! */
+{
+obj result;
+   debug_bytecode_printf(( "vector-set! (3 args)\n" ));
+result = vector_set(TOPT(obj,2),TOPT(obj,1),TOPT(obj,0));
+NPOP(3);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(123) /* os-set-timer */
+{
+   debug_bytecode_printf(( "os-set-timer (1 args)\n" ));
+os_set_timer(TOPT(raw_int,0));
+NPOP(1);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(124) /* os-get-time-remaining */
+{
+INT_32 result;
+   debug_bytecode_printf(( "os-get-time-remaining (0 args)\n" ));
+result = os_get_time_remaining();
+NPOP(0);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(125) /* os-halt-timer */
+{
+INT_32 result;
+   debug_bytecode_printf(( "os-halt-timer (0 args)\n" ));
+result = os_halt_timer();
+NPOP(0);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(126) /* os-sleep */
+{
+INT_32 result;
+   debug_bytecode_printf(( "os-sleep (1 args)\n" ));
+result = os_sleep(TOPT(raw_int,0));
+NPOP(1);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(127) /* bvec-alloc-in-area */
+{
+obj result;
+   debug_bytecode_printf(( "bvec-alloc-in-area (4 args)\n" ));
+result = make_bvec_in_area(TOPT(obj,3),TOPT(obj,2),TOPT(raw_int,1),TOPT(raw_int,0));
+NPOP(4);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(128) /* gvec-alloc-in-area */
+{
+obj result;
+   debug_bytecode_printf(( "gvec-alloc-in-area (4 args)\n" ));
+result = make_gvec_in_area(TOPT(obj,3),TOPT(obj,2),TOPT(raw_int,1),TOPT(obj,0));
+NPOP(4);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(129) /* clone */
+{
+obj result;
+   debug_bytecode_printf(( "clone (1 args)\n" ));
+result = clone(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(130) /* clone2 */
+{
+obj result;
+   debug_bytecode_printf(( "clone2 (2 args)\n" ));
+result = clone2(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(131) /* bvec-ref */
+{
+INT_32 result;
+   debug_bytecode_printf(( "bvec-ref (2 args)\n" ));
+result = bvec_read_uint8(TOPT(obj,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(132) /* bvec-set! */
+{
+   debug_bytecode_printf(( "bvec-set! (3 args)\n" ));
+bvec_write_uint8(TOPT(obj,2),TOPT(raw_int,1),TOPT(raw_int,0));
+NPOP(3);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(133) /* bvec-copy */
+{
+   debug_bytecode_printf(( "bvec-copy (5 args)\n" ));
+bvec_copy(TOPT(obj,4),TOPT(raw_int,3),TOPT(obj,2),TOPT(raw_int,1),TOPT(raw_int,0));
+NPOP(5);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(134) /* bvec-length */
+{
+INT_32 result;
+   debug_bytecode_printf(( "bvec-length (1 args)\n" ));
+result = SIZEOF_PTR(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(135) /* bvec-read-signed-8 */
+{
+INT_32 result;
+   debug_bytecode_printf(( "bvec-read-signed-8 (2 args)\n" ));
+result = bvec_read_int8(TOPT(obj,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(136) /* bvec-read-signed-16 */
+{
+INT_32 result;
+   debug_bytecode_printf(( "bvec-read-signed-16 (2 args)\n" ));
+result = bvec_read_int16(TOPT(obj,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(137) /* bvec-read-unsigned-8 */
+{
+INT_32 result;
+   debug_bytecode_printf(( "bvec-read-unsigned-8 (2 args)\n" ));
+result = bvec_read_uint8(TOPT(obj,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(138) /* bvec-read-unsigned-16 */
+{
+INT_32 result;
+   debug_bytecode_printf(( "bvec-read-unsigned-16 (2 args)\n" ));
+result = bvec_read_uint16(TOPT(obj,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(139) /* bvec-write-signed-8 */
+{
+   debug_bytecode_printf(( "bvec-write-signed-8 (3 args)\n" ));
+bvec_write_int8(TOPT(obj,2),TOPT(raw_int,1),TOPT(raw_int,0));
+NPOP(3);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(140) /* bvec-write-signed-16 */
+{
+   debug_bytecode_printf(( "bvec-write-signed-16 (3 args)\n" ));
+bvec_write_int16(TOPT(obj,2),TOPT(raw_int,1),TOPT(raw_int,0));
+NPOP(3);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(141) /* bvec-write-unsigned-8 */
+{
+   debug_bytecode_printf(( "bvec-write-unsigned-8 (3 args)\n" ));
+bvec_write_uint8(TOPT(obj,2),TOPT(raw_int,1),TOPT(raw_int,0));
+NPOP(3);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(142) /* bvec-write-unsigned-16 */
+{
+   debug_bytecode_printf(( "bvec-write-unsigned-16 (3 args)\n" ));
+bvec_write_uint16(TOPT(obj,2),TOPT(raw_int,1),TOPT(raw_int,0));
+NPOP(3);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(143) /* bvec-read-signed-32 */
+{
+INT_32 result;
+   debug_bytecode_printf(( "bvec-read-signed-32 (2 args)\n" ));
+result = bvec_read_int32(TOPT(obj,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(144) /* bvec-write-signed-32 */
+{
+   debug_bytecode_printf(( "bvec-write-signed-32 (3 args)\n" ));
+bvec_write_int32(TOPT(obj,2),TOPT(raw_int,1),TOPT(raw_int,0));
+NPOP(3);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(145) /* bvec-read-signed-64 */
+{
+INT_64 result;
+   debug_bytecode_printf(( "bvec-read-signed-64 (2 args)\n" ));
+result = bvec_read_int64(TOPT(obj,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(raw_int_64,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(146) /* bvec-write-signed-64 */
+{
+   debug_bytecode_printf(( "bvec-write-signed-64 (3 args)\n" ));
+bvec_write_int64(TOPT(obj,2),TOPT(raw_int,1),TOPT(raw_int_64,0));
+NPOP(3);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(147) /* bvec-read-float-32 */
+{
+IEEE_32 result;
+   debug_bytecode_printf(( "bvec-read-float-32 (2 args)\n" ));
+result = bvec_read_ieee32(TOPT(obj,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(raw_float_32,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(148) /* bvec-write-float-32 */
+{
+   debug_bytecode_printf(( "bvec-write-float-32 (3 args)\n" ));
+bvec_write_ieee32(TOPT(obj,2),TOPT(raw_int,1),TOPT(raw_float_32,0));
+NPOP(3);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(149) /* bvec-read-float-64 */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "bvec-read-float-64 (2 args)\n" ));
+result = bvec_read_ieee64(TOPT(obj,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(150) /* bvec-write-float-64 */
+{
+   debug_bytecode_printf(( "bvec-write-float-64 (3 args)\n" ));
+bvec_write_ieee64(TOPT(obj,2),TOPT(raw_int,1),TOPT(raw_float,0));
+NPOP(3);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(151) /* long-int? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "long-int? (1 args)\n" ));
+result = (rs_bool)LONG_INT_P(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(152) /* long-int->raw-int-64 */
+{
+INT_64 result;
+   debug_bytecode_printf(( "long-int->raw-int-64 (1 args)\n" ));
+result = extract_int_64(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_int_64,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(153) /* raw-int-64->integer */
+{
+obj result;
+   debug_bytecode_printf(( "raw-int-64->integer (1 args)\n" ));
+result = int_64_compact(TOPT(raw_int_64,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(154) /* raw-int-64->raw-int */
+{
+INT_32 result;
+   debug_bytecode_printf(( "raw-int-64->raw-int (1 args)\n" ));
+result = int_64_to_int_32(TOPT(raw_int_64,0));
+NPOP(1);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(155) /* raw-int-64->long-int */
+{
+obj result;
+   debug_bytecode_printf(( "raw-int-64->long-int (1 args)\n" ));
+result = make_long_int(TOPT(raw_int_64,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(156) /* float-truncate-64 */
+{
+INT_64 result;
+   debug_bytecode_printf(( "float-truncate-64 (1 args)\n" ));
+result = float_to_int_64(TOPT(raw_float,0));
+NPOP(1);
+PUSHT(raw_int_64,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(157) /* fixnum->raw-int-64 */
+{
+INT_64 result;
+   debug_bytecode_printf(( "fixnum->raw-int-64 (1 args)\n" ));
+result = fx2int64(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_int_64,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(158) /* raw-int-64->float */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "raw-int-64->float (1 args)\n" ));
+result = int_64_to_float(TOPT(raw_int_64,0));
+NPOP(1);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(159) /* raw-int-64->raw-int */
+{
+INT_32 result;
+   debug_bytecode_printf(( "raw-int-64->raw-int (1 args)\n" ));
+result = int_64_to_int_32(TOPT(raw_int_64,0));
+NPOP(1);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(160) /* raw-int->raw-int-64 */
+{
+INT_64 result;
+   debug_bytecode_printf(( "raw-int->raw-int-64 (1 args)\n" ));
+result = int_32_to_int_64(TOPT(raw_int,0));
+NPOP(1);
+PUSHT(raw_int_64,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(161) /* raw-int-64=? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "raw-int-64=? (2 args)\n" ));
+result = (rs_bool)int_64_eq(TOPT(raw_int_64,1),TOPT(raw_int_64,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(162) /* raw-int-64>? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "raw-int-64>? (2 args)\n" ));
+result = (rs_bool)int_64_gt(TOPT(raw_int_64,1),TOPT(raw_int_64,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(163) /* raw-int-64>=? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "raw-int-64>=? (2 args)\n" ));
+result = (rs_bool)int_64_ge(TOPT(raw_int_64,1),TOPT(raw_int_64,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(164) /* raw-int-64<? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "raw-int-64<? (2 args)\n" ));
+result = (rs_bool)int_64_lt(TOPT(raw_int_64,1),TOPT(raw_int_64,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(165) /* raw-int-64<=? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "raw-int-64<=? (2 args)\n" ));
+result = (rs_bool)int_64_le(TOPT(raw_int_64,1),TOPT(raw_int_64,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(166) /* raw-int-64-zero? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "raw-int-64-zero? (1 args)\n" ));
+result = (rs_bool)int_64_zero_q(TOPT(raw_int_64,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(167) /* raw-int-64-small? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "raw-int-64-small? (1 args)\n" ));
+result = (rs_bool)int_64_fit_in_30_q(TOPT(raw_int_64,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(168) /* raw-int-64-negative? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "raw-int-64-negative? (1 args)\n" ));
+result = (rs_bool)int_64_neg_q(TOPT(raw_int_64,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(169) /* raw-int-64-neg */
+{
+INT_64 result;
+   debug_bytecode_printf(( "raw-int-64-neg (1 args)\n" ));
+result = int_64_neg(TOPT(raw_int_64,0));
+NPOP(1);
+PUSHT(raw_int_64,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(170) /* raw-int-64+ */
+{
+INT_64 result;
+   debug_bytecode_printf(( "raw-int-64+ (2 args)\n" ));
+result = int_64_add(TOPT(raw_int_64,1),TOPT(raw_int_64,0));
+NPOP(2);
+PUSHT(raw_int_64,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(171) /* raw-int-64- */
+{
+INT_64 result;
+   debug_bytecode_printf(( "raw-int-64- (2 args)\n" ));
+result = int_64_sub(TOPT(raw_int_64,1),TOPT(raw_int_64,0));
+NPOP(2);
+PUSHT(raw_int_64,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(172) /* raw-int-64* */
+{
+INT_64 result;
+   debug_bytecode_printf(( "raw-int-64* (2 args)\n" ));
+result = int_64_mul(TOPT(raw_int_64,1),TOPT(raw_int_64,0));
+NPOP(2);
+PUSHT(raw_int_64,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(173) /* raw-int-64-quotient */
+{
+INT_64 result;
+   debug_bytecode_printf(( "raw-int-64-quotient (2 args)\n" ));
+result = int_64_quotient(TOPT(raw_int_64,1),TOPT(raw_int_64,0));
+NPOP(2);
+PUSHT(raw_int_64,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(174) /* raw-int-64-remainder */
+{
+INT_64 result;
+   debug_bytecode_printf(( "raw-int-64-remainder (2 args)\n" ));
+result = int_64_remainder(TOPT(raw_int_64,1),TOPT(raw_int_64,0));
+NPOP(2);
+PUSHT(raw_int_64,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(175) /* raw-int-64-modulo */
+{
+INT_64 result;
+   debug_bytecode_printf(( "raw-int-64-modulo (2 args)\n" ));
+result = int_64_modulo(TOPT(raw_int_64,1),TOPT(raw_int_64,0));
+NPOP(2);
+PUSHT(raw_int_64,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(176) /* float-floor */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "float-floor (1 args)\n" ));
+result = floor(TOPT(raw_float,0));
+NPOP(1);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(177) /* float-ceiling */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "float-ceiling (1 args)\n" ));
+result = ceil(TOPT(raw_float,0));
+NPOP(1);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(178) /* float-truncate* */
+{
+INT_32 result;
+   debug_bytecode_printf(( "float-truncate* (1 args)\n" ));
+result = FLT_TRUNC(TOPT(raw_float,0));
+NPOP(1);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(179) /* float-truncate */
+{
+obj result;
+   debug_bytecode_printf(( "float-truncate (1 args)\n" ));
+result = float_truncate(TOPT(raw_float,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(180) /* raw-int->double-float */
+{
+obj result;
+   debug_bytecode_printf(( "raw-int->double-float (1 args)\n" ));
+result = make_float(TOPT(raw_int,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(181) /* raw-int->raw-float */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "raw-int->raw-float (1 args)\n" ));
+result = FX_FLOAT(TOPT(raw_int,0));
+NPOP(1);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(182) /* float-exp */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "float-exp (1 args)\n" ));
+result = exp(TOPT(raw_float,0));
+NPOP(1);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(183) /* float-log */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "float-log (1 args)\n" ));
+result = log(TOPT(raw_float,0));
+NPOP(1);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(184) /* float-sin */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "float-sin (1 args)\n" ));
+result = sin(TOPT(raw_float,0));
+NPOP(1);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(185) /* float-cos */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "float-cos (1 args)\n" ));
+result = cos(TOPT(raw_float,0));
+NPOP(1);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(186) /* float-tan */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "float-tan (1 args)\n" ));
+result = tan(TOPT(raw_float,0));
+NPOP(1);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(187) /* float-asin */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "float-asin (1 args)\n" ));
+result = asin(TOPT(raw_float,0));
+NPOP(1);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(188) /* float-acos */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "float-acos (1 args)\n" ));
+result = acos(TOPT(raw_float,0));
+NPOP(1);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(189) /* float-sqrt */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "float-sqrt (1 args)\n" ));
+result = sqrt(TOPT(raw_float,0));
+NPOP(1);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(190) /* float-atan1 */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "float-atan1 (1 args)\n" ));
+result = atan(TOPT(raw_float,0));
+NPOP(1);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(191) /* float-atan2 */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "float-atan2 (2 args)\n" ));
+result = atan2(TOPT(raw_float,1),TOPT(raw_float,0));
+NPOP(2);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(192) /* float-pow */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "float-pow (2 args)\n" ));
+result = pow(TOPT(raw_float,1),TOPT(raw_float,0));
+NPOP(2);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(193) /* base+ */
+{
+obj result;
+   debug_bytecode_printf(( "base+ (2 args)\n" ));
+result = basic_plus(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(194) /* base- */
+{
+obj result;
+   debug_bytecode_printf(( "base- (2 args)\n" ));
+result = basic_minus(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(195) /* base>? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "base>? (2 args)\n" ));
+result = (rs_bool)basic_gt_q(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(196) /* base>=? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "base>=? (2 args)\n" ));
+result = (rs_bool)basic_ge_q(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(197) /* base<? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "base<? (2 args)\n" ));
+result = (rs_bool)basic_lt_q(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(198) /* base<=? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "base<=? (2 args)\n" ));
+result = (rs_bool)basic_le_q(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(199) /* base=? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "base=? (2 args)\n" ));
+result = (rs_bool)basic_eq_q(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(200) /* os-mkdir */
+{
+   debug_bytecode_printf(( "os-mkdir (1 args)\n" ));
+os_mkdir(TOPT(raw_str,0));
+NPOP(1);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(201) /* os-set-sigenable */
+{
+rs_bool result;
+   debug_bytecode_printf(( "os-set-sigenable (1 args)\n" ));
+result = (rs_bool)os_set_sigenable(TOPT(raw_bool,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(202) /* make-dequeue */
+{
+obj result;
+   debug_bytecode_printf(( "make-dequeue (0 args)\n" ));
+result = make_dequeue();
+NPOP(0);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(203) /* dequeue-empty? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "dequeue-empty? (1 args)\n" ));
+result = (rs_bool)dequeue_empty(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(204) /* dequeue-count */
+{
+obj result;
+   debug_bytecode_printf(( "dequeue-count (1 args)\n" ));
+result = dequeue_count(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(205) /* dequeue-state */
+{
+obj result;
+   debug_bytecode_printf(( "dequeue-state (1 args)\n" ));
+result = dequeue_state(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(206) /* dequeue-push-front! */
+{
+   debug_bytecode_printf(( "dequeue-push-front! (2 args)\n" ));
+dequeue_push_front(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(207) /* dequeue-push-back! */
+{
+   debug_bytecode_printf(( "dequeue-push-back! (2 args)\n" ));
+dequeue_push_back(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(208) /* dequeue-pop-front! */
+{
+obj result;
+   debug_bytecode_printf(( "dequeue-pop-front! (1 args)\n" ));
+result = dequeue_pop_front(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(209) /* dequeue-pop-back! */
+{
+obj result;
+   debug_bytecode_printf(( "dequeue-pop-back! (1 args)\n" ));
+result = dequeue_pop_back(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(210) /* dequeue-ref */
+{
+obj result;
+   debug_bytecode_printf(( "dequeue-ref (2 args)\n" ));
+result = dequeue_ref(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(211) /* dequeue-set! */
+{
+obj result;
+   debug_bytecode_printf(( "dequeue-set! (3 args)\n" ));
+result = dequeue_set(TOPT(obj,2),TOPT(obj,1),TOPT(obj,0));
+NPOP(3);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(212) /* set-sigqueue-size! */
+{
+   debug_bytecode_printf(( "set-sigqueue-size! (1 args)\n" ));
+set_sigqueue_size(TOPT(raw_int,0));
+NPOP(1);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(213) /* base* */
+{
+obj result;
+   debug_bytecode_printf(( "base* (2 args)\n" ));
+result = basic_mul(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(214) /* base/ */
+{
+obj result;
+   debug_bytecode_printf(( "base/ (2 args)\n" ));
+result = basic_div(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(215) /* base-quotient */
+{
+obj result;
+   debug_bytecode_printf(( "base-quotient (2 args)\n" ));
+result = basic_quotient(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(216) /* base-remainder */
+{
+obj result;
+   debug_bytecode_printf(( "base-remainder (2 args)\n" ));
+result = basic_remainder(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(217) /* base-modulo */
+{
+obj result;
+   debug_bytecode_printf(( "base-modulo (2 args)\n" ));
+result = basic_modulo(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(218) /* get-thread-state-reg */
+{
+obj result;
+   debug_bytecode_printf(( "get-thread-state-reg (0 args)\n" ));
+result = GET_THREAD_STATE_REG();
+NPOP(0);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(219) /* set-thread-state-reg! */
+{
+   debug_bytecode_printf(( "set-thread-state-reg! (1 args)\n" ));
+SET_THREAD_STATE_REG(TOPT(obj,0));
+NPOP(1);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(220) /* check-ptr */
+{
+obj result;
+   debug_bytecode_printf(( "check-ptr (1 args)\n" ));
+result = CHECK_PTR(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(221) /* check-immob */
+{
+obj result;
+   debug_bytecode_printf(( "check-immob (1 args)\n" ));
+result = CHECK_IMMOB(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(222) /* check-fixnum */
+{
+obj result;
+   debug_bytecode_printf(( "check-fixnum (1 args)\n" ));
+result = CHECK_FIXNUM(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(223) /* check-gvec */
+{
+obj result;
+   debug_bytecode_printf(( "check-gvec (1 args)\n" ));
+result = CHECK_GVEC(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(224) /* check-bvec */
+{
+obj result;
+   debug_bytecode_printf(( "check-bvec (1 args)\n" ));
+result = CHECK_BVEC(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(225) /* check-pair */
+{
+obj result;
+   debug_bytecode_printf(( "check-pair (1 args)\n" ));
+result = CHECK_PAIR(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(226) /* check-symbol */
+{
+obj result;
+   debug_bytecode_printf(( "check-symbol (1 args)\n" ));
+result = CHECK_SYMBOL(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(227) /* check-vector */
+{
+obj result;
+   debug_bytecode_printf(( "check-vector (1 args)\n" ));
+result = CHECK_VECTOR(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(228) /* check-function */
+{
+obj result;
+   debug_bytecode_printf(( "check-function (1 args)\n" ));
+result = CHECK_FUNCTION(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(229) /* check-class */
+{
+obj result;
+   debug_bytecode_printf(( "check-class (1 args)\n" ));
+result = CHECK_CLASS(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(230) /* check-string */
+{
+obj result;
+   debug_bytecode_printf(( "check-string (1 args)\n" ));
+result = CHECK_STRING(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(231) /* check-double-float */
+{
+obj result;
+   debug_bytecode_printf(( "check-double-float (1 args)\n" ));
+result = CHECK_DOUBLE_FLOAT(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(232) /* check-long-int */
+{
+obj result;
+   debug_bytecode_printf(( "check-long-int (1 args)\n" ));
+result = CHECK_LONG_INT(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(233) /* check-ascii-char */
+{
+obj result;
+   debug_bytecode_printf(( "check-ascii-char (1 args)\n" ));
+result = CHECK_ASCII_CHAR(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(234) /* check-unicode-char */
+{
+obj result;
+   debug_bytecode_printf(( "check-unicode-char (1 args)\n" ));
+result = CHECK_UNICODE_CHAR(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(235) /* check-boolean */
+{
+obj result;
+   debug_bytecode_printf(( "check-boolean (1 args)\n" ));
+result = CHECK_BOOLEAN(TOPT(obj,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(236) /* check-instance */
+{
+obj result;
+   debug_bytecode_printf(( "check-instance (2 args)\n" ));
+result = CHECK_INSTANCE(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(237) /* %profile-start */
+{
+   debug_bytecode_printf(( "%%profile-start (3 args)\n" ));
+rsprof_start(TOPT(raw_str,2),TOPT(raw_bool,1),TOPT(raw_bool,0));
+NPOP(3);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(238) /* %profile-stop */
+{
+rs_bool result;
+   debug_bytecode_printf(( "%%profile-stop (0 args)\n" ));
+result = (rs_bool)rsprof_stop();
+NPOP(0);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(239) /* %profile-objects */
+{
+   debug_bytecode_printf(( "%%profile-objects (2 args)\n" ));
+rsprof_collect_objects(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(240) /* %profile-append-defn */
+{
+   debug_bytecode_printf(( "%%profile-append-defn (2 args)\n" ));
+rsprof_app_defn_rec(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(241) /* subvector* */
+{
+obj result;
+   debug_bytecode_printf(( "subvector* (3 args)\n" ));
+result = subvector(TOPT(obj,2),TOPT(obj,1),TOPT(obj,0));
+NPOP(3);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(242) /* errno-message */
+{
+obj result;
+   debug_bytecode_printf(( "errno-message (1 args)\n" ));
+result = os_errormsg(TOPT(raw_int,0));
+NPOP(1);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(243) /* procedure? */
+{
+rs_bool result;
+   debug_bytecode_printf(( "procedure? (1 args)\n" ));
+result = (rs_bool)FUNCTION_P(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_bool,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(244) /* get-bytecode-correlation */
+{
+obj result;
+   debug_bytecode_printf(( "get-bytecode-correlation (0 args)\n" ));
+result = get_bytecode_correlation();
+NPOP(0);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(245) /* make-exception-stack */
+{
+obj result;
+   debug_bytecode_printf(( "make-exception-stack (0 args)\n" ));
+result = make_exception_stack();
+NPOP(0);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(246) /* as-raw-int */
+{
+INT_32 result;
+   debug_bytecode_printf(( "as-raw-int (1 args)\n" ));
+result = basic_raw_int(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(247) /* as-raw-float */
+{
+IEEE_64 result;
+   debug_bytecode_printf(( "as-raw-float (1 args)\n" ));
+result = basic_raw_float(TOPT(obj,0));
+NPOP(1);
+PUSHT(raw_float,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(248) /* dequeue-memq */
+{
+obj result;
+   debug_bytecode_printf(( "dequeue-memq (2 args)\n" ));
+result = dequeue_memq(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(249) /* dequeue-delq! */
+{
+INT_32 result;
+   debug_bytecode_printf(( "dequeue-delq! (2 args)\n" ));
+result = dequeue_delq(TOPT(obj,1),TOPT(obj,0));
+NPOP(2);
+PUSHT(raw_int,result);
+BCI_BREAK;
+
+}
+BCI_PRIMOP_CASE(250) /* base->string */
+{
+obj result;
+   debug_bytecode_printf(( "base->string (2 args)\n" ));
+result = basic_num_to_string_obj(TOPT(obj,1),TOPT(raw_int,0));
+NPOP(2);
+PUSHT(obj,result);
+BCI_BREAK;
+
+}
+
+}

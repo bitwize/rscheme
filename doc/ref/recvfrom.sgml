@@ -1,0 +1,86 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}recv-from{/RefName}
+  {RefPurpose}Receive a packet.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/recv-from/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/sock/ {Parameter/buf/ {Parameter/offset/ {Parameter/len/ {Parameter/peek?/ {Parameter/out-of-band?/ {Parameter/peer-class/{/ParamDef}{ParamDef role="returns"}
+{Parameter}len{/Parameter} {Parameter}peer{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}sock{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}buf{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}offset{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}len{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}peek?{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<boolean>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}out-of-band?{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<boolean>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}peer-class{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<<class>>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}len{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}peer{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<sockaddr>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Receive a packet from a datagram port.  
+Returns #f instead if an error occurred.{/para}
+{/RefSect1}
+{/RefEntry}

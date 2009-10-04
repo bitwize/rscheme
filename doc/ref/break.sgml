@@ -1,0 +1,30 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}break{/RefName}
+  {RefPurpose}Break on function entry.{/RefPurpose}
+  {RefClass role="Type"}replcmd{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/unquote/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/function/{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+The {Phrase Role="var"}break{/Phrase} debugging command is similar to the {Phrase Role="var"}trace{/Phrase}
+command, except instead of printing out the function arguments when
+it is called, it creates a break-level read-eval-print loop,
+{UserInput}BRK{/UserInput}.{/para}
+{para}
+Within that loop, the debug command {Phrase Role="var"}return{/Phrase} may be used to
+cause the break'ed function call to return a specific value.
+The {Phrase Role="var"}continue{/Phrase} command may also be used to resume execution of
+the function.{/para}
+{para}
+The breakpoint can be removed using the {Phrase Role="var"}no-break{/Phrase} command.{/para}
+{/RefSect1}
+{/RefEntry}

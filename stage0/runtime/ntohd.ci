@@ -1,0 +1,54 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/runtime/ntohd.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.3
+ * File mod date:    1997-11-29 23:10:53
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ *------------------------------------------------------------------------*/
+
+IEEE_32 htonf( IEEE_32 f )
+{
+union { IEEE_32 f; UINT_32 i; } X;
+
+    X.f = f;
+    X.i = HOST_TO_BIG_ENDIAN_32(X.i);
+    return X.f;
+}
+
+IEEE_32 ntohf( IEEE_32 f )
+{
+union { IEEE_32 f; UINT_32 i; } X;
+
+    X.f = f;
+    X.i = BIG_ENDIAN_TO_HOST_32(X.i);
+    return X.f;
+}
+
+IEEE_64 htond( IEEE_64 d )
+{
+union { IEEE_64 d; UINT_32 i[2]; } X;
+UINT_32 temp;
+
+    X.d = d;
+    temp = HOST_TO_BIG_ENDIAN_32(X.i[0]);
+    X.i[0] = HOST_TO_BIG_ENDIAN_32(X.i[1]);
+    X.i[1] = temp;
+    return X.d;
+}
+
+IEEE_64 ntohd( IEEE_64 d )
+{
+union { IEEE_64 d; UINT_32 i[2]; } X;
+UINT_32 temp;
+
+    X.d = d;
+    temp = BIG_ENDIAN_TO_HOST_32(X.i[0]);
+    X.i[0] = BIG_ENDIAN_TO_HOST_32(X.i[1]);
+    X.i[1] = temp;
+    return X.d;
+}

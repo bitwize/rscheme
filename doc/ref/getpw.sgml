@@ -1,0 +1,54 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}getpw{/RefName}
+  {RefPurpose}Get the password entry for the given entity.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/getpw/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/who/{/ParamDef}{ParamDef role="returns"}
+{Parameter}pwent{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}who{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string-or-fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}pwent{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<vector>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Returns a vector describing the passwd entry for the given
+user.  {Parameter}who{/Parameter} may be either a string, in which case it
+is interpreted as a login name, or an integer, in which case
+it is interpreted as a user id.{/para}
+{para}
+Returns {UserInput}#f{/UserInput} if the lookup fails.{/para}
+{para}
+The returned vector has 7 elements:  The user login name,
+the user id, the user's primary group id, their home directory,
+their shell, their encrypted passwd, and their GECOS data.  Some
+data may not be available, in which case {UserInput}#f{/UserInput} is present in that
+slot.{/para}
+{/RefSect1}
+{/RefEntry}

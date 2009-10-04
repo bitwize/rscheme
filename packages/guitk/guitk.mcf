@@ -1,0 +1,21 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | %Z%1.1 %W% %G% 17:39:20
+ |
+ | Purpose:	Tcl/Tk Interface
+ | 
+ |------------------------------------------------------------------------|
+ | Notes:
+ `------------------------------------------------------------------------|#
+
+((guitk
+	"$dist/guitk"    ;; what directory to put resulting files in
+	"$dist/modules")   ;; what directory to put image file in
+ (require-c-header "<tcl.h>")
+ (require-c-header "<tk.h>")
+ (c-files "callback")
+
+ (open primops *scheme* low-scheme objsys iolib mathlib tables high-scheme)
+ (open corelib)
+
+ (files tclglue)
+ (export :local))

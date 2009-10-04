@@ -1,0 +1,65 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}week->date{/RefName}
+  {RefPurpose}Compute the date for a given week and day of week.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/week->date/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/week/ {Parameter/day-of-week/{/ParamDef}{ParamDef role="returns"}
+{Parameter}date{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}week{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}day-of-week{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}date{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<date>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function returns the date corresponding to the
+given day of the week.{/para}
+{para}
+The following example shows how one might use {Phrase Role="var"}date->week{/Phrase}
+and {Phrase Role="var"}week->date{/Phrase} to find the Sunday before a given
+date.{/para}
+{InformalExample}
+{Para}
+{UserInput Role="ToEval"}(define td (ymd->date 1997 9 13)){/UserInput}
+{Para}
+{UserInput Role="ToEval"}(date->week td){/UserInput}
+{ComputerOutput Role="EvalsTo"}104182{/ComputerOutput}
+{ComputerOutput Role="EvalsTo"}6{/ComputerOutput}
+{Para}
+{UserInput Role="ToEval"}(week->date 104182 0){/UserInput}
+{ComputerOutput Role="EvalsTo"}1997.09.07{/ComputerOutput}
+{/InformalExample}
+{/RefSect1}
+{/RefEntry}

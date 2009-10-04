@@ -1,0 +1,46 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}thread-join{/RefName}
+  {RefPurpose}Synchronize with a thread.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/thread-join/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/thread/{/ParamDef}{ParamDef role="returns"}
+{Parameter}result{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}thread{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<thread>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}result{/Term}
+    {ListItem}{para}
+Instances of {ClassName/<object>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This procedure waits for the given {Parameter}thread{/Parameter} to complete,
+and then returns the values returned by it.  If the target thread
+exits without generating results (ie, by signalling an exception),
+then this procedure signals a {ClassName/<thread-died>/ exception.{/para}
+{/RefSect1}
+{/RefEntry}

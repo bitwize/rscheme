@@ -1,0 +1,126 @@
+
+#
+default:: lssctl
+
+RSCHEME_DIR=@rs_prefix@
+
+INSTALL=@rs_prefix@
+INSTALL_BIN=$(INSTALL)/bin
+INSTALL_LIB=$(INSTALL)/lib
+INSTALL_INCLUDE=$(INSTALL)/include/rscheme/pkgs/lss
+
+CC=@CC@
+CFLAGS=-g -I- -I. -I$(RSCHEME_DIR)/include
+
+#
+#  `liblss.a' library
+#
+
+.SUFFIXES: .scm
+CFILES=lssv3.c lssv2.c freemap.c lssapi.c hash.c @zipper_files@
+OFILES=$(CFILES:.c=.o)
+SCMFILES=classes.scm gc.scm inspect.scm
+SCFILES=$(SCMFILES:.scm=.c)
+PRODUCT=liblss.a
+
+AR=ar rcu
+RANLIB=ranlib
+
+$(PRODUCT): $(OFILES)
+	$(AR) $(PRODUCT) $(OFILES)
+	$(RANLIB) $(PRODUCT)
+
+#
+#  `lssctl' executable
+#
+
+CTL_CFILES=lssctl.c lssdump.c
+CTL_OFILES=$(CTL_CFILES:.c=.o) timebase/timebase.o
+
+lssctl: $(CTL_OFILES) $(PRODUCT)
+	$(CC) $(CTL_OFILES) -o lssctl -L. -llss @LIBS@
+
+timebase/timebase.o:
+	cd timebase ; $(MAKE) timebase.o
+
+INSTALL_PROG=cp -pf
+
+INSTALLED_FILES=$(INSTALL_BIN) \
+		$(INSTALL_LIB) \
+		$(INSTALL_INCLUDE) \
+		$(INSTALL_BIN)/lssctl \
+		$(INSTALL_LIB)/$(PRODUCT) \
+		$(INSTALL_INCLUDE)/lss.h \
+		$(INSTALL_INCLUDE)/lsserrno.h \
+		$(INSTALL_INCLUDE)/lsszips.h
+
+# make sure the directories exist
+
+$(INSTALL_BIN):
+	mkdir -p $(INSTALL_BIN)
+
+$(INSTALL_LIB):
+	mkdir -p $(INSTALL_LIB)
+
+$(INSTALL_INCLUDE):
+	mkdir -p $(INSTALL_INCLUDE)
+
+install: $(INSTALLED_FILES)
+
+$(INSTALL_INCLUDE)/lss.h: rscheme/pkgs/lss/lss.h
+	$(INSTALL_PROG) rscheme/pkgs/lss/lss.h $(INSTALL_INCLUDE)
+
+$(INSTALL_INCLUDE)/lsserrno.h: rscheme/pkgs/lss/lsserrno.h
+	$(INSTALL_PROG) rscheme/pkgs/lss/lsserrno.h $(INSTALL_INCLUDE)
+
+$(INSTALL_INCLUDE)/lsszips.h: rscheme/pkgs/lss/lsszips.h
+	$(INSTALL_PROG) rscheme/pkgs/lss/lsszips.h $(INSTALL_INCLUDE)
+
+$(INSTALL_LIB)/$(PRODUCT): $(PRODUCT)
+	$(INSTALL_PROG) $(PRODUCT) $(INSTALL_LIB)
+
+$(INSTALL_BIN)/lssctl: lssctl
+	$(INSTALL_PROG) lssctl $(INSTALL_BIN)
+
+uninstall::
+	rm -f $(INSTALL_BIN)/lssctl
+	rm -f $(INSTALL_LIB)/liblss.a
+	rm -rf $(INSTALL_INCLUDE)
+
+depend::
+	$(CC) -MM $(CFLAGS) $(CFILES) $(CTL_CFILES)
+
+#
+#  --- the RScheme side of things ---
+#
+
+M_PROD=rs_db_lss.o
+B=rs_db_lss
+M_MAKE=$B.mak
+M_OUT=$(M_MAKE) inspect.c gc.c classes.c $B_l.c $B_r.h $B_p.h $B.h $B.mif $B.mx $B.doc
+M_TEMP=$(M_OUT:.c=.o)
+
+$(M_OUT): glue.scm classes.scm module.scm
+	$(RSCHEME_DIR)/bin/rsc -p --makefile=$(M_MAKE) module.scm
+
+$(M_PROD): $(M_OUT)
+# need to be able to do this w/o having installed base code
+	$(MAKE) -f $(M_MAKE) INSTALL_DIR=$(INSTALL)
+
+scheme:: $(M_MAKE)
+make-scheme:: $(M_PROD)
+
+install-scheme::
+	$(MAKE) -f $(M_MAKE) INSTALL_DIR=$(INSTALL) install
+
+all:: $(PRODUCT) install scheme make-scheme install-scheme
+
+#
+#  cleanup
+#
+
+clean::
+	rm -f $(OFILES) $(SCFILES) $(PRODUCT)
+	rm -f lssctl $(CTL_OFILES)
+	cd timebase ; $(MAKE) clean
+	rm -f $(M_OUT) $(M_PROD) $(M_TEMP)

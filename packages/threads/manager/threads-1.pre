@@ -1,0 +1,3 @@
+,(use rs.sys.threads.manager)
+'((tag threads-1)
+  (title "Threads Test Suite #1"))

@@ -1,0 +1,85 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/cfg/gcadapt/freelist/gcclient2.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.3
+ * File mod date:    1997-11-29 23:10:52
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ *------------------------------------------------------------------------*/
+
+/*  */
+
+#ifndef _CI_GCCLIENT2
+#define _CI_GCCLIENT2
+
+#include <rscheme/linktype.h>
+#include <rscheme/regs.h>
+#include <rscheme/smemory.h>
+#include <rscheme/vinsns.h>
+
+#ifdef gcserver_h
+static inline void gc_weak_pointer( lang_weak_ptr_addr x )
+{
+    fprintf( stderr, "weak pointers not supported in RTGC\n" );
+    abort();
+}
+#endif
+
+CI_DECL void find_pointers( gc_obj_addr client_object )
+{
+obj item, the_class, type;
+obj *p, *limit;
+extern rs_bool CLASS_P( obj );
+
+    item = GCPTR_TO_PTR(client_object);
+    the_class = CLASSOF_PTR(item);
+    assert( CLASS_P(the_class) );
+
+    gc_next_object(&(PTR_TO_HDRPTR(item)->pob_class),
+		   PTR_TO_GCPTR(the_class) );
+    type = gvec_read( the_class, SLOT(1) );
+
+    assert( OBJ_ISA_FIXNUM(type) );
+
+    if (EQ(type,ZERO))
+    {
+        p = (obj *)PTR_TO_DATAPTR(item);
+	limit = (obj *)((char *)p + SIZEOF_PTR(item));
+	while (p<limit)
+	{
+	    if (OBJ_ISA_PTR(*p))
+	    {
+		gc_next_object(p, PTR_TO_GCPTR(*p) );
+	    }
+	    p++;
+	}
+    }
+    else if (EQ(type,int2fx(3))) /* a slot[0]-is-weak object */
+    {
+	printf( "weak pointers in: %#x\n", VAL(item) );
+        p = (obj *)PTR_TO_DATAPTR(item);
+	limit = (obj *)((char *)p + SIZEOF_PTR(item));
+	if (p < limit)
+	{
+	    gc_weak_pointer( p++ );
+	}
+	while (p<limit)
+	{
+	    if (OBJ_ISA_PTR(*p))
+	    {
+		gc_next_object(p, PTR_TO_GCPTR(*p) );
+	    }
+	    p++;
+	}
+    }
+    else
+    {
+	assert( !EQ(type,ZERO) );	/* better not be an IMMOB! */
+    }
+}
+
+#endif /* _CI_GCCLIENT2 */

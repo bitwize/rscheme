@@ -1,0 +1,44 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}stat-id->hash{/RefName}
+  {RefPurpose}Compute hash number for stat buffer.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/stat-id->hash/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/b/{/ParamDef}{ParamDef role="returns"}
+{Parameter}hash{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}b{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<stat-buf>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}hash{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Computes a hash number for a stat buffer based on the identity
+of the stat'd file (ie, using the device number and inode number).{/para}
+{/RefSect1}
+{/RefEntry}

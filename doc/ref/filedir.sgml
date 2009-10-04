@@ -1,0 +1,44 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}file-directory{/RefName}
+  {RefPurpose}Accesses the directory part of a pathname{/RefPurpose}
+  {RefClass role="Type"}generic{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/file-directory/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/pathname/{/ParamDef}{ParamDef role="returns"}
+{Parameter}dirname{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}pathname{/Term}
+    {ListItem}{para}
+A pathname object (an instance of {ClassName/<file-name>/){/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}dirname{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<directory-name>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+The methods on this generic function extract the directory
+portion of pathname objects.{/para}
+{/RefSect1}
+{/RefEntry}

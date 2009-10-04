@@ -1,0 +1,174 @@
+/* FreeBSD memory management support.  -*- C -*-
+   Written by Ville-Pertti Keinonen.
+
+   Based in part on mmglue.lnx and mmglue.sun.  */
+
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <signal.h>
+
+#ifdef PLATFORM_DARWIN
+#include <ucontext.h>
+#endif
+
+/* We need to know the page size so we can reduce the alignment
+   overhead in memory allocations.  */
+#include <machine/param.h>
+
+
+#ifdef UNIT_TEST
+#include <stdio.h>
+#include <sys/time.h>
+#include "mmglue.h"
+static int prot[3] = { PROT_NONE, PROT_READ, PROT_READ|PROT_WRITE };
+#endif
+
+#if PAGE_SIZE >= MM_PAGE_SIZE
+
+/* Alignment to system pages is good enough.  */
+#define MAX_ALIGN 0
+#define mmalign(a) (a)
+
+#else /* PAGE_SIZE < MM_PAGE_SIZE */
+
+/* We need to make sure the allocation is aligned according to the
+   internal page representation.  */
+#define mmalign(a) (((unsigned int)(a) + MM_PAGE_SIZE - 1) & ~MM_PAGE_MASK)
+
+/* If the size of the allocation is aligned, the maximum number of
+   extra bytes needed for aligning the position of the allocation is
+   the difference between page sizes.  */
+#define MAX_ALIGN (MM_PAGE_SIZE - PAGE_SIZE)
+
+#endif /* PAGE_SIZE < MM_PAGE_SIZE */
+
+static void raw_mm_free( void *base, size_t bytes )
+{
+  munmap( base, bytes );
+}
+
+static void *
+raw_mm_alloc (size_t bytes, enum mm_mode mode)
+{
+  char *p;
+
+  p = mmap (NULL, mmalign (bytes) + MAX_ALIGN, prot[mode],
+	    MAP_ANON | MAP_PRIVATE, -1, 0);
+  return p != (char *)0xffffffff ? (void *)mmalign (p) : NULL;
+}
+
+/* Just make sure somebody doesn't just try to use this on another
+   machine.  Faulting pseudo-random pages would be nasty.  */
+#if !defined(i386) && !defined(__ppc__)
+#error unsupported cpu
+#endif
+
+/* Assume the sigframe in i386/frame.h, which looks like:
+
+   struct sigframe
+     {
+       int sf_signum;
+       int sf_code;
+       struct sigcontext *sf_scp;
+       char *sf_addr;
+       sig_t sf_handler;
+       struct sigcontext sf_sc;
+     };
+
+   As long as our arguments are passed using this structure, the
+   handler should work.  If this changes (eg. signals start using
+   library stubs to call the actual handlers), there's still the other
+   method, ie. *((void **)scp - 2).  */
+
+static void
+handler (int signum, int code,
+	 struct sigcontext *scp, void *addr)
+{
+#ifdef PLATFORM_DARWIN
+  ucontext_t *uc = (ucontext_t *)scp;
+  mmc_access_failed( (void *)uc->uc_mcontext->es.dar );
+#else
+  mmc_access_failed( addr );
+#endif
+}
+
+void
+init_mm (void)
+{
+  struct sigaction sa;
+
+  sa.sa_handler = (void *)handler;
+  sigemptyset( &sa.sa_mask );
+  sa.sa_flags = SA_RESTART;
+
+#ifdef PLATFORM_DARWIN
+  sa.sa_flags |= SA_SIGINFO | SA_ONSTACK;
+#endif
+
+  sigaction( SIGSEGV, &sa, NULL );
+  sigaction( SIGBUS, &sa, NULL );           /* nb, Darwin/PPC sends SIGBUS */
+}
+
+#ifdef UNIT_TEST
+
+void *p_base;
+
+void mmc_access_failed( void *addr )
+{
+  printf( "FAULT at %p (delta = %d)\n", addr, (char *)addr - (char *)p_base );
+  mprotect( p_base, 10*PAGE_SIZE, PROT_READ|PROT_WRITE );
+}
+
+double dtime( struct timeval a, struct timeval b )
+{
+  return (a.tv_sec - b.tv_sec) + 1.0e-6 * (a.tv_usec - b.tv_usec);
+}
+
+int main( int argc, char *const *argv )
+{
+  void *p;
+  unsigned *w;
+  struct timeval t0, t1, t2, t3, t4, t5, t6;
+
+  init_mm();
+
+  gettimeofday( &t0, NULL );
+
+  p = raw_mm_alloc( 10*PAGE_SIZE, 0 );
+  p_base = p;
+  printf( "p => %p\n", p );
+  w = (unsigned *)p;
+
+  gettimeofday( &t1, NULL );
+  mprotect( p, 10*PAGE_SIZE, 0 );
+
+  printf( "ready?\n" );
+  gettimeofday( &t2, NULL );
+
+  w[100] = 132;
+  gettimeofday( &t3, NULL );
+
+  mprotect( p, 10*PAGE_SIZE, 0 );
+  w[100] = 456;
+  gettimeofday( &t4, NULL );
+
+  mprotect( p, 10*PAGE_SIZE, 0 );
+  w[100] = 456;
+  gettimeofday( &t5, NULL );
+
+  mprotect( p, 10*PAGE_SIZE, 0 );
+  w[100] = 456;
+  gettimeofday( &t6, NULL );
+
+  printf( "all's well that ends well\n" );
+  printf( "times %g %g %g %g %g %g\n",
+          dtime(t1,t0),
+          dtime(t2,t1),
+          dtime(t3,t2),
+          dtime(t4,t3),
+          dtime(t5,t4),
+          dtime(t6,t5) );
+  return 0;
+}
+
+#endif

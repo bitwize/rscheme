@@ -1,0 +1,42 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | %Z%1.11 %W% %G% 10:39:36
+ |
+ | Purpose:	Unix Module descriptor file
+ | 
+ |------------------------------------------------------------------------|
+ | Notes:
+ |	This describes the so-called unix module (unixm)
+ `------------------------------------------------------------------------|#
+
+((unixm 
+	"$dist/unixm"      ;; what directory to put resulting files in
+	"$dist/modules")   ;; what directory to put image file in
+  (require-c-header "<string.h>")
+  (require-c-header "<stdlib.h>")
+  (require-c-header "<math.h>")
+  (require-c-header "<dirent.h>")
+  (require-c-header "<unistd.h>")
+  (require-c-header "<sys/stat.h>")
+  (require-c-header "<sys/wait.h>")
+  (require-c-header "<sys/resource.h>")
+  
+  ;; 
+  (require-c-header "<sys/types.h>")
+  
+  (require-c-header "<errno.h>")
+  (require-c-header "<unistd.h>")
+  (require-c-header "<fcntl.h>")
+  (require-c-header "<pwd.h>")
+  (require-c-header "<grp.h>")
+  (require-c-header "<signal.h>")
+  
+  (c-files "misc")
+  (h-files "misc")
+
+  (open primops *scheme* low-scheme objsys iolib mathlib tables high-scheme)
+  (open paths mlink start syscalls)
+  (open corelib)
+  
+  (files safeglue syscall dpopen)
+  (files env)
+  (export :local))

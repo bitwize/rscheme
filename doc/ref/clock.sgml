@@ -1,0 +1,32 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}clock{/RefName}
+  {RefPurpose}Return the process clock.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/clock/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+{/ParamDef}{ParamDef role="returns"}
+{Parameter}t{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}t{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<interval>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Return the time since process start as by clock().{/para}
+{/RefSect1}
+{/RefEntry}

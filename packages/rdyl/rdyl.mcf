@@ -1,0 +1,33 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:	packages/rdyl/rdyl.mcf
+ | Version:     1.1
+ | Date:        %G% 16:05:17
+ | Build:       v0.7.3.4-b7u, 2007-05-30
+ |
+ | Purpose:     Module file for the RDyl package
+ |------------------------------------------------------------------------|
+ | Notes:
+ |
+ `------------------------------------------------------------------------|#
+
+((rdyl
+	"$dist/rdyl"       ;; what directory to put resulting files in
+	"$dist/modules")   ;; what directory to put image file in
+ ;;
+ ;; header files that our glue code needs
+ ;;
+ (require-c-header "<rscheme/hashfn.h>")
+
+ (open primops *scheme* low-scheme objsys iolib mathlib tables high-scheme)
+ (open paths mlink start compiler repl editinp pprint)
+ (open corelib)
+
+ (other-files "sysio.ci")
+ (c-files "lex")
+ (c-files "rdyltab")
+ (h-files "rdyltab")
+
+ (files yaccglue)
+ (files cmdloop xlate xtop smoothlib)
+
+ (export :local))

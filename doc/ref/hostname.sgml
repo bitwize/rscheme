@@ -1,0 +1,32 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}hostname{/RefName}
+  {RefPurpose}Determine the hostname of the current machine.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/hostname/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+{/ParamDef}{ParamDef role="returns"}
+{Parameter}hostname{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}hostname{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Returns the hostname of the current machine (unix gethostname()).{/para}
+{/RefSect1}
+{/RefEntry}

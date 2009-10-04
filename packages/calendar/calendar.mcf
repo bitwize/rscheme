@@ -1,0 +1,63 @@
+#|------------------------------------------------------------------------|
+ | %Z%1.8 %W% %G% 08:40:13
+ |
+ | Purpose:	Calendar Module descriptor file
+ |
+ |------------------------------------------------------------------------|
+ | Notes:
+ |	This module can take advantaged of patch-time fixups,
+ |	and approximates such using a tl variable
+ `------------------------------------------------------------------------|#
+
+((calendar 
+	"$dist/calendar" 
+	"$dist/modules")
+
+ (open mathlib low-scheme iolib primops corelib *scheme* objsys)
+ (open high-scheme regex tables syscalls)
+
+ (files yearpart math monthq dateobj weekdays)
+ (files readtime)
+
+ (export *date-patterns*
+         *time-patterns*
+         *timezones*
+         <date>
+         add-time-pattern!
+         ;;
+         date+                  ;; <date> <#days> --> <date>
+         date-                  ;; <date> <date> --> <#days>
+         date<=? date<? date=? date>=? date>?
+         ;;
+         short-month-name       ;; 1 2 ... --> "Jan" "Feb" ...
+         short-weekday-name     ;; monday|0 tuesday|1 ... --> "Mon" "Tue" ...
+         long-month-name        ;; 1 2 ... --> "January" "February" ...
+         long-weekday-name      ;; sunday|0 monday|1 ... --> "Sunday" "Monday"
+         ordinal-weekday
+         last-day-of-month
+         ;;
+         date->time             ;; (date secs-since-midnight) --> <time>
+         date->week             ;; <date> --> week day-of-week (0=Sunday)
+         week->date             ;; (week day-of-week) --> <date>
+         date->weekday          ;; <date> --> <symbol> (sunday monday ...)
+         ;;
+         date->string           ;; convert a date to string format
+         string->date           ;; parse a date
+         string->month          ;; parse a month
+         string->time           ;; parse a time
+         string->timezone       ;; parse a time zone
+         ;;
+         today                  ;; returns today's <date> (in local time)
+         ;;
+         date->day
+         day->date
+         ;;
+         date->ymd
+         ymd->date)
+
+ ;(export :local)
+
+; (export date->day day->date date+ date- date->weekday date->week)
+; (export string->date date->string)
+
+)

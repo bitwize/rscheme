@@ -1,0 +1,44 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}get-env{/RefName}
+  {RefPurpose}Get an environment variable.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/get-env/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/key/{/ParamDef}{ParamDef role="returns"}
+{Parameter}val{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}key{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}val{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string-or-false>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Get the value of an environment variable.  Returns {UserInput}#f{/UserInput} if the variable
+is not defined.{/para}
+{/RefSect1}
+{/RefEntry}

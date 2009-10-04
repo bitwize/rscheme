@@ -1,0 +1,20 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}no-break{/RefName}
+  {RefPurpose}Remove tracing or breakpoint on a function.{/RefPurpose}
+  {RefClass role="Type"}replcmd{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/no-break/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/function/{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Turn of breaking on the given {Parameter/function/.
+{/RefSect1}
+{/RefEntry}

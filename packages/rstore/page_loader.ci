@@ -1,0 +1,1017 @@
+
+#define IS_PAGE_TYPE_ID_WORD(w)    (((w) & 0xF0000000)==0xC0000000)
+
+#define IS_PAGE_TYPE_ID_FIRST(w)   (((w) & 0x0F000000)==0x01000000)
+#define IS_PAGE_TYPE_ID_SUBSEQ(w)  (((w) & 0x0F000000)==0x02000000)
+#define IS_PAGE_TYPE_ID_INDIR(w)   (((w) & 0x0F000000)==0x03000000)
+
+#define PAGE_TYPE_ID_NPAGES(w)     (((w) & 0x000FFFFF))
+
+/*
+ *   Functions to load pages from the store on demand
+ */
+
+struct page_ref_t {
+    UINT_32	base_page_num;	/* the referred-to (base) page */
+    unsigned	nth_page;	/* which page, as in a large object */
+    int		indirect_q;
+    void	*vm_addr;
+};
+
+struct Reading {
+  /* an array of pointers to page records */
+  struct VMPageRecord **prt;
+  /* an array of "page" reference objects */
+  obj  *pro;
+  /* an index of swizzle modes for meta-scanning */
+  obj   mscan_swiz_modes;
+  /* a list of pointers found during a meta-scan */
+  obj   keep_lst;
+  /* the decompressor itself */
+  struct Decompressor decom;
+};
+
+/*  read a page into memory  */
+
+static obj dns_( struct Reading *rx, int l )
+{
+  obj x = OBJ(decompress_word( &rx->decom ));
+#if DEBUG_LOADING
+  printf( "swizzling word: %08lx (line %d)\n", VAL(x), l );
+#endif
+  x = map_pers_to_local( rx->prt, x );
+#if DEBUG_LOADING
+  printf( "                ==> %08lx\n", VAL(x) );
+#endif
+  return x;
+}
+
+#define decompress_and_swiz(rx) dns_(rx,__LINE__)
+
+static UINT_32 get_word( void *info )
+{
+  struct Reading *rx = (struct Reading *)info;
+  return decompress_word( &rx->decom );
+}
+
+static obj get_obj( void *info )
+{
+  return decompress_and_swiz( (struct Reading *)info );
+}
+
+
+static struct LocationRef decompress_LR( struct Reading *rx )
+{
+  union { 
+    struct LocationRef lr;
+    UINT_32 w[2];
+  } overload;
+
+  overload.w[0] = decompress_word( &rx->decom );
+  overload.w[1] = decompress_word( &rx->decom );
+  return overload.lr;
+}
+/* 
+ *  note that the header (hdr) may not be in the same page
+ *  as the data being loaded
+ */
+
+static void decompress_and_swizzle_pob( RStore *store,
+					struct Reading *rx,
+				        struct PHeapHdr *hdr,
+				        UINT_32 *dst,
+				        UINT_32 from_start,
+				        UINT_32 N )
+{
+  UINT_32 i;
+  enum SwizzleMode m = mode_for_object(hdr);
+
+#if DEBUG_LOADING
+  printf( "decompress & swizzle pob "
+	  "(%p (mode %d), hdr at %p, %lu from start, N = %lu)\n",
+	  dst, m, hdr, from_start, N );
+#endif
+
+  switch (m)
+    {
+	  /* note that a template deswizzles exactly like
+	   * a gvec, because the only interesting things
+	   * in a template, the code pointer and function
+	   * descriptor pointer, are stored as indirect
+	   * pointers, which the usual swizzling process
+	   * will translate into the appropriate ids.  Note
+	   * that this is not a reversible process, because the
+	   * translated (swizzled) value looks like an integer.
+	   * That's why SWIZ_MODE_TEMPLATE is handled specially
+	   * on the write side.
+	   */
+    case SWIZ_MODE_TEMPLATE:
+    case SWIZ_MODE_GVEC:
+      {
+	obj *d = (obj *)dst;
+
+	for (i=0; i<N; i+=SLOT(1))
+	  {
+	    *d++ = decompress_and_swiz( rx );
+	  }
+      }
+      break;
+
+    case SWIZ_MODE_FLOAT:
+    case SWIZ_MODE_UINT32:
+    case SWIZ_MODE_BVEC:
+      for (i=0; i<N; i+=SLOT(1))
+	{
+	  *dst++ = decompress_word( &rx->decom );
+	}
+      break;
+
+    case SWIZ_MODE_PADDR_VEC:
+      i = 0;
+      if (from_start == 0)
+	{
+	  struct PAddrVec *pv = (void *)dst;
+	  pv->owner = store;
+	  pv->spare = 0;
+	  i += sizeof( struct PAddrVec ) - sizeof( struct LocationRef );
+	  dst += 2;
+	}
+      for (; i<N; i+=SLOT(1))
+	{
+	  *dst++ = decompress_word( &rx->decom );
+	}
+      break;
+      
+    case SWIZ_MODE_ALLOC_AREA:
+      assert( from_start == 0 );
+      {
+	PAllocArea *aa = (PAllocArea *)dst;
+
+	aa->allocfn = parea_alloc;
+	aa->entry = decompress_and_swiz( rx );
+	aa->reserved = decompress_and_swiz( rx );
+	aa->current_LR = decompress_LR( rx );
+	aa->parent_LR = decompress_LR( rx );
+
+	i = 2 * sizeof(struct LocationRef) + 2 * sizeof(obj);
+	dst += i/sizeof(UINT_32);
+	for (; i<N; i+=SLOT(1))
+	  {
+	    *dst++ = decompress_word( &rx->decom );
+	  }
+
+        /* remap the freelist pointer, if any */
+        if (EQ( aa->free_list_vec, ZERO ))
+          {
+            aa->free_list_vec = FALSE_OBJ;
+          }
+        else
+          {
+            aa->free_list_vec = map_pers_to_local( rx->prt, 
+                                                   aa->free_list_vec );
+          }
+	/* fill in non-stored fields */
+
+	aa->current = NULL;
+	aa->owner = store;
+      }
+      break;
+      
+    default:
+      {
+	struct swiz_mode_handler *h = get_swiz_mode_handler( store, m );
+
+	h->swizzle( h, store, hdr, dst, from_start, N, rx, get_word, get_obj );
+	break;
+      }
+    }
+}
+
+/* our caller has already made sure the first
+   page is loaded
+*/
+
+static void decompress_and_swizzle_interior_page( RStore *store, 
+						  struct VMPageRecord *vmp, 
+						  struct Reading *rx,
+						  struct VMPageRecord *first_vmp )
+{
+  struct PHeapHdr *phh;
+  UINT_32 N, from_start;
+  void *limit;
+
+  phh = first_on_first(first_vmp);
+
+  /* where does the object end in virtual memory? */
+
+  limit = (char *)(phh + 1) + phh->rs_header.pob_size;
+
+  /* and how far into it's data are we going to start? */
+
+  from_start = (char*)vmp->mem_address - (char *)(phh + 1);
+
+  /* try to do a whole page of translation */
+     
+  N = MM_PAGE_SIZE;
+
+  /* but do less if that would put us past the end of the object */
+
+  if ((char *)vmp->mem_address + N > (char *)limit)
+    {
+      N = (char *)limit - (char *)vmp->mem_address;
+    }
+
+#if DEBUG_LOADING
+  printf( "load interior page %#lx: at %p (first is at %p)\n",
+	  vmp->ref.base_page_num + vmp->ref.nth_page,
+	  vmp->mem_address,
+	  first_vmp->mem_address );
+  printf( "\ttranslating %#lx bytes, at +%lu from start of object\n", 
+	  N, from_start );
+#endif
+
+  decompress_and_swizzle_pob( store, rx, phh, vmp->mem_address, 
+			      from_start, N );
+}
+
+static void decompress_first_page_hdr( RStore *store,
+				       struct VMPageRecord *vmp,
+				       struct Reading *rx )
+{
+  struct FirstPageHdr *fph = vmp->mem_address;
+
+  fph->area = PTR_TO_DATAPTR(decompress_and_swiz( rx ));
+  fph->vmpr = vmp;
+  fph->spare1 = fph->spare2 = 0;
+}
+
+/* do the first page of a large object,
+ * which is just like doing a page of objects except
+ *  (1) we know there is only one object on the page
+ *  (2) we don't do the WHOLE object, only PAGE_SIZE worth of it
+ */
+
+static void decompress_and_swizzle_first_page( RStore *store,
+					       struct VMPageRecord *vmp,
+					       struct Reading *rx )
+{
+  struct PHeapHdr *phh;
+  UINT_32 N;
+
+#if DEBUG_LOADING
+  printf( "load first page %#lx (nth %u): at %p\n",
+	  vmp->ref.base_page_num,
+	  vmp->ref.nth_page,
+	  vmp->mem_address );
+#endif
+
+  decompress_first_page_hdr( store, vmp, rx );
+  phh = first_on_first( vmp );
+
+  phh->mem_size = decompress_word( &rx->decom );
+  phh->pstore_flags = decompress_word( &rx->decom );
+  phh->gc_flag_bits = 0xE;      /* objects load as WHITE */ 
+  phh->rs_header.pob_class = decompress_and_swiz( rx );
+  phh->rs_header.pob_size = decompress_word( &rx->decom );
+  phh->size_class = &store->the_size_class;
+
+#if DEBUG_LOADING
+  printf( "    pob_size = %#lx\n", phh->rs_header.pob_size );
+#endif
+
+  N = phh->rs_header.pob_size;
+  if (N + sizeof(struct FirstPageHdr)
+        + sizeof(struct PHeapHdr) 
+      > MM_PAGE_SIZE)
+    {
+      /* quite likely.  The only exception would be if
+         there was a lot of unused space at the end
+	 of the large object */
+      N = MM_PAGE_SIZE - sizeof(struct PHeapHdr)
+	  - sizeof(struct FirstPageHdr);
+    }
+
+  decompress_and_swizzle_pob( store, rx, phh, (UINT_32 *)(phh+1), 0, N );
+}
+
+static void decompress_and_swizzle_page( RStore *store, 
+					 struct VMPageRecord *vmp, 
+					 struct Reading *rx )
+{
+  struct PHeapHdr *phh, *limit;
+
+#if DEBUG_LOADING
+  printf( "decompress_and_swizzle_page()...\n");
+  printf( "load single page %#lx (nth %u): at %p\n",
+	  vmp->ref.base_page_num,
+	  (unsigned)vmp->ref.nth_page,
+	  vmp->mem_address );
+#endif
+
+  decompress_first_page_hdr( store, vmp, rx );
+
+  phh = first_on_first( vmp );
+  limit = (struct PHeapHdr *)((char *)vmp->mem_address + MM_PAGE_SIZE);
+
+  while (phh < limit)
+    {
+      phh->mem_size = decompress_word( &rx->decom );
+      assert( phh->mem_size + (char *)phh <= (char *)limit );
+      assert( (phh->mem_size & 3) == 0 );
+
+#if DEBUG_LOADING
+      printf( "\nmem size = %lu\n", phh->mem_size );
+#endif
+      if (phh->mem_size == 0)
+	{
+	  /* indicates the end of the page */
+	  break;
+	}
+
+      phh->pstore_flags = decompress_word( &rx->decom );
+      phh->gc_flag_bits = 0xE; /* objects load as WHITE */
+      phh->size_class = &store->the_size_class;
+
+      if (phh->pstore_flags == PFLAGS_FREE_OBJ)
+        {
+          struct PFreeBlock *fb = (struct PFreeBlock *)(phh+1);
+          fb->in_sizeclass = decompress_word( &rx->decom );
+          fb->next_page = 0xFFFFFFFF;   /* not used */
+          fb->last_on_this_page = 0;
+        }
+      else if (phh->pstore_flags == PFLAGS_FREE_OBJ_LAST)
+        {
+          struct PFreeBlock *fb = (struct PFreeBlock *)(phh+1);
+          fb->in_sizeclass = decompress_word( &rx->decom );
+          fb->next_page = decompress_word( &rx->decom );
+          fb->last_on_this_page = 1;
+          phh->pstore_flags = PFLAGS_FREE_OBJ;
+        }
+      else
+        {
+          assert( (phh->pstore_flags == PFLAGS_NORMAL_OBJ)
+                  || (phh->pstore_flags == PFLAGS_LARGE_OBJ)
+                  || (phh->pstore_flags == PFLAGS_ALLOC_AREA) );
+
+          phh->rs_header.pob_class = decompress_and_swiz( rx );
+          phh->rs_header.pob_size = decompress_word( &rx->decom );
+
+          decompress_and_swizzle_pob( store,
+                                      rx,
+                                      phh,
+                                      (UINT_32 *)((obj *)(phh+1)),
+                                      0,
+                                      phh->rs_header.pob_size );
+        }
+      /* go on to the next object */
+      phh = (struct PHeapHdr *)((char *)phh + (phh->mem_size));
+    }
+}
+
+void THIS_PAGE_LOADER( RStore *store, 
+		       struct VMPageRecord *vmp,
+		       struct VMPageRecord *first_vmp )
+{
+  unsigned i, num_page_refs;
+  UINT_32 pre;
+  /* these constitute some SERIOUS stack */
+  struct VMPageRecord *(local_prt[2100]);  /* 8K */
+  struct Reading rx;                 /* 64K */
+
+  rx.prt = local_prt;
+  
+  assert( !vmp->ref.loaded );
+  
+  i = vmp->ref.first 
+    ? vmp->ref.base_page_num
+    : vmp->ref.base_page_num + vmp->ref.nth_page;
+
+#if DEBUG_LOADING
+  printf( "loading page %u\n", i );
+  printf( "  VMPR base %#lx, first %c, indirect %c, nth %u\n",
+	  vmp->ref.base_page_num,
+	  vmp->ref.first ? 'Y' : 'N', 
+	  vmp->ref.indirect ? 'Y' : 'N',
+	  vmp->ref.nth_page );
+
+  if (!vmp->ref.first)
+    printf( "  FVMPR at %p\n", first_vmp->mem_address );
+#endif
+  
+  init_decompressor( &rx.decom, store->lss, i );
+
+  /* read the page ref table,
+     accessing, possibly reserving, the indicated pages
+     */
+  
+  pre = decompress_word( &rx.decom );
+  if (IS_PAGE_TYPE_ID_WORD( pre )) {
+    if (vmp->ref.first) {
+      assert( IS_PAGE_TYPE_ID_FIRST( pre ) );
+    } else {
+      assert( IS_PAGE_TYPE_ID_SUBSEQ( pre ) );
+    }
+    assert( PAGE_TYPE_ID_NPAGES( pre ) == vmp->ref.nth_page );
+    pre = decompress_word( &rx.decom );
+  }
+  num_page_refs = pre;
+
+#if DEBUG_LOADING
+  printf( "%u page refs\n", num_page_refs );
+#endif
+
+  for (i=0; i<num_page_refs; i++)
+    {
+      struct PageRef pr;
+      UINT_32 w;
+      
+      pr.base_page_num = decompress_word( &rx.decom );
+      w = decompress_word( &rx.decom );
+      pr.first = (w & 1) ? 1 : 0;
+      pr.indirect = (w & 2) ? 1 : 0;
+      
+      pr.loaded = 0;
+      pr.dirty = 0;
+      pr.nth_page = w >> 2;
+      rx.prt[i] = get_vmpr( store, &pr );
+#if DEBUG_LOADING
+      printf( "  page ref[%u] %#lx ==> vm %p\n", 
+	      i, pr.base_page_num + (pr.first ? 0 : pr.nth_page),
+	      rx.prt[i]->mem_address );
+#endif
+    }
+
+  /* mark the page writable */
+  
+  mm_set_prot( vmp->mem_address, MM_PAGE_SIZE, MM_MODE_READ_WRITE );
+  
+  /* read the page into memory, decompressing */
+  
+  if (vmp->ref.first)
+    if (vmp->ref.nth_page > 1)
+      decompress_and_swizzle_first_page( store, vmp, &rx );
+    else
+      decompress_and_swizzle_page( store, vmp, &rx );
+  else
+    decompress_and_swizzle_interior_page( store, vmp, &rx, first_vmp );
+  
+  /* halt the reading process and release the resources */
+  
+  close_decompressor( &rx.decom );
+  
+  /* clean up the protections, etc. */
+  
+  mm_set_prot( vmp->mem_address, MM_PAGE_SIZE, MM_MODE_READ_ONLY );
+  
+  vmp->ref.loaded = 1;
+  vmp->next_loaded = store->first_loaded;
+  store->first_loaded = vmp;
+}
+
+
+/*
+ *  find the offset of objects in a "normal" page
+ *  (i.e., not the first page of a large object, and certainly
+ *  not an interior page)
+ */
+
+static obj dnscan( struct Reading *rx, int keep )
+{
+  obj x = OBJ( decompress_word( &rx->decom ) );
+  
+  /*
+   *  This part is similar to the functionality of map_pers_to_local()...
+   */
+  if (OBJ_ISA_PTR(x))
+    {
+      obj ref, page_entry;
+      unsigned offset, flags;
+
+      page_entry = rx->pro[ VAL(x) >> 16 ];
+      offset = VAL(x) & 0xFFFF;
+
+      flags = fx2int( gvec_ref( page_entry, SLOT(1) ) );
+      if (flags & 2)
+        {
+          /* indirect */
+          x = int2fx( (fx2int( gvec_ref( page_entry, SLOT(0) ) ) << 6)
+                      + INDIR_CODE_ENTRY( x ) );
+        }
+      else
+        {
+          /* direct */
+          x = gvec_ref( page_entry, SLOT(0) );
+        }
+
+      if (keep)
+        {
+          rx->keep_lst = cons( cons( page_entry, int2fx( offset ) ),
+                               rx->keep_lst );
+        }
+      return x;
+    }
+  else
+    {
+      return x;
+    }
+}
+
+static enum SwizzleMode swizmode_for_scanned_object( struct Reading *rx,
+                                                     unsigned obj_flags,
+                                                     obj obj_class )
+{
+  obj sm, key;
+
+  /* ignoring obj_flags for now... c.f. CR 837 */
+
+  key = obj_class;
+  sm = objecttable_lookup( rx->mscan_swiz_modes,
+                           rehash_fixnum( key ),
+                           key );
+  if (EQ( sm, FALSE_OBJ ))
+    {
+      scheme_error( "could not find swizzle mode ~s", 1, key );
+    }
+  assert( FIXNUM_P( sm ) );
+  return fx2int( sm );
+}
+
+static void scan_pob( struct Reading *rx, 
+                      unsigned obj_flags,
+                      obj obj_class,
+                      UINT_32 from_start,
+                      UINT_32 N,
+                      int keep )
+{
+  enum SwizzleMode m;
+  UINT_32 i;
+
+  /*
+   *  ouch, this is painful -- the repository does not store
+   *  the swizzle mode along with the object; at best, it is
+   *  an external object and the app will tell us what the
+   *  swizzle mode is.  At worst, it is elsewhere in the repository
+   *  For now, require the app to tell us (this may be worse in
+   *  the sense that we can't scan a repository without knowledge
+   *  of the application which is using it!)
+   */
+  m = swizmode_for_scanned_object( rx, obj_flags, obj_class );
+  
+  switch (m)
+    {
+    case SWIZ_MODE_TEMPLATE:
+    case SWIZ_MODE_GVEC:
+      for (i=0; i<N; i+=SLOT(1))
+        {
+          dnscan( rx, keep );
+        }
+      break;
+
+    case SWIZ_MODE_FLOAT:
+    case SWIZ_MODE_UINT32:
+    case SWIZ_MODE_BVEC:
+      for (i=0; i<N; i+=SLOT(1))
+	{
+	  decompress_word( &rx->decom );
+	}
+      break;
+
+    case SWIZ_MODE_PADDR_VEC:
+      i = 0;
+      if (from_start == 0)
+	{
+	  i += sizeof( struct PAddrVec ) - sizeof( struct LocationRef );
+	}
+      for (; i<N; i+=SLOT(1))
+	{
+	  decompress_word( &rx->decom );
+	}
+      break;
+      
+    case SWIZ_MODE_ALLOC_AREA:
+      assert( from_start == 0 );
+      {
+        dnscan( rx, keep );  /* entry */
+        dnscan( rx, keep );  /* reserved */
+	decompress_LR( rx );                    /* current LR */
+	decompress_LR( rx );                    /* parent LR */
+
+	i = 2 * sizeof(struct LocationRef) + 2 * sizeof(obj);
+	for (; i<N; i+=SLOT(1))
+	  {
+            if (i == (unsigned)(&(((PAllocArea *)0)->free_list_vec)))
+              dnscan( rx, keep ); /* ZERO isn't a problem either */
+            else
+              decompress_word( &rx->decom );
+	  }
+      }
+      break;
+      
+    default:
+      {
+        assert(0);   /* XXX we don't support scanning of objects 
+                      *     with arbitrary swizzle modes  
+                      */
+	break;
+      }
+    }
+}
+
+static void scan_first_page_hdr( struct Reading *rx )
+{
+  dnscan( rx, 0 ); /* don't keep the area pointer...
+                      we should (?) always keep the area object anyway */
+}
+
+/*
+ *  The distance (in bytes) from the start of a pstore object
+ *  (the PHeapHdr itself) to the corresponding valid offset
+ */
+
+#define PHH_ADJUST   (VAL(PHH_TO_PTR(0)))
+
+#define DATA_ON_FIRST_PAGE (MM_PAGE_SIZE \
+                            - sizeof(struct FirstPageHdr) \
+                            - sizeof(struct PHeapHdr))
+
+static obj scan_first_page( struct Reading *rx )
+{
+  unsigned memsize;
+  unsigned pstore_flags, o_size;
+  obj o_class;
+  int i, N, swizmode;
+
+  rx->keep_lst = NIL_OBJ;
+
+  scan_first_page_hdr( rx );
+  memsize = decompress_word( &rx->decom );
+  /* this will be LARGER than we can handle on this page... */
+  /*
+   *  We need to return the object's swizzle mode and
+   *  its real size (pob_size) so that we know how to handle
+   *  things for its interior pages
+   */
+  pstore_flags = decompress_word( &rx->decom );
+  assert( pstore_flags == PFLAGS_LARGE_OBJ );
+
+  o_class = dnscan( rx, 1 );
+  o_size = decompress_word( &rx->decom );
+
+  swizmode = swizmode_for_scanned_object( rx, pstore_flags, o_class );
+  N = o_size;
+
+  if (N > DATA_ON_FIRST_PAGE)
+    {
+      N = DATA_ON_FIRST_PAGE;
+    }
+
+  switch (swizmode)
+    {
+    case SWIZ_MODE_TEMPLATE:
+    case SWIZ_MODE_GVEC:
+      for (i=0; i<N; i+=SLOT(1))
+        {
+          dnscan( rx, 1 );
+        }
+      break;
+
+    case SWIZ_MODE_FLOAT:
+    case SWIZ_MODE_UINT32:
+    case SWIZ_MODE_BVEC:
+      /* nothing to do... */
+      break;
+    }
+      
+  return cons( cons( int2fx( o_size ), 
+                     int2fx( swizmode ) ),
+               rx->keep_lst );
+}
+
+static obj scan_interior_page( struct Reading *rx, int N, int swizmode )
+{
+  int i;
+  rx->keep_lst = NIL_OBJ;
+
+  assert( N <= MM_PAGE_SIZE );
+
+  switch (swizmode)
+    {
+    case SWIZ_MODE_TEMPLATE:
+    case SWIZ_MODE_GVEC:
+      for (i=0; i<N; i+=SLOT(1))
+        {
+          dnscan( rx, 1 );
+        }
+      break;
+
+    case SWIZ_MODE_FLOAT:
+    case SWIZ_MODE_UINT32:
+    case SWIZ_MODE_BVEC:
+      /* nothing to do... */
+      break;
+    }
+  return rx->keep_lst;
+}
+
+static obj scan_page_count( struct Reading *rx )
+{
+  UINT_32 memsize;
+
+  /* skip the allocarea pointer */
+  scan_first_page_hdr( rx );
+
+  memsize = decompress_word( &rx->decom );
+  if (memsize < MM_PAGE_SIZE) {
+    /* it's a page of small objects... count one page */
+    return int2fx(1);
+  } else {
+    /* it's a large object... count the number of pages */
+    return int2fx( (memsize + MM_PAGE_SIZE-1) / MM_PAGE_SIZE );
+  }
+}
+
+/*
+ *  if (check == #f), then we are looking for object starts
+ *  otherwise, it is a list of objects whose interior is to be
+ *  scanned
+ */
+
+static obj scan_normal_page( struct Reading *rx, obj check )
+{
+  unsigned offset, next_offset;
+  obj lst = NIL_OBJ;
+
+  if (EQ( check, FALSE_OBJ ))
+    {
+      next_offset = 0;
+    }
+  else
+    {
+      if (!PAIR_P( check ))
+        return NIL_OBJ;  /* nothing to check... */
+      next_offset = fx2int( pair_car( check ) ) - PHH_ADJUST;
+      /*
+       * cannot be zero, because of the FirstPageHdr (16 bytes)
+       */
+      assert( next_offset != 0 );
+#ifdef VERBOSE_SCAN
+      printf( "** scan_normal_page: first_offset = +%04x\n", next_offset );
+#endif
+    }
+
+  /*
+   *  scan the first-page header
+   */
+  scan_first_page_hdr( rx );
+
+  offset = sizeof( struct FirstPageHdr );
+
+  while (offset < MM_PAGE_SIZE)
+    {
+      unsigned memsize, pstore_flags, o_size;
+      int keep = 0;
+      obj o_class;
+
+      /*
+       *  the current object...
+       */
+      memsize = decompress_word( &rx->decom );
+
+#ifdef VERBOSE_SCAN
+      printf( "  . +%04x (memsize = %04x) -- <:%x>\n", 
+              offset, 
+              memsize,
+              offset + PHH_ADJUST );
+#endif
+
+      assert( (memsize + offset) <= MM_PAGE_SIZE );
+      assert( (memsize & 3) == 0 );
+
+      if (memsize == 0)
+        {
+          /* we are at the end of the page */
+#ifdef VERBOSE_SCAN
+          printf( "** scan_normal_page: end of page\n" );
+#endif
+          break;
+        }
+
+      pstore_flags = decompress_word( &rx->decom );
+
+      if (next_offset == 0) /* scanning for starts */
+        {
+          if (!((pstore_flags == PFLAGS_FREE_OBJ)
+                || (pstore_flags == PFLAGS_FREE_OBJ_LAST)))
+            {
+              lst = cons( int2fx( VAL(PHH_TO_PTR(offset)) ), lst );
+            }
+        }
+      else if (next_offset == offset)
+        {
+          keep = 1;
+          rx->keep_lst = NIL_OBJ;
+#ifdef VERBOSE_SCAN
+          printf( "** scan_normal_page: it's a hit!\n" );
+#endif
+        }
+
+      if (pstore_flags == PFLAGS_FREE_OBJ)
+        {
+          decompress_word( &rx->decom );  /* in sizeclass */
+        }
+      else if (pstore_flags == PFLAGS_FREE_OBJ_LAST)
+        {
+          decompress_word( &rx->decom );  /* in sizeclass */
+          decompress_word( &rx->decom );  /* next_page */
+        }
+      else
+        {
+          /*
+           *  note that scanning for starts does not work on large object
+           *  start pages
+           */
+          assert( (pstore_flags == PFLAGS_NORMAL_OBJ)
+                  || (pstore_flags == PFLAGS_ALLOC_AREA) );
+          /*
+           *  consume the necessary input...
+           */
+          o_class = dnscan( rx, keep );               /* object class */
+          o_size = decompress_word( &rx->decom );     /* pob_size */
+
+          scan_pob( rx, pstore_flags, o_class, 0, o_size, keep );
+
+          if (next_offset == offset)
+            {
+              /* we just finished satisfying a request */
+              lst = cons( rx->keep_lst, lst );
+              check = pair_cdr( check );
+              if (!PAIR_P( check ))
+                {
+                  /* prematurely done with this page... */
+#ifdef VERBOSE_SCAN
+                  printf( "** scan_normal_page: exhausted `check' list\n" );
+#endif
+                  break;
+                }
+              next_offset = fx2int( pair_car( check ) ) - PHH_ADJUST;
+#ifdef VERBOSE_SCAN
+              printf( "** scan_normal_page: next_offset = +%04x\n", next_offset );
+#endif
+            }
+        }
+      offset += memsize;
+    }
+  return lst;
+}
+
+/*
+ *   mode:
+ *      0 = RSTORE_SCAN_STARTS = locate objects on multiple-object page
+ *      1 = RSTORE_SCAN_OBJECTS = locate pointers from given objects
+ *      2 = RSTORE_SCAN_FIRST = locate pointers from first page of large object
+ *      3 = RSTORE_SCAN_INTERIOR = locate pointers from interior page of L.O.
+ *      4 = RSTORE_SCAN_PAGETABLE = locate referenced pages
+ *      5 = RSTORE_SCAN_PAGECOUNT = figure out how many pages are counted
+ */
+
+obj THIS_PAGE_SCANNER( LSS *lss, 
+                       unsigned page,
+                       enum MetaScanMode mode,
+                       obj arg )
+{
+  struct Reading rx;                 /* 64K */
+  UINT_32 pre;
+  unsigned num_page_refs;
+  obj pglist, value = FALSE_OBJ;
+  unsigned i;
+
+#ifdef VERBOSE_SCAN
+  printf( "---------------[ page %u ]------------ <mode: %d>\n", page, mode );
+#endif
+
+  init_decompressor( &rx.decom, lss, page );
+
+  /*
+   *  read in the page reference table
+   */
+  pre = decompress_word( &rx.decom );
+  
+  if (IS_PAGE_TYPE_ID_WORD(pre)) {
+    /*
+     * it's really a page type identifier...
+     */
+    switch (mode) {
+      
+    case RSTORE_SCAN_STARTS:
+    case RSTORE_SCAN_OBJECTS:
+      assert( IS_PAGE_TYPE_ID_FIRST( pre ) );
+      assert( PAGE_TYPE_ID_NPAGES( pre ) == 1 );
+      break;
+
+    case RSTORE_SCAN_FIRST:
+      assert( IS_PAGE_TYPE_ID_FIRST( pre ) );
+      assert( PAGE_TYPE_ID_NPAGES( pre ) > 1 );
+      break;
+
+    case RSTORE_SCAN_INTERIOR:
+      assert( IS_PAGE_TYPE_ID_SUBSEQ( pre ) );
+      break;
+
+    case RSTORE_SCAN_PAGECOUNT:
+      assert( IS_PAGE_TYPE_ID_FIRST( pre ) );
+      value = int2fx( PAGE_TYPE_ID_NPAGES( pre ) );
+      goto done;
+
+    case RSTORE_SCAN_PAGETABLE:
+      break;
+    }
+    pre = decompress_word( &rx.decom );
+  }
+  num_page_refs = pre;
+
+#ifdef VERBOSE_SCAN
+  printf( "  %u page refs\n", num_page_refs );
+#endif
+
+#if HAVE_ALLOCA
+  rx.pro = alloca( sizeof(obj) * num_page_refs );
+#else
+  rx.pro = malloc( sizeof(obj) * num_page_refs );
+#endif
+
+  for (i=0; i<num_page_refs; i++)
+    {
+      unsigned base_page, flags;
+
+      base_page = decompress_word( &rx.decom );
+      flags = decompress_word( &rx.decom );
+
+      rx.pro[i] = make3( vector_class, 
+                         int2fx( base_page ),
+                         int2fx( flags ), 
+                         FALSE_OBJ );
+#ifdef VERBOSE_SCAN
+      printf( "  page ref[%u] %#x (%s %s %d)\n",
+              i,
+              base_page,
+              (flags & 1) ? "first" : "-",
+              (flags & 2) ? "indirect" : "-",
+              flags >> 2 );
+#endif
+    }
+
+  pglist = NIL_OBJ;
+  for (i=num_page_refs; i>0;)
+    {
+      pglist = cons( rx.pro[--i], pglist );
+    }
+
+  if (mode == RSTORE_SCAN_PAGETABLE)
+    {
+      value = pglist;
+      goto done;
+    }
+
+  if (mode == RSTORE_SCAN_PAGECOUNT)
+    {
+      rx.mscan_swiz_modes = arg;
+      value = scan_page_count( &rx );
+    }
+  else if (mode == RSTORE_SCAN_STARTS)
+    {
+      rx.mscan_swiz_modes = arg;
+      value = scan_normal_page( &rx, FALSE_OBJ );
+      value = cons( pglist, value );
+    }
+  else if (mode == RSTORE_SCAN_OBJECTS)
+    {
+      rx.mscan_swiz_modes = pair_car( arg );
+      value = scan_normal_page( &rx, pair_cdr( arg ) );
+      value = cons( pglist, value );
+    }
+  else if (mode == RSTORE_SCAN_FIRST)
+    {
+      rx.mscan_swiz_modes = pair_car( arg );
+      value = scan_first_page( &rx );
+      value = cons( pglist, value );
+    }
+  else if (mode == RSTORE_SCAN_INTERIOR)
+    {
+      int len, swizm;
+
+      rx.mscan_swiz_modes = FALSE_OBJ;
+      len = fx2int( pair_car( arg ) );
+      swizm = fx2int( pair_cdr( arg ) );
+      value = scan_interior_page( &rx, len, swizm );
+      value = cons( pglist, value );
+    }
+
+ done:
+#ifdef VERBOSE_SCAN
+  printf( "--------------------------------------\n" );
+#endif
+#if !HAVE_ALLOCA
+  free( rx.pro );
+#endif
+  return value;
+}

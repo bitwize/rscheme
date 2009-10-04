@@ -1,0 +1,50 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}read-char{/RefName}
+  {RefPurpose}Read a character{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/read-char/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+{/ParamDef}{ParamDef role="returns"}
+{Parameter}char{/Parameter}
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}input-port{/Term}
+    {ListItem}{para}
+An instance of <input-port>.  Default is the current input port.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}char{/Term}
+    {ListItem}{para}
+ A character object or the EOF object
+if the input port is at end of file.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function reads one character from the input port given,
+or from the current input port if no argument is given.  It
+return the character read as an RScheme ascii character
+object.  If there are no more characters to read from the port
+then the EOF object is returned (the only one for which 
+eof-object? return #t).{/para}
+{/RefSect1}
+{/RefEntry}

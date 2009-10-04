@@ -1,0 +1,51 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}peek-char{/RefName}
+  {RefPurpose}Read a character without consuming it{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/peek-char/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+{/ParamDef}{ParamDef role="returns"}
+{Parameter}char{/Parameter}
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}input-port{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<input-port>/.  
+Default is the current input port{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}char{/Term}
+    {ListItem}{para}
+A character object or the EOF object
+if the input port is at end of file.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function is similar to read-char in that it reads one
+character from the input port given, or from the current input
+port if no argument is given.  However, the character read is
+not consumed and is returned again by the next call to
+read-char or to peek-char.  If there are no more characters to
+read from the port then the EOF object is returned.{/para}
+{/RefSect1}
+{/RefEntry}

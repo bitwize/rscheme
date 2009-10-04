@@ -1,0 +1,26 @@
+
+default:: all
+
+RSCHEME_DIR=@rs_prefix@
+# this is really RScheme's install dir
+INSTALL_DIR=$(RSCHEME_DIR)
+
+include $(RSCHEME_DIR)/resource/buildenv/preamble.mak
+
+XCFLAGS= -I..
+
+CFILES=load.c store.c
+OFILES=$(CFILES:.c=.o)
+
+LD=ld -r
+
+all: $(OFILES)
+
+clean::
+	rm -f $(OFILES)
+
+depend::
+	$(CC) -MM $(CFLAGS) $(CFILES)
+
+store.o: ../page_storer.ci
+load.o: ../page_loader.ci

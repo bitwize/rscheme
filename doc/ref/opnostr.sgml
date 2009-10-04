@@ -1,0 +1,39 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}open-output-string{/RefName}
+  {RefPurpose}Creates an output port for writing to a string{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/open-output-string/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+{/ParamDef}{ParamDef role="returns"}
+{Parameter}output-port{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}output-port{/Term}
+    {ListItem}{para}
+A general instance of {ClassName/<output-port>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function creates an output port which will accumulate the
+data which is written to it.{/para}
+{para}
+When the output port is eventually closed, the return value from
+{Phrase Role="var"}close-output-port{/Phrase} is a string containing everything that was
+written to the port.{/para}
+{para}
+See also {Phrase Role="var"}with-output-to-string{/Phrase}.{/para}
+{/RefSect1}
+{/RefEntry}

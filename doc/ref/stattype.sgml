@@ -1,0 +1,47 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}stat-type{/RefName}
+  {RefPurpose}Get the type of the stat buffer.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/stat-type/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/buf/{/ParamDef}{ParamDef role="returns"}
+{Parameter}type{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}buf{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<stat-buf>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}type{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<symbol>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Returns a symbol indicating the type of the stat'ed file.
+The returned symbol is one of directory, regular, 
+fifo, character-special, or block-special.  #f may also 
+be returned if the type is not recognized (ie, for symbol
+links stat'ed using {Phrase Role="var"}lstat{/Phrase}.){/para}
+{/RefSect1}
+{/RefEntry}

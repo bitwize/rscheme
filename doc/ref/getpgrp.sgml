@@ -1,0 +1,32 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}getpgrp{/RefName}
+  {RefPurpose}Get process group id.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/getpgrp/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+{/ParamDef}{ParamDef role="returns"}
+{Parameter}pid{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}pid{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<integer>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Returns the process group id (the process id of the group leader?).{/para}
+{/RefSect1}
+{/RefEntry}

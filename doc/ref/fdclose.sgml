@@ -1,0 +1,43 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}fd-close{/RefName}
+  {RefPurpose}Closes a file.{/RefPurpose}
+  {RefClass role="Type"}primop{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/fd-close/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/fd/{/ParamDef}{ParamDef role="returns"}
+{Parameter}ok{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}fd{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}ok{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<boolean>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Closes an open file.{/para}
+{/RefSect1}
+{/RefEntry}

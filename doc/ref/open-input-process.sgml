@@ -1,0 +1,48 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}open-input-process*{/RefName}
+  {RefPurpose}Open an input process.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/open-input-process*/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/arg/{/ParamDef}{ParamDef role="returns"}
+{Parameter}p{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}arg{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>s/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}p{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<input-port>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This is functionally similar to {Phrase Role="var"}open-input-process{/Phrase} which
+uses {UserInput}popen(){/UserInput}.  However, this mechanism is more direct
+in its invocation of the subprogram (since the subcommand is not
+invoked by {Parameter}sh{/Parameter}.).  On the downside, you can't use shell expansions
+in the command, either.  Like the difference between 
+`fork/exec' and `system'.{/para}
+{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,247 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    modules/imageio/imaglod.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.7
+ * File mod date:    2007-01-28 09:58:46
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ *------------------------------------------------------------------------*/
+
+/* load an image file */
+
+/* 
+ * Function:	rs_load_image
+ * Arguments:	(UINT_32 *) image -- the image to be loaded
+ *			(word layout in network (big endian) format)
+ *		(obj) refs -- vector of objects referred to by image
+ *			(may be #f if the image is self-contained)
+ */
+
+typedef struct image_load_context {
+    struct image_source *image;
+    obj		*loaded_objs;
+    UINT_32	section_count[NUM_IMAGE_MODES];
+    obj		*ref_arry;
+    UINT_32	ref_cnt;
+    obj		error_code;		/* a code identifying an error */
+} load_ctx_t;
+
+#define LD_OBJ(x) BIG_ENDIAN_TO_HOST_32(x)
+
+static obj unmarshall( load_ctx_t *ctx, obj ref )
+{
+    if ((VAL(ref) & PRIMARY_TAG_MASK) == POINTER_TAG)
+    {
+	return ctx->loaded_objs[(VAL(ref) - POINTER_TAG)>>PRIMARY_TAG_SIZE];
+    }
+    else
+    {
+	/* nothing else gets transformed */
+	return ref;
+    }
+}
+
+static obj alloc_load( obj obj_class, UINT_32 bytes )
+{
+POBHeader *p;
+
+    p = (POBHeader *)gc_alloc( bytes + sizeof(POBHeader) );
+    p->pob_size = bytes;
+    p->pob_class = obj_class;
+    return HDRPTR_TO_PTR(p);
+}
+
+static void unmarsh_class( load_ctx_t *ctx, obj item )
+{
+POBHeader *p = PTR_TO_HDRPTR(item);
+
+    p->pob_class = unmarshall( ctx, p->pob_class );
+}
+
+static void init_refs( load_ctx_t *ctx, obj *obj_arry, UINT_32 obj_cnt )
+{
+UINT_32 i;
+
+    /* just load 'em from the provided arry */
+    
+    if (obj_cnt != ctx->ref_cnt)
+    {
+	ctx->error_code = int2fx(1);
+	return;
+    }
+    for (i=0; i<obj_cnt; i++)
+	obj_arry[i] = ctx->ref_arry[i];
+}
+
+static void unmarsh_refs( load_ctx_t *ctx, obj *obj_arry, UINT_32 obj_cnt )
+{
+    /* NOP -- refs are already pointers to real objects */
+}
+
+static void init_gvecs( load_ctx_t *ctx, obj *obj_arry, UINT_32 obj_cnt )
+{
+UINT_32 i;
+
+    for (i=0; i<obj_cnt; i++)
+    {
+    struct iob_hdr hdr;
+    obj item;
+    
+	get_words( ctx->image, &hdr, sizeof(struct iob_hdr) );
+	item = alloc_load( hdr.iob_class, hdr.iob_size );
+	*obj_arry++ = item;
+	
+	get_words( ctx->image, PTR_TO_DATAPTR(item), hdr.iob_size );
+    }
+}
+
+static void unmarsh_gvecs( load_ctx_t *ctx, obj *obj_arry, UINT_32 obj_cnt )
+{
+UINT_32 i;
+
+    for (i=0; i<obj_cnt; i++)
+    {
+    UINT_32 j, len;
+    obj item, *gvec;
+    
+	item = *obj_arry++;
+	unmarsh_class( ctx, item );
+
+	len = SIZEOF_PTR(item);
+	gvec = (obj *)PTR_TO_DATAPTR(item);
+	
+	for (j=len; j>0; j-=SLOT(1))
+	{
+	    *gvec = unmarshall(ctx,*gvec);
+	    gvec++;
+	}
+    }
+}
+
+static void init_bvec_8s( load_ctx_t *ctx, obj *obj_arry, UINT_32 obj_cnt )
+{
+UINT_32 i;
+
+    for (i=0; i<obj_cnt; i++)
+    {
+    struct iob_hdr hdr;
+    obj item;
+    
+	get_words( ctx->image, &hdr, sizeof(struct iob_hdr) );
+	item = alloc_load( unmarshall(ctx,hdr.iob_class), hdr.iob_size );
+	*obj_arry++ = item;
+	
+	get_words( ctx->image, PTR_TO_DATAPTR(item), round_up(hdr.iob_size) );
+
+        /* reorder bytes for little-endian machines */
+#ifdef PLATFORM_IS_LITTLE_ENDIAN
+       {
+	 UINT_32 j, *p;
+
+	 p = PTR_TO_DATAPTR(item);
+	 for (j=0; j<hdr.iob_size; j+=sizeof(UINT_32))
+	   {
+             UINT_32 z = *p;
+
+	     *p = HOST_TO_BIG_ENDIAN_32(z);
+	     p++;
+	   }
+       }
+#endif
+    }
+}
+
+static void unmarsh_bvec_8s( load_ctx_t *ctx, obj *obj_arry, UINT_32 obj_cnt )
+{
+    /* nothing to do.
+       This is because we unmarshalled the class pointers at init time,
+       which we were allowed to do because all classes are gvecs, and
+       all bvecs are init'ed after all gvecs
+    */
+}
+
+struct image_mode_info {
+    void (*pass1_fn)( load_ctx_t *ctx, obj *obj_arry, UINT_32 obj_cnt );
+    void (*pass2_fn)( load_ctx_t *ctx, obj *obj_arry, UINT_32 obj_cnt );
+} image_mode_fns[] = { 
+    { init_refs, unmarsh_refs }, 		/* image-mode: 0 (ref) */
+    { init_gvecs, unmarsh_gvecs }, 		/* image-mode: 1 (gvec) */
+    { init_bvec_8s, unmarsh_bvec_8s },		/* image-mode: 2 (bvec-8) */
+};
+
+static obj load_image( struct image_source *src, 
+		       obj *ref_arry, 
+		       UINT_32 ref_cnt )
+{
+load_ctx_t ctx;
+struct image_header hdr;
+UINT_32 i, num_in_sectn[NUM_IMAGE_MODES];
+obj root, *p;
+
+    /* read the image header */
+    
+#ifdef DEBUG_IMAGEIO
+    printf( "loading image...\n" );
+#endif /* DEBUG_IMAGEIO */
+    
+    get_words( src, &hdr, sizeof( struct image_header ) );
+    
+#ifdef DEBUG_IMAGEIO
+    printf( "load-image: loading %u objects\n", hdr.num_objects );
+#endif /* DEBUG_IMAGEIO */
+    
+    /* set up the image-loading context */
+    
+    ctx.image = src;
+    ctx.loaded_objs = (obj *)malloc( sizeof(obj) * hdr.num_objects );
+
+    if (!ctx.loaded_objs)
+	return int2fx(2);
+
+    ctx.ref_arry = ref_arry;
+    ctx.ref_cnt = ref_cnt;
+    ctx.error_code = FALSE_OBJ;
+
+    /* pass I -- allocate and fill in the objects */
+    
+    for (i=0, p = ctx.loaded_objs; i<NUM_IMAGE_MODES; i++)
+    {
+    struct section_header sect_hdr;
+    
+	get_words( src, &sect_hdr, sizeof( struct section_header ) );
+#ifdef DEBUG_IMAGEIO
+	printf( "section[%u]: %u objects (%u bytes)\n", 
+		i, sect_hdr.num_objects,
+		sect_hdr.sectn_length );
+#endif /* DEBUG_IMAGEIO */
+	num_in_sectn[i] = sect_hdr.num_objects;
+	
+	ctx.section_count[i] = sect_hdr.num_objects;
+	image_mode_fns[i].pass1_fn( &ctx, p, sect_hdr.num_objects );
+	p += sect_hdr.num_objects;
+    }
+
+    /* pass II - swizzle the objects */
+    
+    for (i=0, p = ctx.loaded_objs; i<NUM_IMAGE_MODES; i++)
+    {
+    UINT_32 n = num_in_sectn[i];
+    
+	image_mode_fns[i].pass2_fn( &ctx, p, n );
+	p += n;
+    }
+    
+    root = unmarshall( &ctx, OBJ(hdr.root_object) );
+
+    free( ctx.loaded_objs );
+
+    if (!EQ(ctx.error_code,FALSE_OBJ))
+	return ctx.error_code;
+
+    return root;
+}
+

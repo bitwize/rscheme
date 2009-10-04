@@ -1,0 +1,183 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/runtime/smemory.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.10
+ * File mod date:    1998-10-13 07:56:18
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ *------------------------------------------------------------------------*/
+
+#ifndef _CI_SMEMORY
+#define _CI_SMEMORY
+
+#include <stdlib.h>
+#include <rscheme/regs.h>
+#include <rscheme/smemory.h>
+#include <rscheme/profile.h>
+
+extern rs_bool loading_image;
+
+#include <rscheme/gcserver.h>
+
+/*  headers and offsets  */
+
+#ifdef DEBUG_SMEMORY
+CI_DECL gc_obj_addr PTR_TO_GCPTR( obj x )
+{
+    return (gc_obj_addr)
+    	  	(VAL(x) - sizeof(POBHeader) 
+			- POINTER_TAG);
+}
+
+CI_DECL obj GCPTR_TO_PTR( gc_obj_addr x )
+{
+    return OBJ(((UINT_32)x) + sizeof(POBHeader) 
+			    + POINTER_TAG );
+}
+
+CI_DECL void *PTR_TO_DATAPTR( obj ptr )
+{
+    assert( OBJ_ISA_PTR(ptr) );
+    return (void *)(VAL(ptr) - POINTER_TAG);
+}
+
+CI_DECL POBHeader *PTR_TO_HDRPTR( obj ptr )
+{
+    assert( OBJ_ISA_PTR(ptr) );
+    return (POBHeader *)(VAL(ptr) - POINTER_TAG - sizeof(POBHeader));
+}
+
+CI_DECL obj HDRPTR_TO_PTR( POBHeader *hdr )
+{
+    assert( (((unsigned)hdr) & 3) == 0 );
+    return OBJ( ((UINT_32)hdr) + sizeof(POBHeader) + POINTER_TAG );
+}
+
+CI_DECL UINT_32 SIZEOF_PTR( obj ptr )
+{
+    return PTR_TO_HDRPTR(ptr)->pob_size;
+}
+
+CI_DECL obj CLASSOF_PTR( obj ptr )
+{
+    return PTR_TO_HDRPTR(ptr)->pob_class;
+}
+#endif
+
+
+/*  Low-level storage allocator.  Returns uninitialized bits.  */
+
+#ifdef RS_PROFILE
+void rs_profile_alloc( obj the_class, UINT_32 size );
+#endif
+
+CI_DECL obj alloc( UINT_32 bytes, obj obj_class )
+{
+POBHeader *p;
+UINT_32 *mem;
+#ifndef INLINES /* can't forward reference CLASS_P if doing inlining */
+extern rs_bool CLASS_P( obj );
+
+    assert( loading_image || CLASS_P(obj_class) );
+#endif
+    mem = (UINT_32 *)gc_alloc( bytes + sizeof(POBHeader) );
+#ifndef NDEBUG
+    {
+      /* fill the object with a particular bit pattern which, if
+       * this is a GVEC, will allow the write barriers to make
+       * sure they are being used write (distinguishing the
+       * `initializing write' case from other writes)
+       */
+
+      UINT_32 i;
+      
+      for (i=(bytes + sizeof(POBHeader))/SLOT(1) ; i>0;)
+	mem[--i] = VAL(DEBUG_TRAP_OBJ);
+    }
+#endif
+
+    p = (POBHeader *)mem;
+    p->pob_size = bytes;
+    p->pob_class = obj_class;
+    if (rsprof_active)
+      rsprof_obj_alloced( HDRPTR_TO_PTR(p), obj_class, bytes );
+    return HDRPTR_TO_PTR(p);
+}
+
+CI_DECL obj alloc1( obj obj_class ) { return alloc( SLOT(1), obj_class ); }
+CI_DECL obj alloc2( obj obj_class ) { return alloc( SLOT(2), obj_class ); }
+CI_DECL obj alloc3( obj obj_class ) { return alloc( SLOT(3), obj_class ); }
+CI_DECL obj alloc4( obj obj_class ) { return alloc( SLOT(4), obj_class ); }
+CI_DECL obj alloc5( obj obj_class ) { return alloc( SLOT(5), obj_class ); }
+CI_DECL obj alloc6( obj obj_class ) { return alloc( SLOT(6), obj_class ); }
+CI_DECL obj alloc7( obj obj_class ) { return alloc( SLOT(7), obj_class ); }
+CI_DECL obj alloc8( obj obj_class ) { return alloc( SLOT(8), obj_class ); }
+CI_DECL obj alloc9( obj obj_class ) { return alloc( SLOT(9), obj_class ); }
+
+/*  Allocate a bvec, with last word set to zeros */
+/*  if num_bytes = 0, there is no last word (because there are NO words) */
+
+CI_DECL obj bvec_alloc( UINT_32 num_bytes, obj bvec_class )
+{
+obj bvec;
+UINT_32 *lastw;
+
+    bvec = alloc( num_bytes, bvec_class );
+    if (num_bytes)
+    {
+	lastw = (UINT_32 *)((char *)PTR_TO_DATAPTR(bvec) 
+				+ ((num_bytes-1) & ~(sizeof(UINT_32)-1)));
+	*lastw = 0;
+    }
+    return bvec;
+}
+
+CI_DECL void safe_point( UINT_32 headroom )
+{
+    gc_safe_point( headroom );
+}
+
+struct aligned_header {
+    void *os_ptr;
+};
+
+
+CI_DECL void *malloc_aligned_32( UINT_32 bytes )
+{
+void *mem;
+struct aligned_header *ch;
+
+    OUT_CALL( mem = malloc( bytes + sizeof(UINT_32) + sizeof( struct aligned_header ) ); );
+    
+    ch = (struct aligned_header *)((((UINT_32)mem)|((sizeof(UINT_32)-1)))+1);
+    ch->os_ptr = mem;
+    return (void *)(ch + 1);
+}
+
+CI_DECL void free_aligned_32( void *ptr )
+{
+struct aligned_header *ch = ((struct aligned_header *)ptr) - 1;
+
+    free( ch->os_ptr );
+}
+
+#if INCLUDE_READ_BARRIER
+CI_DECL obj read_barrier( obj item )
+{
+  if (PTR_P(item))
+    {
+      if (EQ(PTR_TO_HDRPTR(item)->pob_class,ZERO))
+	return read_barrier( OBJ( PTR_TO_HDRPTR(item)->pob_size ) );
+      else
+	return item;
+    }
+  else
+    return item;
+}
+#endif
+
+#endif /* _CI_SMEMORY */

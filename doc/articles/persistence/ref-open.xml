@@ -1,0 +1,105 @@
+
+
+<refentry>
+
+  <refnamediv>
+        <refname>open-persistent-store</refname>
+        <refname>read-persistent-store</refname>
+        <refpurpose>open a persistent store</refpurpose>
+        <refclass role="type">procedure</refclass>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <funcsynopsis language="scheme">
+      <funcprototype>
+        <funcdef>
+          <function>open-persistent-store</function>
+          <type>&lt;persistent-store&gt;</type>
+        </funcdef>
+        <paramdef><parameter>file</parameter><type>&lt;string&gt;</type></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+
+    <funcsynopsis language="scheme">
+      <funcprototype>
+        <funcdef>
+          <function>read-persistent-store</function>
+          <type>&lt;persistent-store&gt;</type>
+        </funcdef>
+        <paramdef><parameter>file</parameter><type>&lt;string&gt;</type></paramdef>
+      </funcprototype>
+    </funcsynopsis>
+
+  </refsynopsisdiv>
+
+  <refsect1>
+    <title>Description</title>
+<!--
+    <para>The (create-persistent-store) procedure is used to
+          initialize a persistent object store on disk and
+           open it for subsequent use.  The persistent store so
+           created is not initialized until the first call to
+           <code>(commit)</code>.  If the program should crash or otherwise
+           exit with ever performing the first commit, then a subsequent
+           attempt to open the store will fail.
+    </para>
+
+    <caution role="bug">
+      <para>In fact, it will fail with a mysterious LSS Error 5001</para>
+    </caution>
+-->
+
+    <para>The (open-persistent-store) procedure is used to access
+          an existing persistent object store.  The
+           root descriptor is read in and an initial set of virtual
+           memory mappings are created so that the graph of objects in
+           the store may begin to be accessed.
+    </para>
+
+    <para>The <code>(read-persistent-store)</code> procedure is like
+          <code>(open-persistent-store)</code>, except that the store
+          is opened for read access only.  The underlying LSS volumes
+          are not locked, and multiple processes may have the store open.
+    </para>
+  </refsect1>
+
+  <refsect1>
+    <title>Restrictions</title>
+    <para>An LSS volume may not be open by more than one process
+           for write at a time (this is enforced through the use of
+           <literal>O_EXCL</literal> flags when opening the underlying
+           store.)</para>
+
+    <para>A volume may not be open for read and write
+          at the same time.  However, this restriction is not enforced.</para>
+  </refsect1>
+
+<refsect1>
+  <title>Errors</title>
+  <para>The following conditions may be signalled.</para>
+  <variablelist>
+    <varlistentry>
+      <term>&lt;os-error&gt;</term>
+      <listitem>
+        <para>The file is not accessible or cannot be created.</para>
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term>&lt;lss-error&gt;</term>
+      <listitem>
+        <para>When opening a store, the file is not a legible
+              LSS volume.  It could be have been corrupted,
+              or it could be not an LSS volume at all.</para>
+      </listitem>
+    </varlistentry>
+  </variablelist>
+</refsect1>
+
+</refentry>
+
+<!--
+;;; Local Variables:
+;;; sgml-doctype: "ref.doctype"
+;;; sgml-parent-document: ("persistence.xml" "sect1" ("sect1") "para")
+;;; End:
+-->

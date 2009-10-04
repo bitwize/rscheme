@@ -1,0 +1,14 @@
+{Sect1}
+{Title}Define module{/Title}
+{Para}
+In this section we describe how modules can be defined in the interactive
+environment.
+You can therefore
+take advantage of modules even if you do not wish to use the off-line
+module compiler. 
+{Para}
+The main form for defining modules is defined-module with the
+following syntax:
+&ref.define-module;
+&ref.with-module;
+&ref.define-module-extend;

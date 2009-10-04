@@ -1,0 +1,120 @@
+{Chapter}
+{DocInfo}
+  {ReleaseInfo}doc/chaps/threads.sgml 1.4 (2004-06-24 13:03:12){/ReleaseInfo}
+{/DocInfo}
+{Title}Thread System{/Title}
+{Para}
+&rs; supports user-level threads portably, even on
+operating systems that don't have threads at all.  &rs; multiplexes
+several user threads onto one OS-level process.  These threads
+appear to be preemptive from the normal user's point of view.
+(For example, nonblocking I/O is used so that 
+one thread reading from the network doesn't block the whole process;
+the reading thread actually issues a nonblocking read request
+and a thread switch activates a waiting thread.)
+{Para}
+<!--
+We think threads will be especially important for graphics programming.
+Eventually we intend to have a full-fledged GUI programming system
+that combines callbacks for reactive programming with threads for
+ongoing and background computations.  We believe that this is the Right
+Thing.  Callbacks are very convenient and intuitive for writing simple
+reactive GUI's, but threads are indispensable for tasks that are
+conceptually concurrent.  (Without threads, you end up having to fake
+them with some kind of cooperative multitasking, and this tends to
+make concurrency problems harder, not easier.)
+-->
+{Para}
+When threads support is compiled in, the REPL comes up by default
+running in a thread.  In this case, the {UserInput/,tl/ directive will
+list all the threads in the system with their state, total run time, and
+the kind of object they are blocked on, if any.  For example:
+{/Para}
+{Screen}
+{Prompt/top[0]=>/{UserInput/,tl/
+     0 [main]       RUN    46.2 ms   
+     1 [finalize]   BLOCK  27 us      #[<mailbox> "finalize"]
+     2 [monitor]    BLOCK  54 us      #[<mailbox> "signal"]
+{/Screen}
+{Para}
+Synchronous exceptions (e.g., taking the car of 3) still generate
+a break loop in the thread causing the exception (typically the
+REPL thread itself).
+{/para}
+{note}{para}Need to talk about the backstop handler{/note}
+{Para}
+However, when running a threaded REPL, an asynchronous interrupt 
+(as from &cntl.c;) will suspend the current thread group and create
+a new "break" thread group for a new REPL:
+{/Para}
+{Screen}
+{Prompt/top[1]=>/{UserInput}&cntl.c;{/UserInput}
+** 0: Interrupt received: (SIGINT . #[<time> Thu Jul 17 16:21:00 2003])
+{Prompt/break[0]=>/{UserInput},tl{/UserInput}
+     0 [main]       SUSP   50 ms     
+     1 [finalize]   BLOCK  27 us      #[<mailbox> "finalize"]
+     2 [monitor]    BLOCK  3.1 ms     #[<mailbox> "signal"]
+     3 [break]      RUN    1.68 ms   
+{/Screen}
+{Para}
+When the break loop ends (as by EOF, or &cntl.d;), the suspended thread
+group is resumed.
+{Para}
+
+In order to maintain thread progress, the low-level system call I/O and
+other blocking system calls should not normally be used (e.g., {Phrase
+Role="var"}fd-read{/Phrase}, {Phrase Role="var"}fd-write{/Phrase},
+{Phrase Role="var"}socket-accept{/Phrase}, {Phrase
+Role="var"/wait-for/) since they will typically block the entire
+RScheme process waiting for the operation to complete.  
+{para}
+The threads
+system uses select() internally to manage multiple outstanding
+non-blocking I/O requests.
+
+Therefore, when interacting with {Quote/slow/ devices such as the
+network, use the appropriate procedures described in this chapter to
+create safe objects.  See section {XRef linkend="x.threads.io"} for
+more details.
+{/Para}
+
+{note}{para}The procedures defined in this chapter are available from
+the {literal}rs.sys.threads.manager{/literal} module.{/note}
+
+{Sect1}
+{Title}Thread Objects{/Title}
+{Para}
+The {Phrase Role="var"}make-thread{/Phrase} procedure is used to
+create threads.  The system maintains a notion of thread groups, which
+is a hierarchy of thread sets.  You can also determine what thread is
+currently running, and its thread group.
+
+&ref.make-thread;
+&ref.current-thread-group;
+&ref.current-thread;
+&ref.suspend-thread;  <!-- really `thread-suspend' -->
+&ref.resume-thread;   <!-- really `thread-resume' -->
+&ref.thread-sleep;
+
+{Sect1}{Title}Synchronization{/Title}
+
+&ref.make-mailbox;
+&ref.send-message;
+&ref.receive-message;
+&ref.make-send-rights;
+&ref.make-semaphore;
+&ref.semaphore-signal;
+&ref.semaphore-wait;
+&ref.thread-join;
+
+{Sect1}{Title}High Level Programming{/Title}
+
+&ref.future;
+&ref.force;
+
+{Sect1 id="x.threads.io"}{Title}Thread Safe Input and Output{/Title}
+
+&ref.open-server-socket;
+&ref.accept-client;
+&ref.open-client-socket;
+&ref.socket-close;

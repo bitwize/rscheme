@@ -1,0 +1,49 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}with-output-to-string{/RefName}
+  {RefPurpose}Creates an output port for writing to a string{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/with-output-to-string/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/thunk/{/ParamDef}{ParamDef role="returns"}
+{Parameter}string{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}thunk{/Term}
+    {ListItem}{para}
+A procedure of no arguments.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}string{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function establishes a string output port 
+(see {Phrase Role="var"}open-output-string{/Phrase}), establishes it as the current
+output port, and then calls the given procedure (thunk)
+with no arguments.{/para}
+{para}
+When the thunk returns normally, the output port is closed and
+the resulting string is returned.{/para}
+{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,258 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/runtime/numsimpl.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.4
+ * File mod date:    1998-12-30 19:24:23
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ *------------------------------------------------------------------------*/
+
+obj basic_plus( obj x, obj y )
+{
+  if (OBJ_ISA_FIXNUM(x))
+  {
+    if (OBJ_ISA_FIXNUM(y))
+      return FX_ADD(x,y);
+    else if (LONGFLOAT_P(y))
+      return make_float( fx2int(x) + extract_float(y) );
+    }
+    else if (LONGFLOAT_P(x))
+    {
+	if (OBJ_ISA_FIXNUM(y))
+	    return make_float( extract_float(x) + fx2int(y) );
+	else if (LONGFLOAT_P(y))
+	    return make_float( extract_float(x) + extract_float(y) );
+    }
+
+    scheme_error( "(base+ ~s ~s): argument not basic", 2, x, y );
+    return ZERO;
+}
+
+obj basic_minus( obj x, obj y )
+{
+    if (OBJ_ISA_FIXNUM(x))
+    {
+	if (OBJ_ISA_FIXNUM(y))
+	    return FX_SUB(x,y);
+	else if (LONGFLOAT_P(y))
+	    return make_float( fx2int(x) - extract_float(y) );
+    }
+    else if (LONGFLOAT_P(x))
+    {
+	if (OBJ_ISA_FIXNUM(y))
+	    return make_float( extract_float(x) - fx2int(y) );
+	else if (LONGFLOAT_P(y))
+	    return make_float( extract_float(x) - extract_float(y) );
+    }
+
+    scheme_error( "(base- ~s ~s): argument not basic", 2, x, y );
+    return ZERO;
+}
+
+obj basic_mul( obj x, obj y )
+{
+    if (OBJ_ISA_FIXNUM(x))
+    {
+	if (OBJ_ISA_FIXNUM(y))
+	    return FX_MUL(x,y);
+	else if (LONGFLOAT_P(y))
+	    return make_float( fx2int(x) * extract_float(y) );
+    }
+    else if (LONGFLOAT_P(x))
+    {
+	if (OBJ_ISA_FIXNUM(y))
+	    return make_float( extract_float(x) * fx2int(y) );
+	else if (LONGFLOAT_P(y))
+	    return make_float( extract_float(x) * extract_float(y) );
+    }
+    scheme_error( "(base* ~s ~s): argument not basic", 2, x, y );
+    return ZERO;
+}
+
+obj basic_div( obj x, obj y )
+{
+    if (OBJ_ISA_FIXNUM(x))
+    {
+	if (OBJ_ISA_FIXNUM(y))
+	    return make_float( (double)fx2int(x) / (double)fx2int(y) );
+	else if (LONGFLOAT_P(y))
+	    return make_float( fx2int(x) / extract_float(y) );
+    }
+    else if (LONGFLOAT_P(x))
+    {
+	if (OBJ_ISA_FIXNUM(y))
+	    return make_float( extract_float(x) / fx2int(y) );
+	else if (LONGFLOAT_P(y))
+	    return make_float( extract_float(x) / extract_float(y) );
+    }
+
+    scheme_error( "(base/ ~s ~s): argument not basic", 2, x, y );
+    return ZERO;
+}
+
+static int float_cmp( IEEE_64 a, IEEE_64 b )
+{
+  if (a < b)
+    return -1;
+  else if (a > b)
+    return 1;
+  else
+    return 0;
+}
+
+int basic_cmp( obj x, obj y )
+{
+  if (OBJ_ISA_FIXNUM(x))
+    {
+      if (OBJ_ISA_FIXNUM(y))
+	{
+	  if (EQ(x,y))
+	    return 0;
+	  else if (FX_LT(x,y))
+	    return -1;
+	  else
+	    return 1;
+	}
+      else if (LONGFLOAT_P(y))
+	{
+	  return float_cmp( (IEEE_64)fx2int(x), extract_float(y) );
+	}
+    }
+    else if (LONGFLOAT_P(x))
+    {
+	if (OBJ_ISA_FIXNUM(y))
+	  return float_cmp( extract_float(x), (IEEE_64)fx2int(y) );
+	else if (LONGFLOAT_P(y))
+	  return float_cmp( extract_float(x), extract_float(y) );
+    }
+
+    scheme_error( "(base-cmp ~s ~s): argument not basic", 2, x, y );
+    return NO;
+}
+
+obj basic_bitwise_and( obj x, obj y )
+{
+    if(!OBJ_ISA_FIXNUM(x)){
+      scheme_error("type check failed: expected a fixnum, saw: ~s\n", 1, x);
+      return ZERO;
+    }
+    if(!OBJ_ISA_FIXNUM(y)){
+      scheme_error("type check failed: expected a fixnum, saw: ~s\n", 1, y);
+      return ZERO;
+    }
+    return FX_AND(x, y);
+}
+
+obj basic_bitwise_or( obj x, obj y )
+{
+    if(!OBJ_ISA_FIXNUM(x)){
+      scheme_error("type check failed: expected a fixnum, saw: ~s\n", 1, x);
+      return ZERO;
+    }
+    if(!OBJ_ISA_FIXNUM(y)){
+      scheme_error("type check failed: expected a fixnum, saw: ~s\n", 1, y);
+      return ZERO;
+    }
+    return FX_OR(x, y);
+}
+
+obj basic_bitwise_xor( obj x, obj y )
+{
+    if(!OBJ_ISA_FIXNUM(x)){
+      scheme_error("type check failed: expected a fixnum, saw: ~s\n", 1, x);
+      return ZERO;
+    }
+    if(!OBJ_ISA_FIXNUM(y)){
+      scheme_error("type check failed: expected a fixnum, saw: ~s\n", 1, y);
+      return ZERO;
+    }
+    return FX_XOR(x, y);
+}
+
+obj basic_bitwise_not( obj x )
+{
+    if(!OBJ_ISA_FIXNUM(x)){
+      scheme_error("type check failed: expected a fixnum, saw: ~s\n", 1, x);
+      return ZERO;
+    }
+    return FX_NOT(x);
+}
+
+obj basic_lshr(obj x, int y)
+{
+    if(!OBJ_ISA_FIXNUM(x)){
+      scheme_error("type check failed: expected a fixnum, saw: ~s\n", 1, x);
+      return ZERO;
+    }
+    return FX_LSHR(x, y);
+}
+
+obj basic_ashr(obj x, int y)
+{
+    if(!OBJ_ISA_FIXNUM(x)){
+      scheme_error("type check failed: expected a fixnum, saw: ~s\n", 1, x);
+      return ZERO;
+    }
+    return FX_ASHR(x, y);
+}
+
+obj basic_lshl(obj x, int y)
+{
+    if(!OBJ_ISA_FIXNUM(x)){
+      scheme_error("type check failed: expected a fixnum, saw: ~s\n", 1, x);
+      return ZERO;
+    }
+    return FX_SHL(x, y);
+}
+
+obj basic_ashl(obj x, int y)
+{
+    if(!OBJ_ISA_FIXNUM(x)){
+      scheme_error("type check failed: expected a fixnum, saw: ~s\n", 1, x);
+      return ZERO;
+    }
+    return basic_lshl(x, y);
+}
+
+obj basic_quotient(obj x, obj y)
+{
+    if(!OBJ_ISA_FIXNUM(x)){
+      scheme_error("type check failed: expected a fixnum, saw: ~s\n", 1, x);
+      return ZERO;
+    }
+    if(!OBJ_ISA_FIXNUM(y)){
+      scheme_error("type check failed: expected a fixnum, saw: ~s\n", 1, y);
+      return ZERO;
+    }
+    return int_quotient(fx2int(x), fx2int(y));
+}
+
+obj basic_remainder(obj x, obj y)
+{
+    if(!OBJ_ISA_FIXNUM(x)){
+      scheme_error("type check failed: expected a fixnum, saw: ~s\n", 1, x);
+      return ZERO;
+    }
+    if(!OBJ_ISA_FIXNUM(y)){
+      scheme_error("type check failed: expected a fixnum, saw: ~s\n", 1, y);
+      return ZERO;
+    }
+    return int_remainder(fx2int(x), fx2int(y));
+}
+
+obj basic_modulo(obj x, obj y)
+{
+    if(!OBJ_ISA_FIXNUM(x)){
+      scheme_error("type check failed: expected a fixnum, saw: ~s\n", 1, x);
+      return ZERO;
+    }
+    if(!OBJ_ISA_FIXNUM(y)){
+      scheme_error("type check failed: expected a fixnum, saw: ~s\n", 1, y);
+      return ZERO;
+    }
+    return int_modulo(fx2int(x), fx2int(y));
+}

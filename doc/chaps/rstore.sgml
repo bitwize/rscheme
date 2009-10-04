@@ -1,0 +1,136 @@
+{Chapter}
+{Title}Persistent Object Store{/Title}
+{Para}
+The persistent object store module ({UserInput/rs.db.rstore/) is an
+implementation based on the concept of pointer swizzling
+at page-fault time as described
+in Paul Wilson's
+{CiteTitle PUBWORK="article"}<!-- Wilson92iwooos -->Pointer Swizzling
+at Page-Fault Time{/CiteTitle}.
+This allows the system to access databases larger than
+the virtual memory of the machine, and with efficient
+translation costs (pages are faulted in and translated
+on-demand, and once faulted, incur no additional run-time overhead).
+{Para}
+The underlying storage for the object store is log-structured
+(and, in fact, currently no mechanism exists to automatically
+or incrementally compact the log).  Only one file is used to store
+all the information in an object store, and that file is
+called the {Emphasis/backing store file/.
+{Para}
+The interior structure of an object store -- that is, the 
+data structures which are stored -- are determined completely by
+the application program.  This facility provides access to
+a single value per persistent store, the {Emphasis/root object/, which
+is read using the {Phrase Role="var"}root-object{/Phrase} function and written using
+the {Phrase Role="var"}commit{/Phrase} function.
+{Para}
+{Sect1}
+{Title}Creating and Accessing an Object Store{/Title}
+{Para}
+The life cycle of an object store starts off with it's creation
+(obviously).
+A newly created object store has no contents, and takes up about 600
+bytes in the backing store.  The initial root object is &f;.
+{Para}
+Thereafter, a sequence of {Emphasis/commit/ operations take place, each
+establishing a (possibly) new root object.  Each commit copies all
+dirty pages (pages modified since the last commit) to the end of the
+backing store file, and then writes out a {Emphasis/commit record/ which 
+describes the state of the object store.
+{Para}
+An existing object store is accessed using the {Phrase Role="var"}open-persistent-store{/Phrase}
+function.
+{Para}
+{Sect1}
+{Title}Commit Records{/Title}
+{Para}
+A {Emphasis/commit record/ describes the state of the object store; each
+commit operation writes out a new commit record.  A previous state
+of the store can even be accessed (in read mode) by specifying 
+the location of the
+commit record to use when the store is opened.
+<!>
+{Sect1}
+{Title}Defining Pivot Points{/Title}
+{Para}
+It is usually necessary to allow objects within an object store
+to point to objects that are part of the {Quote/program/, such as 
+standard class objects (recall that everything is an object, and
+every object has a class.  Furthermore, the representation is
+such that objects that are actually in the heap have actual
+pointers to their class objects.  Hence, in order to have, for
+example, a vector located in the persistent store, it is necessary
+to somehow allow that object to point to the (single)
+{ClassName/<vector>/ class object.  Furthermore, since the location in
+memory of
+built-in class objects may change from process to process, a
+different {Emphasis/object naming/ scheme must be employed to resolve
+the references to built-in or other application objects.)
+{Para}
+The mechanism that this module provides to allow persistent objects
+to refer to transient objects (but in a persistent way) is
+called {Emphasis/pivots/.
+{Para}
+The application defines a sequence of {Emphasis/pivot objects/ with
+well-known names (they are defined in collections on
+{Quote/indirect pages/ -- see {Phrase Role="var"}setup-indirect-page{/Phrase}); 
+the system automatically resolves references to
+such objects when a page is loaded, and recognizes references to
+them when a page is written out.  The next time the application
+opens an object store, it configures the same sequence of pivot
+objects -- then, a page that is loaded will correctly resolve to the
+corresponding application object.
+{Para}
+Under normal circumstances, this module provides a
+pre-defined collection of pivots for the standard built-in classes
+such (for example) as the {ClassName/<vector>/ and {ClassName/<pair>/ class objects.
+<!>
+{Sect1}
+{Title}Reachability-based Persistence{/Title}
+{Para}
+When the persistence system is writing out a page, if it encounters
+a pointer to a transient object that is not a pivot, then something
+must be done -- after all, a persistent page cannot {Emphasis/have/ a pointer
+to a transient object except as allowed by the pivot mechanism.
+{Para}
+The default behavior depends on what kind of object it is.  Most
+normal data-structuring objects will be implicitly copied into
+the store (ie, made persistent).  These are objects like lists, 
+vectors, strings, regular application objects, etc.  Because of
+this, the basic persistence metaphor is one of reachability-based
+persistence; that is, the {Emphasis/root object/ and any object reachable
+from it will be made persistent.
+
+{Para}
+
+One consequence of {Emphasis/copying/ objects into the store
+to make them persistent is that {Emphasis/object identity of
+transient objects is lost/ across a commit.  If you hold on
+to a pointer to a transient object which is reachable from
+the root of the store, then after the commit, that pointer
+will no longer refer to the object within the store.
+
+[Need a picture here!]
+
+{Para}
+Symbols are turned into pivots, in order to preserve the usual meaning
+of symbols (so that when the image is later loaded, the symbols will
+maintain the correct object identity.)
+{Para}
+A class object that is encountered, however, probably denotes an
+application error -- presumably either a failure to declare the class
+as a pivot, or the installation of an unexpected kind of object into
+the persistent data structure.  (Note that class objects can't be
+automatically turned into pivots the way symbols can, because there
+isn't a well-known, fixed way of naming them.)
+{Para}
+{Sect1}
+{Title}Functions Reference{/Title}
+<!-- ================================================================== -->
+&ref.open-persistent-store;
+&ref.create-persistent-store;
+&ref.root-object;
+&ref.commit;
+&ref.setup-indirect-page;
+&ref.alloc-indirect-pages;

@@ -1,0 +1,136 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}format{/RefName}
+  {RefPurpose}Format some output to a port or string{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/format/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/dest/ {Parameter/format-str/ {Parameter/arg/ {Parameter Role="rest"}...{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}dest{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<output-port>/, {UserInput}#f{/UserInput} (denoting output to a string
+buffer) or {UserInput}#t{/UserInput} (denoting output to current output).{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}format-str{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}arg{/Term}
+    {ListItem}{para}
+Arguments interpreted according to format string.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Interpolate argument values ({Phrase Role="var"}arg{/Phrase}s) into indicated
+positions in the format string {Phrase Role="var"}format-str{/Phrase} and render
+the result onto the output specified by {Phrase Role="var"}dest{/Phrase}.{/para}
+{para}
+If {Phrase Role="var"}dest{/Phrase} is {UserInput}#t{/UserInput}, consider the destination to be the
+value currently returned by {Phrase Role="var"}current-output-port{/Phrase}.{/para}
+{para}
+If {Phrase Role="var"}dest{/Phrase} is {UserInput}#f{/UserInput}, render the output into a freshly
+allocated {ClassName/<string>/ instance.{/para}
+{para}
+Interpolations are indicated in {Phrase Role="var"}format-str{/Phrase} by the tilde ({UserInput}~{/UserInput})
+character.
+The following format specifiers are available:{/para}
+{InformalTable}
+{TGroup COLS=2}
+{THead}
+{Row}
+{Entry}format specifier{/Entry}
+{Entry}description{/Entry}
+{/Row}
+{/THead}
+{TBody}
+{Row}
+{Entry}{UserInput}~a{/UserInput}{/Entry}
+{Entry}any: display the argument (as for humans).{/Entry}
+{/Row}
+{Row}
+{Entry}{UserInput}~s{/UserInput}{/Entry}
+{Entry}slashified: write the argument (as for parsers).{/Entry}
+{/Row}
+{Row}
+{Entry}{UserInput}~j{/UserInput}{/Entry}
+{Entry}joined: display over space-seperated elements of list{/Entry}
+{/Row}
+{Row}
+{Entry}{UserInput}~d{/UserInput}{/Entry}
+{Entry}decimal: the integer argument is output in decimal format.{/Entry}
+{/Row}
+{Row}
+{Entry}{UserInput}~x{/UserInput}{/Entry}
+{Entry}hexadecimal: the integer argument is output in hexadecimal format.{/Entry}
+{/Row}
+{Row}
+{Entry}{UserInput}~c{/UserInput}{/Entry}
+{Entry}character: the next argument is displayed as a character.{/Entry}
+{/Row}
+{Row}
+{Entry}{UserInput}~_{/UserInput}{/Entry}
+{Entry}space: output a space character.{/Entry}
+{/Row}
+{Row}
+{Entry}{UserInput}~%{/UserInput}{/Entry}
+{Entry}newline: output a newline character.{/Entry}
+{/Row}
+{Row}
+{Entry}{UserInput}~~{/UserInput}{/Entry}
+{Entry}tilde: output a tilde.{/Entry}
+{/Row}
+{Row}
+{Entry}{UserInput}~t{/UserInput}{/Entry}
+{Entry}tab: output a tab character.{/Entry}
+{/Row}
+{Row}
+{Entry}{UserInput}~>{/UserInput}{/Entry}
+{Entry}tab: the next arg is an integer # of tab stops.{/Entry}
+{/Row}
+{Row}
+{Entry}{UserInput}~b{/UserInput}{/Entry}
+{Entry}binary: the integer argument is output in binary format.{/Entry}
+{/Row}
+{Row}
+{Entry}{UserInput}~o{/UserInput}{/Entry}
+{Entry}octal: the integer argument is output in octal format.{/Entry}
+{/Row}
+{Row}
+{Entry}{UserInput}~p{/UserInput}{/Entry}
+{Entry}plural: if the argument is greater than 1, print a lower case 's'.{/Entry}
+{/Row}
+{Row}
+{Entry}{UserInput}~h{/UserInput}{/Entry}
+{Entry}hash: create a user hash number for the arg object{/Entry}
+{/Row}
+{Row}
+{Entry}{UserInput}~r{/UserInput}{/Entry}
+{Entry}raw: the 32 bits of the value are printed in hex{/Entry}
+{/Row}
+{Row}
+{Entry}{UserInput}~C{/UserInput}{/Entry}
+{Entry}Capitalize: like ~a, but the first letter is cap'd{/Entry}
+{/Row}
+{/TBody}
+{/TGroup}
+{/InformalTable}
+{/RefSect1}
+{/RefEntry}

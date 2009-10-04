@@ -1,0 +1,53 @@
+
+(define-primop check-ptr ((arg <obj>) => <ptr>)
+  "CHECK_PTR")
+
+(define-primop check-immob ((arg <obj>) => <immob>)
+  "CHECK_IMMOB")
+
+(define-primop check-fixnum ((arg <obj>) => <fixnum>)
+  "CHECK_FIXNUM")
+
+(define-primop check-gvec ((arg <obj>) => <gvec>)
+  "CHECK_GVEC")
+
+(define-primop check-bvec ((arg <obj>) => <bvec>)
+  "CHECK_BVEC")
+
+(define-primop check-pair ((arg <obj>) => <pair>)
+  "CHECK_PAIR")
+
+(define-primop check-symbol ((arg <obj>) => <symbol>)
+  "CHECK_SYMBOL")
+
+(define-primop check-vector ((arg <obj>) => <vector>)
+  "CHECK_VECTOR")
+
+(define-primop check-function ((arg <obj>) => <function>)
+  "CHECK_FUNCTION")
+
+(define-primop check-class ((arg <obj>) => <<class>>)
+  "CHECK_CLASS")
+
+(define-primop check-string ((arg <obj>) => <string>)
+  "CHECK_STRING")
+
+(define-primop check-double-float ((arg <obj>) => <double-float>)
+  "CHECK_DOUBLE_FLOAT")
+
+(define-primop check-long-int ((arg <obj>) => <long-int>)
+  "CHECK_LONG_INT")
+
+(define-primop check-ascii-char ((arg <obj>) => <ascii-char>)
+  "CHECK_ASCII_CHAR")
+
+(define-primop check-unicode-char ((arg <obj>) => <unicode-char>)
+  "CHECK_UNICODE_CHAR")
+
+(define-primop check-boolean ((arg <obj>) => <boolean>)
+  "CHECK_BOOLEAN")
+
+;;
+
+(define-primop check-instance ((arg <obj>) (class <<class>>) => <obj>)
+  "CHECK_INSTANCE")

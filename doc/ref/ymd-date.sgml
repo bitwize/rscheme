@@ -1,0 +1,64 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}ymd->date{/RefName}
+  {RefPurpose}Convert a day in separate year, month, and day to a date object.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/ymd->date/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/year/ {Parameter/month/ {Parameter/day/{/ParamDef}{ParamDef role="returns"}
+{Parameter}date{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}year{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}month{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}day{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}date{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<date>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function computes the date object corresponding to the given
+{Parameter}year{/Parameter}, {Parameter}month{/Parameter}, and {Parameter}day{/Parameter} in the Gregorian calendar.{/para}
+{InformalExample}
+{Para}
+{UserInput Role="ToEval"}(ymd->date 1997 9 14){/UserInput}
+{ComputerOutput Role="EvalsTo"}1997.09.14{/ComputerOutput}
+{Para}
+{UserInput Role="ToEval"}(date->day (ymd->date 1997 9 14)){/UserInput}
+{ComputerOutput Role="EvalsTo"}729281{/ComputerOutput}
+{/InformalExample}
+{/RefSect1}
+{/RefEntry}

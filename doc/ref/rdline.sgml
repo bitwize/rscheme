@@ -1,0 +1,52 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}read-line{/RefName}
+  {RefPurpose}Reads a line of input{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/read-line/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+{/ParamDef}{ParamDef role="returns"}
+{Parameter}string{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}input-port{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<input-port>/.  Default is
+the current input port.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}string{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function reads a line of text from the given port.
+The returned string is the contents of that line, not including
+the terminating newline character.{/para}
+{para}
+If no characters can be read because the input port is at EOF,
+then the EOF object is returned.  On the other hand, if EOF is
+encountered after reading some characters but before reading
+a newline character, then the EOF terminates the line and the
+returned string will consist of the characters up to the EOF.{/para}
+{/RefSect1}
+{/RefEntry}

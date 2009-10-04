@@ -1,0 +1,52 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}define-class{/RefName}
+  {RefPurpose}Defines a new class{/RefPurpose}
+  {RefClass role="Type"}special{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/define-class/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/name/ {Parameter/superclass/ {Parameter/class-opt/ {Parameter/slot-spec/{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}name{/Term}
+    {ListItem}{para}
+The name of the class being defined{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}superclass{/Term}
+    {ListItem}{para}
+The parent class{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}class-opt{/Term}
+    {ListItem}{para}
+A class option{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}slot-spec{/Term}
+    {ListItem}{para}
+A slot specification{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This special form defines a new, immutable top-level
+variable with the given {Parameter}name{/Parameter}, whose value is the
+class object described by the superclass,
+class options, slot specifications.{/para}
+{/RefSect1}
+{/RefEntry}

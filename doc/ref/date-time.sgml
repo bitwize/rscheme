@@ -1,0 +1,54 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}date->time{/RefName}
+  {RefPurpose}Compute the time on a particular day{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/date->time/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/date/ {Parameter/secs/{/ParamDef}{ParamDef role="returns"}
+{Parameter}time{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}date{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<date>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}secs{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}time{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<time>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Returns the {Parameter}time{/Parameter} corresponding to the given number of
+seconds, {Parameter}secs{/Parameter}, since midnight GMT on the given {Parameter}date{/Parameter}.{/para}
+{para}
+Because of the representation of time objects (from the
+{UserInput}syscalls{/UserInput} module, btw), {Parameter}date{/Parameter} must refer to
+January 1, 1970, or later.{/para}
+{/RefSect1}
+{/RefEntry}

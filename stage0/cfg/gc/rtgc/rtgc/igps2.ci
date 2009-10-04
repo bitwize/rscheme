@@ -1,0 +1,182 @@
+#ifndef IGPS1_CI
+#define IGPS1_CI
+
+#include <assert.h>
+#include <rtgc/igps.hh>
+#include <rtgc/objmgr.hh>
+#include <rtgc/gc.hh>
+
+//**********************************************************************
+// igp_manager::test_and_gray(pos_ptr_addr igp,int old,
+//			       int young, int black_flag)
+// This function gets the igp stored address and pointed to and pointing to 
+// generation number and the flag if the pointing object is black or not.
+// It grays object in the younger generation if it is white.
+// If the objects has already been promoted, it enlists the igp in the
+// igp list or stored into list for the next generation.
+LINK_TYPE int igp_manager::test_and_gray(pos_ptr_addr igp,int old,
+					 int young, int black_flag){
+    gc_obj_addr ptr;
+    gc_object_base *object;
+
+    assert(young < old);
+
+    if((ptr = cast_and_deref_ptr(igp)) != NULL){
+	// First, we derive the header of this rval object.  There
+	// are two ways of doing this depending on whether the language
+	// system allows derived pointers.  One just subtracts off
+	// the language level header, and the other does a virtual
+	// function call.
+#ifdef NO_DERIVED_POINTERS
+	object = (gc_object_base *)(((char *)ptr)-sizeof(gc_object_base));
+#ifndef NDEBUG
+	object_manager *om = gc.get_object_manager(ptr);
+	gc_object_base *object1 = om->find_start_of_object(ptr);
+	assert(object == object1);
+#endif //NDEBUG
+#else
+	object_manager *om = gc.get_object_manager(ptr);
+	object = om->find_start_of_object(ptr);
+#endif
+	// Next, determine if the rval object is a white in the 
+	// generation young.
+	if(object->get_gen_num()==young){
+	    if(!object->is_shaded()){
+		// If the rval object is not shaded, shade it and do
+		// some more tracing (by calling generations::trace).
+#ifdef NO_DERIVED_POINTERS
+		object->get_containing_list()->gray_this_object(object);
+#else
+		object->get_containing_list(om)->gray_this_object(object);
+#endif
+		// We need to store this into the compacting space.
+		if(black_flag)
+		    black_igps[old][young][black_igp_store[old][young]++]=igp;
+		else
+		    white_igps[old][young][white_igp_store[old][young]++]=igp;
+		// Since we grayed one white, return 1. 
+		return(1);
+	    }else{// if the object is shaded
+		// simply copy the igp into the compacting space
+		if(black_flag)
+		    black_igps[old][young][black_igp_store[old][young]++]=igp;
+		else
+		    white_igps[old][young][white_igp_store[old][young]++]=igp;
+	    }
+	}
+	// Otherwise, determine if the young object is in the next
+	// generation. IGP list may contain an object that points to
+	// a promoted object. If that case, the young  object may be
+	// white and the old object may be black. We have to
+	// 
+	else if(object->get_gen_num() == young + 1){
+	    if(young+1 == old){
+		if(black_flag){
+		    gc.get_gen(old)->add_ptr_stored_into_list(igp);
+		}
+	    }else{
+		if(black_flag)
+		    add_black_igp(igp,old,young+1);
+		else
+		    add_white_igp(igp,old,young+1);
+	    }
+	    // We throw away this igp by not storing it into the ipg
+	    // compacting space.
+	}
+    }
+    return(0);
+}
+
+
+//**********************************************************************
+// igp_manager::scan_next_igp(int pointed)
+//
+// scan_next_igp finds a white object pointed by an igp and gray it.
+// It returns 1 in success, 0 in the failure to find such an object.
+
+LINK_TYPE int igp_manager::scan_igp_list(int young)
+{
+    int old,i;
+    pos_ptr_addr igp;
+
+    assert(young < NUMBER_OF_GENERATIONS - 1);
+    // The largest index of the old_igps and new_igps is
+    // NUMBER_OF_GENERATIONS - 1.
+    for(old = NUMBER_OF_GENERATIONS - 1;old > young; old--){
+	// This is for scanning black igps.
+
+	// scan igps which were collected before the last finish of younger
+	// generation GC cycle.
+	for(i = 0; i < NUMBER_OF_STEPS; i++){
+	    while(black_igp_next[old][young] < black_igp_bndry[old][young][i]){
+
+		assert(black_igp_next[old][young] < NUM_IGP);
+
+		// Take an igp and check
+		igp = black_igps[old][young][black_igp_next[old][young]++];
+		// test and gray in black mode
+		if(test_and_gray(igp,old,young,1)){
+		    return(1);
+		}
+	    }
+	    // If the counter reaches the boundery, we reset the boundary
+	    // pointer so that it points to the new boundary of the IGP list
+	    if(black_igp_next[old][young] == black_igp_bndry[old][young][i]){
+		black_igp_bndry[old][young][i] = black_igp_store[old][young];
+	    }
+	}
+	// i is now NUMBER_OF_STEPS
+	// If the igp is added to the IGP list after we finish scanning the 
+	// list, we continue scanning the igp list from the newly added igp's.
+	while(black_igp_next[old][young] < 
+	      black_igp_bndry[old][young][NUMBER_OF_STEPS])
+	{
+	    assert(black_igp_next[old][young] < NUM_IGP);
+	    igp = black_igps[old][young][black_igp_next[old][young]++];
+	    // test and gray in black mode
+	    if(test_and_gray(igp,old,young,1)){
+		return(1);
+	    }
+	}
+	// This is for scanning white igps.
+
+	// scan igps which were collected before the last finish of younger
+	// generation GC cycle.
+	for(i = 0; i < NUMBER_OF_STEPS; i++){
+	    while(white_igp_next[old][young] < 
+	          white_igp_bndry[old][young][i])
+	{
+		assert(white_igp_next[old][young] < NUM_IGP);
+		igp = white_igps[old][young][white_igp_next[old][young]++];
+		// test and gray in white mode
+		if(test_and_gray(igp,old,young,0)){
+		    return(1);
+		}
+	    }
+	    // If the counter reaches the boundery, we reset the boundary
+	    // pointer so that it points to the new boundary of the IGP list
+	    if(white_igp_next[old][young] == white_igp_bndry[old][young][i]){
+		white_igp_bndry[old][young][i] = white_igp_store[old][young];
+	    }
+	}
+	// i is now NUMBER_OF_STEPS
+	// If the igp is added to the IGP list after we finish scanning the 
+	// list, we continue scanning the igp list from the newly added igp's.
+	while(white_igp_next[old][young] < 
+	      white_igp_bndry[old][young][NUMBER_OF_STEPS])
+	{
+	    assert(white_igp_next[old][young] < NUM_IGP);
+	    igp = white_igps[old][young][white_igp_next[old][young]++];
+	    // test and gray in white mode
+	    if(test_and_gray(igp,old,young,0)){
+		return(1);
+	    }
+	}
+    }
+    // If there is no igp left unscanned, return 0. 
+    return(0);
+}
+
+
+
+#endif IGPS1_CI

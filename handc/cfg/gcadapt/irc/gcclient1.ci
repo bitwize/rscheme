@@ -1,0 +1,146 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/cfg/gcadapt/irc/gcclient1.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.10
+ * File mod date:    2000-11-21 23:25:08
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ * Purpose:          (IRC) GC client adapter (part I)
+ *------------------------------------------------------------------------*/
+
+#ifndef _CI_GCCLIENT1
+#define _CI_GCCLIENT1
+
+#include <rscheme/profile.h>
+
+#include <rscheme/vinsns.h>
+#include <rscheme/linktype.h>
+#include <rscheme/smemory.h>
+#include <rscheme/regs.h>
+#include <rscheme/clientyp.h>
+#include <rscheme/stakcach.h>
+#include <rscheme/osglue.h>
+
+extern struct module_descr **stable_root_module_ptr;
+extern unsigned stable_root_num;
+extern unsigned quasistable_root_num;
+
+
+CI_DECL gc_obj_addr cast_and_deref_ptr( pos_ptr_addr slot )
+{
+    return OBJ_ISA_PTR(*slot) ? PTR_TO_GCPTR(*slot) : NULL;
+}
+
+CI_DECL void IRC_clientStableRootIteratorInit( IRC_clientStableRootIterator *i )
+{
+  init_unit_root_iterator( &i->uri );
+}
+
+CI_DECL void *IRC_clientStableRootIteratorNext( IRC_clientStableRootIterator *i )
+{
+  obj *p, item;
+
+  while (1)
+    {
+      p = unit_root_iterator_next( &i->uri );
+      if (!p)
+	return NULL;
+      item = *p;
+      if (OBJ_ISA_PTR(item))
+        {
+          i->last_ptr = p;
+          return PTR_TO_GCPTR(item);
+        }
+    }
+}
+
+CIH_DECL void IRC_clientStableRootWasUnmapped( IRC_clientStableRootIterator *i )
+{
+  *(i->last_ptr) = UNMAPPED_OBJ;
+}
+
+/*====================================================================
+ *
+ *   Quasistable roots (i.e., the registers)
+ *
+ *====================================================================*/
+
+CI_DECL void IRC_clientQuasistableRootIteratorInit( 
+		IRC_clientQuasistableRootIterator *i )
+{
+  *i = 0;
+}
+
+CI_DECL void *IRC_clientQuasistableRootIteratorNext( 
+		IRC_clientQuasistableRootIterator *i )
+{
+obj item;
+
+  while (*i < NUM_REGS)
+    {
+      item = any_reg_ref( (*i)++ );
+      if (OBJ_ISA_PTR(item))
+	return PTR_TO_GCPTR(item);
+    }
+  return NULL;
+}
+
+CI_DECL void IRC_clientQuasistableRootWasUnmapped( IRC_clientQuasistableRootIterator *i )
+{
+  any_reg_set( (*i)-1, UNMAPPED_OBJ );
+}
+
+/*====================================================================
+ *
+ *   Unstable roots (i.e., the stack cache)
+ *
+ *====================================================================*/
+
+CI_DECL void IRC_clientUnstableRootIteratorInit( IRC_clientUnstableRootIterator *i )
+{
+  i->stack_cache = (obj *)(cache_upper_limit - POINTER_TAG);
+  i->sig_queue = 0;
+}
+
+
+CI_DECL void *IRC_clientUnstableRootIteratorNext( IRC_clientUnstableRootIterator *i )
+{
+obj item, *stop;
+UINT_32 cr = VAL(continuation_reg);
+obj *cache_iteration = i->stack_cache;
+
+    if (!i->stack_cache || !in_stack_cache(continuation_reg))
+      goto scan_sig_queue;
+
+    stop = (obj *)(cr - POINTER_TAG);
+
+    while (cache_iteration > stop)
+    {
+	item = *--cache_iteration;
+	if (OBJ_ISA_PTR(item) && !in_stack_cache(item))
+	{
+	     i->stack_cache = cache_iteration;
+	    return PTR_TO_GCPTR(item);
+	}
+    }
+    i->stack_cache = NULL;
+scan_sig_queue:
+    if (os_scan_sig_queue( &i->sig_queue, &item ))
+      return PTR_TO_GCPTR(item);
+    return NULL;
+}
+
+CI_DECL void IRC_clientUnstableRootWasUnmapped( IRC_clientUnstableRootIterator *i )
+{
+  assert( i->stack_cache );
+  *(i->stack_cache) = UNMAPPED_OBJ;
+}
+
+
+#endif /* _CI_GCCLIENT1 */
+
+

@@ -1,0 +1,179 @@
+#ifndef IGPS2_CI
+#define IGPS2_CI
+
+#include <assert.h>
+#include <rtgc/igps.hh>
+#include <rtgc/gcserver.h>
+
+#undef LINK_TYPE
+#ifdef INLINES
+#define LINK_TYPE inline 
+#else
+#define LINK_TYPE
+#endif
+
+//**********************************************************************
+// igp_manager::add_black_igp(pos_ptr_addr igp, int old, int young)
+//
+// Add the passed argument to the IGP list assuming the igp is a
+// pointer from a black old object to a young object.  This IGP will
+// be valid in the rest of the GC cycle and the next whole GC cycle.
+// old and young are the numbers of the corresponding generations. 
+LINK_TYPE
+void igp_manager::add_black_igp(pos_ptr_addr igp,int old, int young)
+{
+    assert(old < NUMBER_OF_GENERATIONS); 
+    assert(young < old);
+    assert(black_igp_bndry[old][young][NUMBER_OF_STEPS]  < NUM_IGP);
+
+    // This value 4 has no theoretical explanation. We should change it.  
+    amount_allocated -= 4;
+
+    int i = black_igp_bndry[old][young][NUMBER_OF_STEPS]++;
+    black_igps[old][young][i] = igp;
+}
+
+//**********************************************************************
+// igp_manager::add_white_igp(pos_ptr_addr igp, int old, int young)
+// Add the passed argument to the white IGP list, assuming the passed
+// igp is from a white old object to a black. This IGP will be valid
+// only in the rest of the GC cycle, and it will be abandoned at the
+// end of the cycle.
+ 
+LINK_TYPE void igp_manager::add_white_igp(pos_ptr_addr igp, int old, int young)
+{
+    assert(old < NUMBER_OF_GENERATIONS); 
+    assert(young < old);
+    assert(white_igp_bndry[old][young][NUMBER_OF_STEPS] < NUM_IGP);
+
+    // This value has no theoretical explanation. We should change it.
+    amount_allocated -= 4;
+
+    int i = white_igp_bndry[old][young][NUMBER_OF_STEPS]++;
+    white_igps[old][young][i] = igp;
+}
+
+//**********************************************************************
+// igp_manager::switch_igp_lists(int old)
+// 
+// This function is supposed to be called when the older generation 
+// switch_igp_lists switches the role of the arrays including IGP's and reset
+// the counters. 
+// old is the number of the older generation.
+// We should assume that reset_igp_lists(int young) is called for all young
+// s.t. young < old.
+
+
+LINK_TYPE void igp_manager::switch_igp_lists(int old)
+{
+    pos_ptr_addr *temp_ptr;
+    int i,k;
+
+    assert((old < NUMBER_OF_GENERATIONS) && (old > 0)); 
+
+    for(i = 0; i < old; i++){
+	// Switching the role of black and white igp lists.
+	temp_ptr = black_igps[old][i];
+	black_igps[old][i] = white_igps[old][i];
+	white_igps[old][i] = temp_ptr;
+	white_igp_next[old][i] = black_igp_next[old][i];
+	black_igp_next[old][i] = 0;
+	for(k = 0; k < NUMBER_OF_STEPS + 1; k++){ 
+	    // Black ipgs in the former cycle is now white. 
+	    white_igp_bndry[old][i][k] = black_igp_bndry[old][i][k];
+	    // All the black IGP's are abandoned.
+	    black_igp_bndry[old][i][k] = 0;
+	}
+
+	// Store pointers are all reset to 0. This is done actually in
+	// switch_igp_lists(), so this resetting is redundant.
+	//black_igps_store[old][i] = 0;
+	//white_igps_store[old][i] = 0;
+    }
+
+#ifndef NDEBUG
+    for(i = 0; i < old; i++){
+	for(k = 0; k < NUMBER_OF_STEPS + 1; k++){
+	    assert(black_igp_bndry[old][i][k] == 0);
+	}
+	for(k = 0; k < NUMBER_OF_STEPS; k++){
+	    assert(white_igp_bndry[old][i][k]
+		   <= white_igp_bndry[old][i][k+1]);
+	}
+	assert(white_igp_bndry[old][i][NUMBER_OF_STEPS] < NUM_IGP);
+    }
+#endif NDEBUG
+}
+
+
+//**********************************************************************
+// igp_manger::reset_igp_list(int young)
+//
+// This resets the next igp indexing pointer of the igps lists concerning
+// the argument generation as the pointed generation. This is supposed
+// to be called when the younger generation finishes the GC cycle.
+// young is the number of the generation. 
+
+LINK_TYPE void igp_manager::reset_igp_lists(int young)
+{
+    assert(young < NUMBER_OF_GENERATIONS - 1);
+    int old,i;
+    for(old = young + 1; old < NUMBER_OF_GENERATIONS; old++){
+
+	// IGP may be added in the last increment of tracing of old generation
+	// to the black igp list. They may not have been scaned, but it is
+	// sound, because duplicated copies must be in white igp.
+	// However, they are not in the compaction space, so we have to move
+	// them.
+	while(black_igp_next[old][young]
+	    < black_igp_bndry[old][young][NUMBER_OF_STEPS]){
+		int i = black_igp_next[old][young]++;
+		int j = black_igp_store[old][young]++;
+		black_igps[old][young][j] = black_igps[old][young][i];
+	    }
+	// now igp_next and igp_bndry must be equal
+	assert(black_igp_next[old][young]
+	       == black_igp_bndry[old][young][NUMBER_OF_STEPS]);
+	assert(white_igp_next[old][young]
+	       == white_igp_bndry[old][young][NUMBER_OF_STEPS]);
+
+	// We assume that all the boundary pointers for old steps are
+	// already stored into the appropriate slots.
+	black_igp_bndry[old][young][NUMBER_OF_STEPS]
+	    = black_igp_store[old][young];
+	black_igp_store[old][young] = 0;
+	white_igp_bndry[old][young][NUMBER_OF_STEPS]
+	    = white_igp_store[old][young];
+	white_igp_store[old][young] = 0;
+	
+	// Now, we advance the boundary to the next boundary
+	black_igp_next[old][young] = black_igp_bndry[old][young][0];
+	for(i = 0; i < NUMBER_OF_STEPS; i++){
+	    black_igp_bndry[old][young][i] = black_igp_bndry[old][young][i+1];
+	}
+	white_igp_next[old][young] = white_igp_bndry[old][young][0];
+	for(i = 0; i < NUMBER_OF_STEPS; i++){
+	    white_igp_bndry[old][young][i] = white_igp_bndry[old][young][i+1];
+	}
+    }
+
+#ifndef NDEBUG
+    int k;
+    for(i = young + 1; i < NUMBER_OF_GENERATIONS; i++){
+	for(k = 0; k < NUMBER_OF_STEPS; k++){
+	    assert(black_igp_bndry[i][young][k]
+		   <= black_igp_bndry[i][young][k+1]);
+	}
+	assert(black_igp_bndry[i][young][NUMBER_OF_STEPS] < NUM_IGP);
+	for(k = 0; k < NUMBER_OF_STEPS; k++){
+	    assert(white_igp_bndry[i][young][k]
+		   <= white_igp_bndry[i][young][k+1]);
+	}
+	assert(white_igp_bndry[i][young][NUMBER_OF_STEPS] < NUM_IGP);
+    }
+#endif NDEBUG
+}
+
+
+
+#endif //IGPS2_CI

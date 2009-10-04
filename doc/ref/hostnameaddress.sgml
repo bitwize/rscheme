@@ -1,0 +1,51 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}host-name->address{/RefName}
+  {RefPurpose}Look up a host by name.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/host-name->address/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/hostname/{/ParamDef}{ParamDef role="returns"}
+{Parameter}addr{/Parameter} {Parameter}aliases{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}hostname{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}addr{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}aliases{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<list>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Look up a host name and return its address (dotted list format) and
+any aliases ({Parameter}aliases{/Parameter} includes the canonical name as the
+first element){/para}
+{/RefSect1}
+{/RefEntry}

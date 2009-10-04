@@ -1,0 +1,54 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}error{/RefName}
+  {RefPurpose}Signal a non-recoverable condition{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/error/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/condition/{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/error/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/message/ {Parameter/arg/{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}condition{/Term}
+    {ListItem}{para}
+A condition object (an instance of {ClassName/<condition>/).{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}format-string{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function signals a condition from which no recovery
+is possible.  If the signal handler returns, then another
+error is signalled (a recovery protocol failure).  Hence, this
+function never returns.{/para}
+{para}
+In the interactive environment, the default condition handler
+supplied by the read-eval-print loop will catch any condition
+not otherwise caught and create a {Quote}break{/Quote} loop.{/para}
+{para}
+The second form of the function is a convenient interface to
+creating instances of {ClassName/<simple-error>/ with the given
+message and arguments.{/para}
+{/RefSect1}
+{/RefEntry}

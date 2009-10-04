@@ -1,0 +1,51 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}time+interval{/RefName}
+  {RefPurpose}Adds an interval to a time.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/time+interval/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/t1/ {Parameter/dt1/{/ParamDef}{ParamDef role="returns"}
+{Parameter}t2{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}t1{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<time>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}dt1{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<interval>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}t2{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<time>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Returns a new time which is {Parameter}dt{/Parameter} later than the given time.
+({Parameter}dt{/Parameter} may be negative, in which case the returned time is
+earlier){/para}
+{/RefSect1}
+{/RefEntry}

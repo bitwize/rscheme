@@ -1,0 +1,825 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(subproj.lst)
+
+#
+#  pick up release variables
+#  RSCHEME_RELEASE, RSCHEME_VERSION, and RSCHEME_BUILD
+#
+. ./release.cfg
+
+echo "configuring: RScheme ($RSCHEME_BUILD)"
+
+AC_SUBST(RSCHEME_BUILD)
+AC_SUBST(default_pkgs)
+AC_SUBST_FILE(PREAMBLE)
+AC_SUBST_FILE(POSTAMBLE)
+PREAMBLE=preamble.mak
+POSTAMBLE=postambl.mak
+
+test "$prefix" = NONE && prefix=/usr/local/lib/rs/$RSCHEME_VERSION
+test "$exec_prefix" = NONE && exec_prefix=$prefix/bin
+
+#
+#  use C++ if using the RTGC
+#
+
+AC_PROG_CC
+AC_PROG_CPP
+
+if test "$with_gc" = "rtgc"
+then AC_LANG_CPLUSPLUS
+     AC_PROG_CXX
+     AC_PROG_CXXCPP
+     gnu_c="$GXX"
+     COMPILE="$CXX"
+else gnu_c="$GCC"
+     COMPILE="$CC"
+fi
+
+uselinks=false
+#
+# configuration parameters...
+#
+
+
+USE_INLINES=false
+OPTIMIZE=true
+ASSERTIONS=false
+PERMIT_APPLY_BACKTRACE=false
+USE_STACK_CACHE=true
+FAKE_TIME_THREADS=false
+
+if test "$enable_debug" = "yes"
+then ASSERTIONS=true
+fi
+
+
+GC=""
+LDX_FLAGS="-lm"
+
+AC_CANONICAL_HOST
+AC_C_BIGENDIAN
+
+LD=ld
+default_pkgs="syscalls unixm"
+dl_default=no
+
+case "${host}" in
+  m68k-*-*)     ARCH=m68k ; AC_DEFINE(PLATFORM_ARCH_M68K,1) ;;
+  powerpc-*-*)  ARCH=powerpc ; AC_DEFINE(PLATFORM_ARCH_PPC,1) ;;
+  rs6000-*-*)   ARCH=powerpc ; AC_DEFINE(PLATFORM_ARCH_PPC,1) ;;
+  i?86-*-*)     ARCH=i386 ; AC_DEFINE(PLATFORM_ARCH_I386,1) ;;
+  x86_64-*-*)   ARCH=x86_64 ; AC_DEFINE(PLATFORM_ARCH_X86_64,1) ;;
+  mips-*-*)     ARCH=mips ; AC_DEFINE(PLATFORM_ARCH_MIPS,1) ;;
+  sparc-*-*)    ARCH=sparc ; AC_DEFINE(PLATFORM_ARCH_SPARC,1) ;;
+  alpha*-*-*)   ARCH=alpha ; AC_DEFINE(PLATFORM_ARCH_ALPHA,1) ;;
+  s390-*-*)     ARCH=s390 ; AC_DEFINE(PLATFORM_ARCH_S390,1) ;;
+  *-*-*)        ARCH=unknown ; AC_DEFINE(PLATFORM_ARCH_UNKNOWN,1) ;;
+esac
+AC_MSG_RESULT(Found architecture: $ARCH)
+
+# configure PLATFORM and PLATCAP (used in various #defines and
+# for reading platform-specific config files)
+#
+# also, for some systems, augment the set of default packages
+# and whether dynamic linking is configured by default or
+# not
+
+case "${host}" in
+  m68k-*-nextstep*) PLATFORM=next ; PLATCAP=NEXT
+                 ;;
+  *-*-darwin*)   PLATFORM=darwin ; PLATCAP=DARWIN
+                 dl_default=yes
+                 default_pkgs="fasl threads lss rstore"
+	         LDX_FLAGS=""
+                 ;;
+  *-*-rhapsody*) PLATFORM=rhapsody ; PLATCAP=RHAPSODY
+                 default_pkgs="fasl"
+	         LDX_FLAGS=""
+                 ;;
+  *-*-bsdi*)     PLATFORM=bsdi ; PLATCAP=BSDI
+                 ;;
+  *-*-*bsd*)	 PLATFORM=bsd ; PLATCAP=BSD
+                 dl_default=yes
+                 default_pkgs="fasl threads lss rstore"
+		 ;;
+  *-*-aix*)      PLATFORM=aix ; PLATCAP=AIX
+                 dl_default=yes
+                 default_pkgs="fasl threads lss rstore"
+                 ;;
+  *-*-linux*)    PLATFORM=linux ; PLATCAP=LINUX
+                 dl_default=yes
+                 default_pkgs="fasl threads lss rstore"
+                 ;;
+  *-*-sunos* | *-*-solaris*) PLATFORM=sunos ; PLATCAP=SUNOS
+                 dl_default=yes
+                 default_pkgs="fasl threads lss rstore"
+                 ;;
+  *-*-irix6*)    PLATFORM=irix ; PLATCAP=IRIX
+                 LD="ld -old_ld"
+                 default_pkgs=""
+                 dl_default=yes
+                 ;;
+  *-*-irix*)     PLATFORM=irix ; PLATCAP=IRIX
+                 ;;
+  *-*-*)         PLATFORM=com ; PLATCAP=ANSI
+                 ;;
+esac
+AC_MSG_RESULT(Found platform: $PLATFORM $PLATCAP)
+
+AC_MSG_CHECKING([for cpp -isystem])
+
+cpp_save="$CPPFLAGS"
+CPPFLAGS="-isystem foo"
+rm -rf foo
+mkdir foo
+echo "int decl;" > foo/barzog.h
+
+AC_PREPROC_IFELSE([#include <barzog.h>],
+[AC_DEFINE(CPP_SUPPORTS_ISYSTEM,1)
+ AC_MSG_RESULT([yes])],
+[AC_DEFINE(CPP_SUPPORTS_ISYSTEM,0)
+ AC_MSG_RESULT([no])])
+rm -rf foo
+
+CPPFLAGS="$cpp_save"
+
+default_pkgs="general syscalls unixm calendar sets $default_pkgs"
+
+USE_STACK_CACHE=true
+FAKE_TIME_THREADS=false
+OPTIMIZE=true
+
+if test "$PLATFORM" = "linux"
+then LDX_FLAGS="$LDX_FLAGS -ldl"
+fi
+
+if test "$PLATFORM" = "aix"
+then LDX_FLAGS="$LDX_FLAGS -lcur -lbsd"
+fi
+
+if test "${gnu_c}" = "yes" ; then
+  GNU_C=true
+  LD=${LD:-gcc}
+  PERMIT_APPLY_BACKTRACE=true
+  USE_INLINES=true
+  STYLE=gcc
+else
+  GNU_C=false
+  LD=${LD:-ld}
+  PERMIT_APPLY_BACKTRACE=false
+  USE_INLINES=false
+  STYLE=ansi
+fi
+
+if test "$enable_debug" = "yes"
+then USE_INLINES=false
+     OPTIMIZE=false
+     AC_DEFINE(DEBUG_BCI, 1)
+else AC_DEFINE(DEBUG_BCI, 0)
+fi
+
+#
+#  handle specification of --with-gc={irc,freelist,rtgc}
+#
+
+GC=${with_gc:-irc}
+
+#
+#  remove files we're going to install new versions of
+#
+
+rm -f install/include/rscheme/platform.h \
+      heapi/mapf.c \
+      runtime/osglue.c \
+      runtime/dynlink.c
+
+#
+#  fill in the remaining values
+#
+
+INSTALL_DIR=${prefix}
+
+#
+#  if using readline library, add appropriate LDX flags
+# should this a --with option?  Better defaults?
+
+case "$enable_readline" in
+  gnu | yes )
+     rdln_dir=""
+     for i in /lib /usr/lib /usr/local/lib $HOME/lib
+     do if test -r $i/libreadline.a
+        then rdln_dir=$i
+	fi
+     done
+     if test -z "$rdln_dir"
+     then echo "WARNING: could not find GNU readline library" >&2
+          echo "         may need to patch rshell/Makefile" >&2
+          LDX_FLAGS="-lreadline $LDX_FLAGS"
+     else LDX_FLAGS="-L$rdln_dir -lreadline $LDX_FLAGS"
+     fi
+     if test -r /usr/lib/libcur.a
+     then LDX_FLAGS="$LDX_FLAGS -lcur"
+     else if test -r /usr/lib/libtermcap.a
+	  then LDX_FLAGS="$LDX_FLAGS -ltermcap"
+	  fi
+     fi
+     RDLN="gnu" ;;
+  "std" | "no" | "" )
+     RDLN="std" ;;
+  *)
+     RDLN="$enable_readline" ;;
+esac
+
+if test "$enable_dynamic_linking" = "" -a "$dl_default" = "yes"
+then enable_dynamic_linking=yes
+fi
+
+case "$enable_dynamic_linking" in
+  yes )
+     AC_CHECK_LIB(dl,dlopen)
+	case "${host}" in
+        *-*-aix*)
+            LDX_FLAGS="-Wl,-bE:\$(INSTALL_DIR)/lib/rs.exp $LDX_FLAGS"
+            ;;
+	*-*-freebsd2*)
+	    LDX_FLAGS="-Wl,-Bforcedynamic $LDX_FLAGS"
+	    ;;
+	*-*-darwin*)
+	    LDX_FLAGS="-dynamic $LDX_FLAGS"
+	    ;;
+        *-*-sunos | *-*-solaris*)
+	    LDX_FLAGS="$LDX_FLAGS -ldl"
+	    ;;
+	*)
+	    LDX_FLAGS="-rdynamic $LDX_FLAGS"
+	    ;;
+	esac;
+     ;;
+  no )
+     ;;
+esac
+
+#
+#............. configure our files ................
+#
+
+AC_CONFIG_HEADER(config.h)
+
+AC_HEADER_DIRENT
+AC_CHECK_HEADERS([db3/db_185.h db/db.h db.h unistd.h alloca.h sys/socket.h sys/select.h sys/time.h execinfo.h vm/vm_param.h uvm/uvm_param.h])
+
+AC_PATH_PROG(RANLIB, ranlib, :)
+
+AC_CHECK_TYPES(long long)
+AC_CHECK_TYPE(socklen_t,[AC_DEFINE(HAVE_SOCKLEN_T,1)],[AC_DEFINE(HAVE_SOCKLEN_T,0)],[#include <sys/types.h>
+#if HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif])
+
+AC_CHECK_SIZEOF(unsigned short)
+AC_CHECK_SIZEOF(unsigned)
+AC_CHECK_SIZEOF(unsigned long)
+
+AC_CHECK_MEMBER(struct timeval.tv_usec,
+                [AC_DEFINE(HAVE_STRUCT_TIMEVAL,1)],
+                [AC_DEFINE(HAVE_STRUCT_TIMEVAL,0)],
+                [
+#if HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif])
+
+AC_CHECK_LIB(m,sin)
+
+AC_CHECK_FUNCS(getcwd getenv gettimeofday getwd \
+  memcpy memmove ntohl ntohs setitimer strerror \
+  stat mkdir chdir wait waitpid flock lockf getrusage usleep symlink \
+  fgetln round nearest random erand48 backtrace)
+
+
+dnl Check if the compiler supports computed gotos
+AC_CACHE_CHECK(if computed goto works, rs_cv_computed_goto_works,
+if test "$with_gc" = "rtgc"
+then rs_cv_computed_goto_works=no
+else AC_TRY_COMPILE([],[void *target = &&destination;
+destination: goto *target;],
+rs_cv_computed_goto_works=yes,
+rs_cv_computed_goto_works=no)
+fi
+)
+
+dnl Check to see how to implement fcanget()
+AC_CACHE_CHECK(if can use select in fcanget, rs_cv_fcanget_do_select,
+AC_TRY_COMPILE([#include <sys/time.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/select.h>
+#include <unistd.h>],[  
+  FILE *strm = stdin;
+  fd_set r, w, x;
+  int n, fd;
+  struct timeval nodelay;
+      
+  nodelay.tv_sec = 0;
+  nodelay.tv_usec = 0;
+
+  fd = fileno( strm );
+
+  FD_ZERO( &r );
+  FD_ZERO( &w );
+  FD_ZERO( &x );
+  FD_SET( fd, &r );
+
+  select( fd+1, &r, &w, &x, &nodelay );
+],
+rs_cv_fcanget_do_select=yes,
+rs_cv_fcanget_do_select=no))
+
+AC_CACHE_CHECK(if FILE* has _IO_read_ptr, rs_cv_fcanget_use_io_read_ptr,
+AC_TRY_COMPILE([#include <stdio.h>],[FILE *strm = stdin;
+int n = strm->_IO_read_end - strm->_IO_read_ptr;],
+rs_cv_fcanget_use_io_read_ptr=yes,
+rs_cv_fcanget_use_io_read_ptr=no))
+
+AC_CACHE_CHECK(if FILE* has _cnt, rs_cv_fcanget_use_cnt,
+AC_TRY_COMPILE([#include <stdio.h>],[FILE *strm = stdin;
+int n = strm->_cnt;],
+rs_cv_fcanget_use_cnt=yes,
+rs_cv_fcanget_use_cnt=no))
+
+AC_CACHE_CHECK(if FILE* has _r, rs_cv_fcanget_use_r,
+AC_TRY_COMPILE([#include <stdio.h>],[FILE *strm = stdin;
+int n = strm->_r;],
+rs_cv_fcanget_use_r=yes,
+rs_cv_fcanget_use_r=no))
+
+
+dnl Check if we can use the Pentium rdtsc instruction
+AC_CACHE_CHECK(if Pentium RDTSC access works, rs_cv_pentium_rdtsc,
+AC_TRY_COMPILE([],[unsigned long long int t;
+   __asm__ volatile( ".byte 0x0f,0x31" : "=A"(t) );],
+rs_cv_pentium_rdtsc=yes,
+rs_cv_pentium_rdtsc=no))
+
+dnl Check if Berkeley db is available
+
+if test $ac_cv_header_db3_db_185_h = yes
+then db_hh="db3/db_185.h"
+else if test $ac_cv_header_db_db_h = yes
+     then db_hh="db/db.h"
+     else if test $ac_cv_header_db_h = yes
+	  then db_hh="db.h"
+	  else db_hh=""
+	  fi
+     fi
+fi
+
+if test "$db_hh"
+then AC_CACHE_CHECK(if Berkeley db, rs_cv_db_works,
+     AC_TRY_COMPILE([#include <${db_hh}>
+#include <stdio.h>
+#include <sys/types.h>
+#include <fcntl.h>],[
+DB *db;
+DBT k, v;
+  db = dbopen( "test.db", O_CREAT|O_TRUNC, 0666, DB_BTREE, NULL );
+  k.data = "hello";
+  k.size = 5;
+  v.data = "there";
+  v.size = 5;
+  db->put( db, &k, &v, R_NOOVERWRITE );
+],
+rs_cv_db_works=yes,
+rs_cv_db_works=no))
+fi
+
+if test "$rs_cv_db_works" = yes
+then default_pkgs="$default_pkgs db"
+fi
+
+AC_CACHE_CHECK(if ntoh protos are ok, rs_cv_ntoh_proto_ok,
+AC_TRY_COMPILE([#include <sys/types.h>],
+               [extern unsigned long int ntohl( unsigned long int );
+                extern unsigned short int ntohs( unsigned short int );],
+               rs_cv_ntoh_proto_ok=yes,
+               rs_cv_ntoh_proto_ok=no))
+
+AC_CACHE_CHECK(if <netinet/in.h> has ntoh protos, rs_cv_netinet_has_ntoh,
+AC_TRY_COMPILE([#include <netinet/in.h>],
+               [return ntohl(2);],
+               rs_cv_netinet_has_ntoh=yes,
+               rs_cv_netinet_has_ntoh=no))
+
+if test "$rs_cv_ntoh_proto_ok" = no; then
+  AC_DEFINE(NTOH_PROTO_OK, 0)
+fi
+if test "$rs_cv_netinet_has_ntoh" = yes; then
+  AC_DEFINE(USE_NETINET_FOR_NTOH_PROTO, 1)
+fi
+
+if test "$rs_cv_pentium_rdtsc" = yes
+then AC_DEFINE(USE_TIMEOFDAY_CLOCK,0)
+     AC_DEFINE(USE_i586_CLOCK,1)
+fi
+
+if test $rs_cv_computed_goto_works = yes; then
+  AC_DEFINE(USE_COMPUTED_GOTO, 1)
+fi
+
+if test $rs_cv_fcanget_do_select = yes
+then AC_DEFINE(FCANGET_DO_SELECT, 1)
+else AC_DEFINE(FCANGET_DO_SELECT, 0)
+fi
+
+if test $rs_cv_fcanget_use_io_read_ptr = yes
+then AC_DEFINE(FCANGET_USE_IO_READ_PTR, 1)
+else if test $rs_cv_fcanget_use_cnt = yes
+     then AC_DEFINE(FCANGET_USE_CNT, 1)
+     else if test $rs_cv_fcanget_use_r = yes
+          then AC_DEFINE(FCANGET_USE_R, 1)
+          fi
+     fi
+fi
+
+dnl Check the return type of sprintf.  Kind of ugly ...
+AC_CACHE_CHECK(sprintf returns int, rs_cv_sprintf_returns_int,
+AC_TRY_COMPILE([#include <stdio.h>
+changequote(,)
+changequote([,])dnl
+],[changequote(<,>)dnl
+char buf[20]; 
+changequote([,])dnl
+return (buf + sprintf(buf, "%d", 34))-buf;],
+rs_cv_sprintf_returns_int=yes,
+rs_cv_sprintf_returns_int=no))
+
+if test $rs_cv_sprintf_returns_int = no; then
+  AC_DEFINE(SPRINTF_RETURNS_INT, 0)
+fi
+
+dnl Check to see if sigset_t is available (POSIX signals)
+AC_CACHE_CHECK(for POSIX signals, rs_cv_posix_signals,
+AC_TRY_COMPILE([#include <signal.h>
+changequote(,)
+changequote([,])dnl
+],[sigset_t new_sig, old_sig;
+sigfillset( &new_sig );
+sigemptyset( &old_sig );
+sigprocmask( SIG_BLOCK, &new_sig, &old_sig )],
+rs_cv_posix_signals=yes,
+rs_cv_posix_signals=no))
+if test $rs_cv_posix_signals = no; then
+  AC_DEFINE(USE_POSIX_SIGNALS, 0)
+fi
+
+if test "$enable_trace_signal_latency" = "yes"
+then AC_DEFINE(TRACE_SIGNAL_LATENCY, 1)
+else AC_DEFINE(TRACE_SIGNAL_LATENCY, 0)
+fi
+
+if test "$enable_profiling_hooks" = "yes"
+then AC_DEFINE(PROFILING_HOOKS, 1)
+     AC_DEFINE(ACCUM_GF_CACHE_HISTOGRAM,1)
+     AC_DEFINE(ACCUM_BYTECODE_CORRELATION,1)
+else AC_DEFINE(PROFILING_HOOKS, 0)
+     AC_DEFINE(ACCUM_GF_CACHE_HISTOGRAM,0)
+     AC_DEFINE(ACCUM_BYTECODE_CORRELATION,0)
+fi
+
+if test "$enable_read_barrier" = "yes"
+then AC_DEFINE(INCLUDE_READ_BARRIER, 1)
+     echo "*** WARNING:  read barrier support is still under development"
+else AC_DEFINE(INCLUDE_READ_BARRIER, 0)
+fi
+
+if test "$enable_pstore_unmapper" = "yes"
+then AC_DEFINE(INCLUDE_PSTORE_UNMAPPER, 1)
+else AC_DEFINE(INCLUDE_PSTORE_UNMAPPER, 0)
+fi
+
+#
+#  NOTE:  full-numeric-tower support is not fully implemented yet!
+#         (fixnums roll over to longints, but not to MPs.  Also,
+#         the implementation is still sketchy.)
+#
+if test "$enable_full_numeric_tower" = "yes"
+then AC_DEFINE(FULL_NUMERIC_TOWER, 1)
+     LDX_FLAGS="$LDX_FLAGS -lgmp"
+     echo "*** WARNING:  full numeric tower support is sketchy at best."
+     echo "              this option is still under development"
+else AC_DEFINE(FULL_NUMERIC_TOWER, 0)
+fi
+
+if test "$enable_utf_process_code" = "yes"
+then AC_DEFINE(UTF_PROCESS_CODE, 1)
+else AC_DEFINE(UTF_PROCESS_CODE, 0)
+fi
+
+cat > preamble.mak <<EOF
+# This is the preamble.mak used when building the base system
+IFLAGS=-I. -I../install/include
+CFLAGS=\$(CFLAGS1) \$(IFLAGS)
+LD=$LD
+LD_FLAGS=-r
+LDX=$LDX_FLAGS
+EOF
+
+AC_OUTPUT(Makefile hasht/Makefile)
+
+#
+# interpolate the INSTALL_DIR into the release config file
+#
+
+sed 's&@@{installdir}&'$INSTALL_DIR'&' \
+	< ./install/include/rscheme/rlseconf.cfg \
+	> ./install/include/rscheme/rlseconf.h \
+
+#
+# a file to put build style flags
+#
+
+
+# Perhaps buildsty.h should be merged with platform.h.
+# Note that (for now) CONFIG_H is *not* config.h!
+CONFIG_H=./install/include/rscheme/buildsty.h
+rm -f $CONFIG_H
+echo "/* build style parameters */">$CONFIG_H
+
+choose() {
+   set=$1
+   choice=$2
+
+   rm -rf $set
+   if test ! -d cfg/$set/$choice
+   then echo "invalid choice for $set: $choice"
+        exit 1
+   fi
+   mkdir $set
+dnl #Should use AC_LINK_FILES, but does not work in a loop or function.
+   if $uselinks
+   then for i in cfg/$set/$choice/* 
+        do ln -s ../$i $set/`basename $i`
+        done
+   else for i in cfg/$set/$choice/*
+        do if test -f $i
+           then cp $i $set
+           fi
+        done
+   fi
+}
+
+choose gc $GC
+choose gcadapt $GC
+choose rdln $RDLN
+
+_mkdir() {
+   if test ! -d $1
+   then mkdir $1
+   fi
+}
+
+_mkdir install
+_mkdir install/lib
+_mkdir install/resource
+_mkdir install/resource/buildenv
+
+cat > install/resource/buildenv/preamble.mak <<EOF
+# This is the preamble.mak used when building packages and other addons
+# INSTALL_DIR=$INSTALL_DIR
+IFLAGS=\$(USR_IFLAGS) -I. \$(SYS_IFLAGS) -I\$(INSTALL_DIR)/include
+SUBPROJ_LD=$LD
+SUBPROJ_LD_FLAGS=-r
+LDX_FLAGS=-L\$(INSTALL_DIR)/lib -lrs $LDX_FLAGS
+EOF
+
+cat > install/resource/buildenv/module.mak <<EOF
+OFILES=\$(CFILES:.c=.o)
+SOFILES=\$(CFILES:.c=.so)
+# INSTALL_DIR=$INSTALL_DIR
+include \$(INSTALL_DIR)/resource/buildenv/preamble.mak
+
+LD=$LD
+LD_FLAGS=-r
+
+\$(PRODUCT): \$(OFILES)
+	\$(LD) \$(LD_FLAGS) \$(OFILES) -o \$(PRODUCT)
+
+clean::
+	rm -f \$(PRODUCT) \$(OFILES) \$(SOFILES)
+
+\$(INSTALL_DIR)/include/rscheme/pkgs:
+	mkdir \$(INSTALL_DIR)/include/rscheme/pkgs
+
+install:: \$(PRODUCT) \$(INSTALL_DIR)/include/rscheme/pkgs
+	cp \$(PRODUCT) \$(INSTALL_DIR)/lib
+	cp \$(INCFILES) \$(INSTALL_DIR)/include/rscheme/pkgs
+	cp \$(MIFBASEFILE).mif \$(INSTALL_DIR)/resource/modules
+	cp \$(MIFBASEFILE).mx \$(INSTALL_DIR)/resource/modules
+EOF
+
+dnl ... XXX need to figure out how to use libtool to generalize this...
+dnl ... XXX currently, dynamic linking is very Linux/GCC specific
+
+if test "$enable_dynamic_linking" = "yes"
+then cat >> install/resource/buildenv/module.mak <<"EOF"
+
+SO_PRODUCT=lib$(PRODUCT:.o=.so)
+$(SO_PRODUCT): $(SOFILES)
+	$(CC) -shared $(SOFILES) -o $(SO_PRODUCT) $(XLFLAGS)
+
+%.so: %.c
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) -fPIC -o $@ $^
+
+install.so: $(SO_PRODUCT)
+	cp $(SO_PRODUCT) $(INSTALL_DIR)/resource/modules
+	cp $(INCFILES) $(INSTALL_DIR)/include/rscheme/pkgs
+	cp $(MIFBASEFILE).mif $(INSTALL_DIR)/resource/modules
+	cp $(MIFBASEFILE).mx $(INSTALL_DIR)/resource/modules
+EOF
+fi
+
+
+#
+#  run platform-specific configuration
+#
+
+# . ./platform/$PLATFORM/configure
+
+sed -e "s/PLATFORM_ANSI/PLATFORM_$PLATCAP/" < config.h \
+	> install/include/rscheme/platform.h
+
+if test "$PLATFORM" = "next"
+then LDX_FLAGS="-sectcreate IMAGE system ../install/resource/system.img $LDX_FLAGS"
+fi
+
+#
+# pick up platform-dependent implementations of
+# `mapf.c', `osglue.c', and `dynlink.c', if available
+# else use the common ones
+
+choose_most_specific() {
+  dest=$1
+  file=$2
+  if test -r platform/$PLATFORM/$file
+  then ln -f -s ../platform/$PLATFORM/$file $dest/$file
+  else ln -f -s ../platform/com/$file $dest/$file
+  fi
+}
+
+choose_most_specific heapi mapf.c
+choose_most_specific runtime osglue.c
+choose_most_specific runtime dynlink.c
+
+#
+#  run some little config scripts, but only
+#  if the platform doesn't supply a file
+#
+
+if test -r platform/$PLATFORM/modulo.h
+then cp platform/$PLATFORM/modulo.h install/include/rscheme
+else $COMPILE cfg/mod.c
+     if test -x ./a.exe
+     then ax=./a.exe
+     else ax=./a.out
+     fi
+     $ax > install/include/rscheme/modulo.h 
+     rm -f $ax
+fi
+
+#
+#  collect other compile-time flags
+#
+
+# CFLAGS="" ...already set above, may be overridden in a config file (style)
+
+#  there seems to be a bug in AIX 4.1.4 xlc that causes optimization
+#  to kill RScheme...
+
+if test "$PLATFORM" = aix -a $GNU_C = false
+then OPTIMIZE=false
+fi
+
+#
+
+if test "$OPTIMIZE" = true -a "$GNU_C" = true
+then CFLAGS="$CFLAGS -O2"
+fi
+
+# HWREGS is broken on the latest GCC (3.3) on both
+# 68K and PowerPC...
+
+hwregs=none
+
+# AC_MSG_CHECKING(if we should use hardware registers)
+#
+# hwregs=platform/arch/$ARCH/hwregs
+#
+# if test "$PLATFORM" = "rhapsody"
+# then # broken on Rhapsody, even though it is a gcc
+#      hwregs=none
+# fi
+# 
+# if test -r $hwregs -a $GNU_C = true
+# then AC_MSG_RESULT(yes)
+#      CFLAGS="$CFLAGS -DUSE_HW_REGS `cat $hwregs`"
+# else AC_MSG_RESULT(no)
+# fi
+
+if $ASSERTIONS
+then CFLAGS="$CFLAGS -g"
+else CFLAGS="$CFLAGS -DNDEBUG"
+fi
+
+if test "$PLATFORM" = "aix"
+then CFLAGS="$CFLAGS -D_BSD=43 -D_ALL_SOURCE"
+fi
+
+
+if $USE_INLINES
+then CFLAGS="$CFLAGS -DINLINES"
+     if test $GC = "irc"
+     then CFLAGS="$CFLAGS -DGC_MACROS"
+     fi
+fi
+
+if $PERMIT_APPLY_BACKTRACE
+then echo "#define RECORD_CALL_CHAIN" >> $CONFIG_H
+fi
+
+if $USE_STACK_CACHE
+then echo "#define STACK_CACHE" >> $CONFIG_H
+fi
+
+if $GNU_C
+then CFLAGS="$CFLAGS -Wall -Wno-unused"
+     if $ASSERTIONS
+     then echo "#define USE_CONSTRUCTOR_EXPRS" >> $CONFIG_H
+     fi
+     echo "#define _rs_inline inline" >> $CONFIG_H
+     echo "#define _rs_volatile __attribute__((noreturn))" >> $CONFIG_H
+else echo "#define _rs_inline /* empty */" >> $CONFIG_H
+     echo "#define _rs_volatile /* empty */" >> $CONFIG_H
+fi
+
+
+if $FAKE_TIME_THREADS
+then echo "#define TIMER_IS_MONOTONE_COUNTER" >> $CONFIG_H
+fi
+
+echo "#define PLATFORM_TYPE \"$PLATFORM\"" >> $CONFIG_H
+
+#
+#  finish up...
+#
+
+echo "CC=$COMPILE" >> preamble.mak
+echo "CFLAGS1=$CFLAGS" >> preamble.mak
+echo "CFLAGS=\$(CFLAGS1) \$(IFLAGS)" >> preamble.mak
+
+echo "CC=$COMPILE" >> install/resource/buildenv/preamble.mak
+echo "CFLAGS1=$CFLAGS" >> install/resource/buildenv/preamble.mak
+echo "CFLAGS=\$(CFLAGS1) \$(XCFLAGS) \$(IFLAGS)" >> install/resource/buildenv/preamble.mak
+
+#
+#  copy the include files
+#
+
+# useinclude() {
+#    ln -f -s ../../../$1/$2 ../install/include/rscheme/$2
+# }
+
+useinclude() { 
+   rm -f ../install/include/rscheme/$2 
+   cp $2 ../install/include/rscheme/$2 
+}
+
+for i in `cat subproj.lst`
+do if test -r $i/includes.lst
+   then (cd $i
+	 for j in `cat includes.lst`
+	 do useinclude $i $j
+ 	 done)
+   fi
+
+   if $USE_INLINES && test -r $i/inlines.lst
+   then (cd $i
+	 for j in `cat inlines.lst`
+	 do useinclude $i $j
+ 	 done)
+   fi
+done
+
+#
+#............. configure RTGC includes .............
+#
+
+if test "$GC" = "rtgc"
+then rm -rf install/include/rtgc 
+     cp -r cfg/gc/rtgc/rtgc install/include
+     rm -f install/include/rtgc/langtype.h
+     ln -f -s ../rtgc/gcserver.h install/include/rscheme
+     ln -f -s ../rscheme/langtype.h install/include/rtgc/langtype.h
+     ln -f -s ../rscheme/gcclient1.ci install/include/rtgc/gcclient1.ci
+     ln -f -s ../rscheme/gcclient2.ci install/include/rtgc/gcclient2.ci
+fi

@@ -1,0 +1,255 @@
+{Chapter}
+{Title}Compiling to C{/Title}
+{Para}By Robert Strandh
+{Para}
+The normal mode of operation (called strategy) of the off-line module
+compiler is to generate bytecodes.  But there is another strategy
+which consists of generating C code which then is compiled with the
+ordinary C compiler to generate object code.
+{Para}
+In this section, we describe the steps necessary to take in order for
+rsc to generate C code, or a mixture between C code and bytecodes.  We
+also describe how to compile this C code and how to integrate it with
+the RScheme system.
+{Para}
+As mentioned before, the off-line module compiler is invoked like
+this for ordinary user modules:
+{Screen}
+{Prompt/% /{UserInput/rsc -p foo.mcf/
+{/Screen}
+{Para}
+where -p means "package" and where foo1.mcf, foo2.mcf etc are the
+module control files for modules foo1 and foo2 respectively.
+{Para}
+In the default case where the strategy is to compile to bytecodes, rsc
+generates two files for each module, the module image file (extension
+.mif) and the module index file (extension .mx).  
+{Para}
+When the off-line module compiler compiles the Scheme code of a
+module, it uses a default strategy.  If the option -ccode is given to
+rsc the default strategy is to generate C code, otherwise (if no
+argument -ccode has been given) the default strategy is to generate
+bytecodes.  The default strategy can then be overridden for a sequence
+of top-level forms in the Scheme code.  For that purpose, you use the
+special form (%strategy strategy form ...).  Here strategy can be
+either ccode or bytecode. The forms are typically top-level procedure
+definitions, but can be any top-level forms. 
+{Para}
+If any form is compiled with strategy ccode, whether by command-line
+options or the use of the %strategy special form, then the off-line
+module compiler generates a number of files in addition to the module
+image file and the module index file.  The compiler puts these
+additional files in the directory indicated by the outdir element in
+the module descriptor [is that what we called it?] in the module
+control file.  
+{Para}
+[why, btw is the extension .mx and not .mxf, or, alternatively, why
+are the extensions .mcf and .mif and not just .mc and .mi.  I mean you
+use .c for a C file, not .cf.  The fact that it is a file is kind of
+implicit, no?]
+{Para}
+For the module as a whole, the compiler generates a Makefile, two
+header files and a C file. The Makefile is used by the Unix make
+command to generate the object code for the module.  For module foo,
+the header files will be called foo.h and foo_p.h.  The file foo.h is
+the ordinary header file that can be used by a client module to access
+exported symbols in the module, and foo_p.h is the so-called private
+header file containing declarations that should only be used by other
+parts of the module to access data that is morally but not technically
+private to the module.  The C file is called foo_l.c and is called the
+linkage file.  This file contains C code needed to link the module to
+the RScheme system.
+{Para}
+In addition to the files associated with the module as a whole, the
+compiler generates one C file for each Scheme file (extension .scm)
+that is part of the module (recall that the Scheme files of a module
+are listed in the files clause in the module control file) [is this
+true: and that contains at least one form to be compiled with the
+ccode strategy].  For Scheme file foo.scm, the name of this file is
+foo.c.  This file is where the compiler puts the code for each form
+that needs to be translated to C.
+{Para}
+Next, you have to decide whether you want to incorporate the module
+code by static or dynamic linking into your RScheme system.  Static
+linking makes the RScheme executable bigger but the start-up time will
+be shorter.  Dynamic linking is more flexible in that you can decide
+for each execution of your RScheme system whether you need the module
+or not.  
+{/Para}
+{Sect1}
+{Title}Incorporation of object code using static linking{/Title}
+{Para}
+For static linking, the next step is to generate object (extension .o)
+code for the entire module from the C files.  To do that, you use the
+Unix make command in the directory (outdir) where the compiler put the
+Makefile, the header files, and the C files. 
+{Para}
+Before you use the make command, however, you need to figure out where
+your RScheme system is installed.  Usually, this place will be
+something like {Filename}/usr/local/lib/rs/VER{/Filename}  where VER is
+something like {UserInput/0.7.2/.  This location is referred to as the install
+directory. However, since it is possible to change the install
+directory when the RScheme system is compiled, you may have to consult
+the person who did this installation as to the exact location to give
+here. 
+{Para}
+Supposing that the install directory is /usr/local/lib/rs/0.7.2, you
+type {UserInput}make INSTALL_DIR=/usr/local/lib/rs/0.7.2{/UserInput} 
+to the Unix shell.  This
+make command will generate a single file foo.o (where foo is the name
+of the module) [the bug is that it actually generates bar.o where bar
+is the name of the directory (outdir?)]
+{Para}
+As part of the static linking process, you now have to build a new
+version of the rs command that, in addition to all the normal files,
+also contains the file foo.o.
+{Para}
+But before you link the final executable, you have to make sure that
+the top-level forms of your module are executed when the RScheme
+system starts.  To accomplish that, you have to inform the RScheme
+start-up code of the existance of your module.  
+{Para}
+To understand how this mechanism works, we need to describe the way
+the RScheme system is organized.  The bulk of the functionality of
+RScheme is assembled in a Unix library called librs.a which is
+installed in /usr/local/lib/rs/0.7.1 (for version 0.7.1).  The only
+thing that has been left out of librs.a is the file that contains the
+main program.  This file is called shell.c.  The RSheme system is
+built from the file shell.o (shell.c compiled) and the library
+librs.a.  The file shell.c contains, in addition to the main program,
+a vector of module descriptors of modules to be initalized when
+RScheme starts up.  The descriptor of your module must be in this
+list. 
+{Para}
+The easiest way to integrate your module is to copy the shell.c file
+into the directory where you module object code foo.o lives.  Next,
+you have to modify the shell.c file using your favorite text editor.
+Here is the general structure of shell.c:
+{/Para}
+{ProgramListing}
+static struct module_descr *std_modules[] =
+{
+  STD_MODULES_DECL
+};
+...
+main()
+{
+  ...
+}
+{/ProgramListing}
+{Para}
+To insert your own modules (say) foo1 and foo2 into this file, you
+need to modify it to look like this:
+{/Para}
+{ProgramListing}
+...
+#include "foo1.h"
+#include "foo2.h"
+...
+static struct module_descr *std_modules[] =
+{
+  &amp;module_foo1,
+  &amp;module_foo2,
+  STD_MODULES_DECL
+};
+...
+main()
+{
+  ...
+}
+{/ProgramListing}
+{Para}
+The order between the entries of the table is not significant as the
+initialization code is executed in the order determined by the
+dependencies between modules, not by the order in this vector.
+{Para}
+Now that you have a modified shell.c, you can finally create the
+modified version of the rs command.  We recommend that you call it
+somthing other than rs so as to avoid confusion.  Here is the general
+structure of the command to use
+{/Para}
+{Screen}
+{Prompt/% /{UserInput}cc -I /usr/local/lib/rs/0.7.1/include 
+             -I the-directory-in-which-the-module-lives
+	     shell.c
+	     -L /usr/local/lib/rs/0.7.1/lib
+	     -o name-of-final-executable{/UserInput}
+{/Screen}
+{Para}
+While the resulting executable file contains the machine code for the
+forms compiled with strategy ccode, it does not contain forms compiled
+with strategy bytecode, nor other information that is kept in the
+module image file and the module index file. 
+{Para}
+So in order to use your module from RScheme, you still have to say
+,(use foo) if foo is the name of the module.  Alternatively, you can
+use the same method as we used for pure bytecode in order to create a
+new RScheme image in which the module is fully incorporated.
+Supposing you gave the name rsf to the name of the final executable
+containing object code for you module, you can now do:
+{/Para}
+{Screen}
+{Prompt/% /{UserInput/rsf -m foo.mif -c foo.img/
+{/Screen}
+{Para}
+to create an image foo.img in which all of your module exists.  If you
+want your executable rsf to behave like the executable rs (except with
+more functionality), i.e., with a read-eval-print loop, you can do:
+{/Para}
+{Screen}
+{Prompt/% /{UserInput/rsf -m foo.mif -c.repl foo.img/
+{/Screen}
+{Para}
+The option {UserInput}-c.{Replaceable/module/{/UserInput} indicates that the procedure 
+called {Phrase Role="ProcedureName"}main{/Phrase} is taken
+from the module {Replaceable/module/.  
+The {Replaceable/module/ is not imported, however.
+{UserInput}-c{/UserInput} means to use the {UserInput/main/ from the current
+environment.
+{Para}
+To start the new system with the new image, use:
+{/Para}
+{Screen}
+{Prompt/% /{UserInput/rsf -image foo.img/
+{/Screen}
+
+{Sect1}
+{Title}Incorporation of object code using dynamic linking{/Title}
+{Para}
+Using dynamic linking instead of static linking to incorporate your
+module into RScheme is slightly more complicated. 
+{Para}
+First, you have to make sure you RScheme command rs was linked with a
+flag to ld indicating that the dynamic linker can use symbols in the
+executable to resolve unresolved symbols in dynamically linked code.
+The name of this flag varies between systems.  On GNU/Linux, it is
+-rdynamic.
+{Para}
+If rs was not built with this flag, you first have to rebuild it.
+Normally, if the object code is still around, you only have to redo
+the final link stage. 
+{Para}
+Next, you have to modify the Makefile generated by the off-line module
+compiler.  You have to inform the C compiler to generate position
+independent code for all the C files of your module.  This is
+necessary because the exact position of the final executable code may
+vary from one execution of the system to another.  The exact form of
+this flag varies from system to system, but for the GNU C compiler it
+is -fPIC.  In addition to informing the C compiler about position
+independent code, you have to tell the linker to generate a
+dynamically linkable library rather than just an object file, so
+instead of foo.o you obtain libfoo.so.  Again the way to do this
+varies from system to system.
+{Para}
+At this point you are almost done.  You don't need to recompile the
+RScheme executable, only make sure that it can find your file
+libfoo.so.  If your module is generally useful, you may want to
+install it together with other modules delivered with RScheme in the
+directory for this purpose (usually
+/usr/local/lib/rs/0.7.1/resource/modules).  For application-specific
+modules, you simply need to make sure the directory in which the
+module is installed is in RScheme's search path for dynamically linked
+modules{footnote}{Para}The default search path for modules, accessible
+by the {Phrase Role="var"}module-search-path{/Phrase} function in the {UserInput/mlink/ module,
+is the current directory, followed by {Filename}[install]/resource/modules{/Filename},
+followed by {Filename}~/lib/rs/modules{/Filename}.{/footnote}.

@@ -1,0 +1,33 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}fork{/RefName}
+  {RefPurpose}Fork a new process{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/fork/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+{/ParamDef}{ParamDef role="returns"}
+{Parameter}pid{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}pid{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<integer>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Create a new process.  Returns the subprocess's id in the parent,
+and #f in the child.{/para}
+{/RefSect1}
+{/RefEntry}

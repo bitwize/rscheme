@@ -1,0 +1,90 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    bytcodes/longint.dat
+ |
+ |          Copyright (C)1995 Donovan Kolbly <donovan@tkg.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.3
+ | Date:    1996-04-18 20:06:09
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ `------------------------------------------------------------------------|#
+
+;; coercions
+
+(define-primop long-int? (<obj> => <raw-bool>)
+  "LONG_INT_P")
+
+(define-primop long-int->raw-int-64 (<long-int> => <raw-int-64>)
+  "extract_int_64")
+
+(define-primop raw-int-64->integer ((a <raw-int-64>) => <obj>)
+  "int_64_compact")
+
+(define-primop raw-int-64->raw-int (<raw-int-64> => <raw-int>)
+  "int_64_to_int_32")
+
+(define-primop raw-int-64->long-int (<raw-int-64> => <long-int>)
+  "make_long_int")
+
+(define-primop float-truncate-64 (<raw-float> => <raw-int-64>)
+  "float_to_int_64")
+
+(define-primop fixnum->raw-int-64 (<fixnum> => <raw-int-64>)
+  "fx2int64")
+
+
+(define-primop raw-int-64->float ((a <raw-int-64>) => <raw-float>)
+  "int_64_to_float")
+
+(define-primop raw-int-64->raw-int ((a <raw-int-64>) => <raw-int>)
+  "int_64_to_int_32")
+
+(define-primop raw-int->raw-int-64 ((a <raw-int>) => <raw-int-64>)
+  "int_32_to_int_64")
+
+
+(define-primop raw-int-64=? ((a <raw-int-64>) (b <raw-int-64>) => <raw-bool>)
+  "int_64_eq")
+(define-primop raw-int-64>? ((a <raw-int-64>) (b <raw-int-64>) => <raw-bool>)
+  "int_64_gt")
+(define-primop raw-int-64>=? ((a <raw-int-64>) (b <raw-int-64>) => <raw-bool>)
+  "int_64_ge")
+(define-primop raw-int-64<? ((a <raw-int-64>) (b <raw-int-64>) => <raw-bool>)
+  "int_64_lt")
+(define-primop raw-int-64<=? ((a <raw-int-64>) (b <raw-int-64>) => <raw-bool>)
+  "int_64_le")
+
+(define-primop raw-int-64-zero? ((a <raw-int-64>) => <raw-bool>)
+  "int_64_zero_q")
+
+(define-primop raw-int-64-small? ((a <raw-int-64>) => <raw-bool>)
+  "int_64_fit_in_30_q")
+
+(define-primop raw-int-64-negative? ((a <raw-int-64>) => <raw-bool>)
+  "int_64_neg_q")
+
+(define-primop raw-int-64-neg ((a <raw-int-64>) => <raw-int-64>)
+  "int_64_neg")
+
+(define-primop raw-int-64+ ((a <raw-int-64>) (b <raw-int-64>) => <raw-int-64>)
+  "int_64_add")
+
+(define-primop raw-int-64- ((a <raw-int-64>) (b <raw-int-64>) => <raw-int-64>)
+  "int_64_sub")
+
+(define-primop raw-int-64* ((a <raw-int-64>) (b <raw-int-64>) => <raw-int-64>)
+  "int_64_mul")
+
+(define-primop raw-int-64-quotient ((a <raw-int-64>) 
+				 (b <raw-int-64>) => <raw-int-64>)
+  "int_64_quotient")
+
+(define-primop raw-int-64-remainder ((a <raw-int-64>) 
+				  (b <raw-int-64>) => <raw-int-64>)
+  "int_64_remainder")
+
+(define-primop raw-int-64-modulo ((a <raw-int-64>) 
+			       (b <raw-int-64>) => <raw-int-64>)
+  "int_64_modulo")
+

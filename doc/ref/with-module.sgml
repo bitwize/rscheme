@@ -1,0 +1,33 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}with-module{/RefName}
+  {RefPurpose}Local module import{/RefPurpose}
+  {RefClass role="Type"}special{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/with-module/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/module-name/ {Parameter/form/{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}name{/Term}
+    {ListItem}{para}
+The name of the module to temporarily import
+  {/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}form{/Term}
+    {ListItem}{para}
+A sequence of forms in the extended scope.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{/RefEntry}

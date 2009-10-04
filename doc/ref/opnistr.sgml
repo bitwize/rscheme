@@ -1,0 +1,44 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}open-input-string{/RefName}
+  {RefPurpose}Create an input port to read from a string{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/open-input-string/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/str/{/ParamDef}{ParamDef role="returns"}
+{Parameter}input-port{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}str{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}input-port{/Term}
+    {ListItem}{para}
+A general instance of {ClassName/<input-port>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Create an input port which will deliver the characters
+from {Parameter}str{/Parameter}.{/para}
+{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,46 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}vector-append{/RefName}
+  {RefPurpose}Concatenates a sequence of vectors{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/vector-append/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/vector/{/ParamDef}{ParamDef role="returns"}
+{Parameter}result-vector{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}vector{/Term}
+    {ListItem}{para}
+Instances of {ClassName/<vector>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}result-vector{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<vector>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function appends a sequence of vectors together into
+one vector.  The returned vector has all the elements of the
+given vectors, in order.  Hence, the length of the returned
+vector is the sum of the lengths of the given vectors.{/para}
+{/RefSect1}
+{/RefEntry}

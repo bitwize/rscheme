@@ -1,0 +1,49 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}with-output-to-file{/RefName}
+  {RefPurpose}Redirect output to a file{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/with-output-to-file/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/string/ {Parameter/thunk/{/ParamDef}{ParamDef role="returns"}
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}string{/Term}
+    {ListItem}{para}
+An instance of <string> representing a file name{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}thunk{/Term}
+    {ListItem}{para}
+A procedure of no arguments{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This procedure creates a new output port referring to the 
+system file {parameter}string{/parameter}, as does
+the procedure
+{function}open-output-file{/function}.  It then calls the given
+{parameter}thunk{/parameter}
+in a dynamic context such that the current output
+port is the new output port.  If the procedure returns, then the port
+will be closed as with close-output-port.  If the procedure
+does not return, the port will not be closed until and unless
+it can be shown (as by the reachability analysis done by the
+garbage collector) that the port cannot be used for any
+output operations.{/para}
+{/RefSect1}
+{/RefEntry}

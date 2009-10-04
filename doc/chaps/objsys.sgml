@@ -1,0 +1,86 @@
+{Chapter}
+{Title}Object System{/Title}
+{Para}
+{Para}By Robert Strandh
+{Para}
+&rs; is a fully object-oriented language in that each RScheme
+object is an instance of some class.  Contrary to common languages
+such as C++ or Java in which methods are associated with classes,
+the &rs; object system is based on generic functions much in the
+spirit of Dylan, which in turn is based on the Common Lisp object
+system (CLOS). 
+{Para}
+Every value in &rs; is an object.
+That is, &rs; is "objects all the way down" rather than
+being a hybrid language like C++ or most Lisp object systems---the
+built-in R4RS Scheme data types are all classes in the class hierarchy,
+as they should be.  Currently, only a simple object system with
+single inheritance and single dispatching is supported.  The object
+system is approximately a subset of TinyCLOS, with some Dylan-like
+extensions.
+{Para}
+{Sect1}
+{Title}Classes{/Title}
+{Para}
+As mentioned above, every object in &rs; is an instance of a
+class.  For example, 123 and 12.3 are both instances of the class
+named {ClassName/<number>/, and "hello" and "hi there" are both instances of the
+class {ClassName/<string>/.  
+{Para}
+Classes are organized into a hierarchy.  The top class of the
+hierarchy is called {ClassName/<object>/.  If some class A is positioned
+immediately above some other class B in the hierarchy then we say that
+A is the immediate superclass of B, and B is the immediate subclass of
+A.  All classes above A in the hierarchy are called (indirect)
+superclasses of B, and all classes below B in the hierarchy are called
+(indirect) subclasses of A.  The term subclass is used to mean direct
+or indirect sublcass, and the term superclass is used to mean direct
+or indirect superclass.  A direct subclass B is said to inherit from
+its direct superclass A, because instances of B automatically contain
+everything that instances of A contain, plus information specific to
+B.  An instance of a class B is also said to be an instance of every
+superclass (direct or indirect) of B.  An object, instance of B but
+not of any subclass of B, is said to be a direct instance of B and an
+(indirect) instance of every superclass of B.
+{Para}
+In the &rs; class hierarchy, each class has exactly one direct
+superclass (except {ClassName/<object>/ which has none).  Another term for this
+kind of class organization is single inheritance.  
+{Para}
+We mentioned above that 123 and 12.3 are both instances of the class
+{ClassName/<number>/.  To be more specific, 123 is a direct instance of the class
+named {ClassName/<fixnum>/ which is a subclass of <number>, and 12.3 is a direct
+instance of the class named {ClassName/<double-float>/ 
+which is also a subclass of
+{ClassName/<number>/. 
+{Para}
+In some languages, for instance C++ and Java, classes exist only at
+compile time, and thus cannot be manipulated as objects at runtime.
+In other languages, for instance Smalltalk and &rs;, classes are
+themselves objects (and thus instances of some classes) in the same
+way numbers and strings are objects.  If classes can be manipulated in
+the same way other objects are manipulated, then we say that classes
+are first-class.  If an object is first-class, it can be given as
+values to a variable, passed as an argument to a function, and
+returned as values of a function invocation.
+{Para}
+Since classes are first-class objects, they do not necessarily have
+names.  It is convenient, however, to be able to refer to classes by
+some name.  Indeed, above we already talked about the classes named
+{ClassName/<object>/, {ClassName/<number>/, and {ClassName/<string>/.  In reality, these names are just
+names of ordinary global variables whose values happen to be classes.
+As a convention, we use angle brackets around variable names whose
+values are classes. 
+{Para}
+Most classes in &rs; are instances of the class named
+{ClassName/<<standard-class>/>.  Classes of class objects are called metaclasses.
+Names of metaclasses are surrounded by double angle brackets as a
+convention. 
+{Para}
+The most convenient way of creating a class and giving it a name, is
+to use the macro define-class.  Here is the syntax:
+<!-- (define-class name (superclass) 
+  class-options
+  slot-specifications)
+-->
+&ref.define-class;

@@ -1,0 +1,13 @@
+alloc.h
+clientyp.h
+gcconfig.h
+gcserver.h
+gcglue.h
+irc.h
+irctypes.h
+record.h
+sizeclas.h
+traverse.h
+travstat.h
+writebar.h
+gcxverse.h

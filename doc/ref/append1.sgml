@@ -1,0 +1,48 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}append!{/RefName}
+  {RefPurpose}Append some lists using side-effects.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/append!/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/l/{/ParamDef}{ParamDef role="returns"}
+{Parameter}b{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}l{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<list>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}b{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<list>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Like {Phrase Role="var"}append{/Phrase}, but side effects the tails of all but the
+last list in order to concatenate them.  Note however that
+{Phrase Role="var"}append!{/Phrase} must still traverse each pair in the lists
+except the last, so this function still costs time proportional
+to the length of the lists (except the last), though the space
+cost is zero.{/para}
+{/RefSect1}
+{/RefEntry}

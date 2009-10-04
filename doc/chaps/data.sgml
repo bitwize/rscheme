@@ -1,0 +1,79 @@
+{Chapter}
+{Title}Data Types{/Title}
+{Para}
+&rs; has a rich set of data types for general programming.
+Unlike in some hybrid lisp object systems, all data types are
+part of a complete class hierarchy.
+The &rs; data types are a superset of standard Scheme's required 
+data types.
+{/Para}
+{Note}
+{Para}Until we finish filling in all this material, please look
+in {Citation}R4RS{/Citation} for reference material.
+<!>
+{/Note}
+{Sect1}
+{Title}Booleans{/Title}
+{Para}
+Standard scheme &t; and &f;.
+<!>
+{Sect1}
+{Title}Symbols{/Title}
+{Para}
+Standard scheme, except that symbols are case sensitive.
+<!>
+{Sect1}
+{Title}Numbers{/Title}
+{Para}
+Standard scheme {Emphasis/required/ types -- float and small integers.
+<!-- someday: extensible number system with packages
+for bignums, complex, and rationals -->
+<!>
+{Sect1}
+{Title}Characters{/Title}
+{Para}
+Standard scheme with extensions.  You can write ascii
+control characters using their ascii control
+character names, for example {UserInput/#\ff/
+or {UserInput/#\esc/.  Some characters can be entered
+using different
+names, such as {UserInput/#\newline/ which is also
+{UserInput/#\nl/.
+<!>
+{Sect1}
+{Title}Strings{/Title}
+{Para}
+Standard Scheme, except with standard C string escapes
+(&eg;, embed newline characters using {UserInput/\n/)
+<!>
+{Sect1}
+{Title}Functions{/Title}
+{Para}
+Unlike some languages like Pascal, functions are regular data
+objects and can be stored in data structures, extracted, and the
+result of a computation can be invoked like any other 
+function{footnote}{Para}Some languages, like C, support first-class
+functions -- function pointers, in their terminology -- but
+functions in &rs; are richer structures that in C because here they
+include their lexical environment.  They are 
+{FirstTerm Role="defn"}closures{/FirstTerm} rather
+than just code.{/footnote}
+{Para}
+Note that the use of the term {Quote/function/ does not imply
+anything in the sense of purely functional languages.  The term
+is used here as in Dylan and C; functions can have side effects,
+and can return zero or more values (unlike C and Java which only
+support returning zero or one values)
+                                                                      <!>
+{Sect1}
+{Title}Collections{/Title}
+{Sect2}
+{Title}Vectors{/Title}
+{Para}
+Standard Scheme.  See chapter on vectors.
+{Sect2}
+{Title}Tables{/Title}
+{Para}
+Constant-time mappings from keys to values.
+See chapter on tables. <!-- cite chapter id "tables" -->
+{Para}

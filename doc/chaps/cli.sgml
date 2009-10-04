@@ -1,0 +1,115 @@
+{Chapter}
+{Title}Command-Line Interface{/Title}
+{Para}
+{Para}
+The &rs; executable program in a unix-like environment accepts several
+switches, options, and arguments.
+{Para}
+When the system starts up, the first thing it does is load the
+{FirstTerm Role="defn"}system image{/FirstTerm}.  When &rs; is configured, a default location for
+the system image is defined, and that location is compiled into the
+executable image.  In particular, the image is sought in
+{Filename}{Envar}$INSTALL_DIR{/Envar}/resource/system.img{/Filename}, where
+{Envar}$INSTALL_DIR{/Envar} is the installation directory for &rs;.
+{Para}
+After loading the system image, the internal start function is called
+which executes the initialization procedures and then calls the
+current {UserInput/main/ function with the command line arguments in
+a list.
+{Para}
+{Sect1}
+{Title}System Argument Processing{/Title}
+{Para}
+The C initialization code and the built in (system) start funcion
+interpret some but not all command arguments.  The command-line
+arguments understood by the C initialization code will be shared
+by all {Quote/executable/ images.
+{Para}
+The following flags are processed by the system initialization code:
+{/Para}
+<!>
+{Table}
+  {Title}Command-line Interface Flags defined for the RScheme executable
+environment.  See also the following table.{/Title}
+{TGroup COLS=2}
+ {ColSpec colwidth="1in"}
+ {ColSpec colwidth="3in"}
+{THead}
+  {Row}{Entry}flag{/Entry}{Entry}meaning{/Entry}{/Row}
+{/THead}
+{TBody}
+{Row}{Entry}{UserInput/- -version/{/Entry}{Entry}Print out the version and exit.{/Entry}
+{/Row}{Row}{Entry}{UserInput/-image/{/Entry}{Entry}Use an alternate system image file.{/Entry}
+{/Row}{Row}{Entry}{UserInput/-q/{/Entry}{Entry}Suppress output of greetings.{/Entry}
+{/Row}{Row}{Entry}{UserInput/-qimage/{/Entry}{Entry}Use an alternate system image file and suppress.{/Entry}
+{/Row}{Row}{Entry}{UserInput/-script/{/Entry}{Entry}Suppress output of greetings and set {Emphasis/script mode/.{/Entry}
+{/Row}{Row}{Entry}{UserInput/-bcitrace/{/Entry}{Entry}Turn on tracing of bytecodes; the system must
+     have been configured with the {UserInput/- -enable-debug/ flag to make
+     use of this flag.{/Entry}
+{/Row}{Row}{Entry}{UserInput/-abt/{/Entry}{Entry}Turn on apply backtrace tracing from the start.  Useful
+     in some cases when turning it on at runtime (using {UserInput/,fg-abt/)
+     doesn't work.{/Entry}
+{/Row}
+{/TBody}
+{/TGroup}
+{/Table}
+
+{Para}
+{Sect1}
+{Title}REPL Argument Processing{/Title}
+{Para}
+As built, the {UserInput/main/ function comes form the {UserInput/repl/
+module, which interprets the arguments as flags and names of
+files to be loaded.  The following flags are understood:
+{/Para}
+<!>
+{Table}
+  {Title}&rs; Shell Flags{/Title}
+{TGroup COLS=2}
+ {ColSpec colwidth="1in"}
+ {ColSpec colwidth="3in"}
+{THead}
+{Row}{Entry}flag{/Entry}{Entry}meaning{/Entry}
+{/THead}
+{TBody}
+{Row}{Entry}{UserInput/-c/ {Parameter/path/{/Entry}{Entry}Save bootable image.
+{/Entry}{/Row}{Row}{Entry}{UserInput/-c.repl/ {Parameter/path/{/Entry}{Entry}Save bootable image with REPL's {UserInput/main/
+                                as the main function.
+{/Entry}{/Row}{Row}{Entry}{UserInput/-/{UserInput/-/{/Entry}{Entry}Interpret remaining arguments as application arguments.
+{/Entry}{/Row}{Row}{Entry}{UserInput/-exit/{/Entry}{Entry}Exit successfully.
+{/Entry}{/Row}{Row}{Entry}{UserInput/-e/ {Parameter/expr/{/Entry}{Entry}Evaluate expression {Parameter/expr/.
+{/Entry}{/Row}{Row}{Entry}{UserInput/-m/ [{Parameter/module/{UserInput/=/]{Parameter/file/{/Entry}{Entry}Link module {Parameter/module/
+from mif at {Parameter/file/.  If {Parameter/module/ is not specified, the name
+will be the base name in {Parameter/file/.
+{/Entry}{/Row}{Row}{Entry}{UserInput/+/{Parameter/module/{/Entry}{Entry}Import module {Parameter/module/{/Entry}
+{/Row}
+{/TBody}
+{/TGroup}
+{/Table}
+
+{Para}
+The default behavior is to interpret each of the other command-line arguments
+as the name of a file to load.
+{Para}
+{Comment/unify this.../
+When we
+start the RScheme system, we can use command-line arguments to
+incorporate compiled modules and to execute expressions, and possibly
+to save the resulting image to an image file.  The general syntax of
+the rs command is described above.
+{Para}
+Each module-or-eval-argument is handled in the order given on the
+command line and can be -m foo.mif, +foo, or -e expr. Using -m foo.mif
+means that the code for the module foo is loaded into RScheme, but the
+exported variables in foo are not made visible until a ,(use foo)
+command is executed.  Using +foo means that the module is loaded in
+the same way as with -m foo.mif, but in addition the exported
+variables in foo are made visible to the current module as if ,(use
+foo) had been typed.  Using -e expr means evaluating an RScheme
+expression.  Thus rs +foo is rougly equivalent to rs -m foo.mif -e
+",(use foo)", but -e can of course be used to evaluate any valid
+RScheme expression.
+{Para}
+Finally, the argument -c file.img saves the RScheme image resulting
+from the other arguments.
+{Para}

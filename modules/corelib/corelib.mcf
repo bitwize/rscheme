@@ -1,0 +1,120 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    modules/corelib/corelib.mcf
+ |
+ |          Copyright (C)1996 Donovan Kolbly <d.kolbly@rosette.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.34
+ | Date:    2004-03-24 14:38:27
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ | Purpose: Core Library Module Definition File
+ `------------------------------------------------------------------------|#
+
+((corelib "$dist/corelib" "$install/resource/modules")
+ (open primops *scheme*)
+ (c-files str2num)
+ (h-files strnnum)
+ (require-c-header "<ctype.h>" "<string.h>" "<stdlib.h>")
+ (require-c-header "<rscheme/osglue.h>")
+ (require-c-header "<rscheme/allocns.h>")
+ (require-c-header "<rscheme/intrs.h>")
+ (require-c-header "<signal.h>")
+ (open precore)
+ (files apply fluid)
+ (files threadv)
+ (files errors)
+ (files alloc process)
+ (files dynstate)
+ (files string str2num num2str)
+ (files layer imageio intrglue)
+ (files linkinfo keywords)
+ (files complex rational basicnum)
+ (files delegate)
+ (export :local)
+ ;;
+ ;; bindings we are re-exporting from precore...
+ ;;
+ (export %make <<class>> <<standard-class>> <ascii-char>
+	 <binding-envt> <binding> <boolean> <bvec> <byte-coded> <byte-vector>
+	 <char> <closure> <collection> <complex> <dequeue> <double-float>
+	 <empty-list> <fixnum> <float> <fluid-tl-contour> <function-place>
+	 <function> <generic-function> <single-dispatch-gf>
+	 <gvec> <integer> <lexical-contour>
+	 <list> <local-rewriter> <long-int> <macro-form> <macro> <method>
+	 <number> <object> <pair> <partial-continuation> <place> <primop>
+         <quantity>
+	 <rational> <real> <rewriter> <scope-record> <sequence>
+	 <slot-descriptor> <spare-1> <spare-2> <spare-3> <string>
+         <abstract-string> <octet-string> <substring>
+	 <substitution> <symbol> <template> <top-level-contour>
+	 <top-level-var> <unicode-char> <unicode-string> <unique-obj> <vector>
+	 <winding-contour> 
+	 <mp-rational> <rect-complex> <mp-data> <bignum>
+	 <slot-method> <getter> <setter> slot-descriptor
+	 all-slots and arg-types args back backing bindings
+	 body car case cdr class-name class-category class-hash
+	 class-precedence-list code-pointer cond
+	 cons cons* corresponding-primtype 
+	 define-inline define-macro nlambda
+	 define-safe-glue direct-slots dirty? display-object do
+	 dynamic-enclosing else-bdg enclosing environment envt expr finalize
+	 forms front ftlc-bindings ftlc-inside-values ftlc-saved-values
+	 full-procedure-bdg function-descr function-place-code
+	 function-specializers generic-function-methods generic-function-name
+	 getter hash-code heap-type image-mode index init-keyword init-value
+	 initialization-mode initialize instance-size let* lexical-enclosing
+	 linkage-info name name->bindings or owner primop-has-side-effect?
+	 properties rest-type result-type rewriter-args rewriter-body
+	 rewriter-dyn-envt rewriter-lex-envt set-all-slots! set-arg-types!
+	 set-args! set-back! set-backing! set-bindings! set-body!
+	 set-class-name! set-class-precedence-list! set-code-pointer!
+	 set-corresponding-primtype! set-direct-slots! set-dirty?!
+	 set-dynamic-enclosing! set-else-bdg! set-enclosing! set-environment!
+	 set-envt! set-expr! set-forms! set-front! set-ftlc-bindings!
+	 set-ftlc-inside-values! set-ftlc-saved-values!
+	 set-full-procedure-bdg! set-function-descr! set-function-place-code!
+	 set-function-specializers! set-generic-function-methods!
+	 set-generic-function-name! set-getter! set-heap-type! set-image-mode!
+	 set-index! set-init-keyword! set-init-value! set-initialization-mode!
+	 set-instance-size! set-lexical-enclosing! set-linkage-info! set-name!
+	 set-name->bindings! set-owner! set-primop-has-side-effect?!
+	 set-properties! set-rest-type! set-result-type! set-rewriter-args!
+	 set-rewriter-body! set-rewriter-dyn-envt! set-rewriter-lex-envt!
+	 set-setter! set-setter-forms! set-spare-0!
+	 set-state! set-superclasses!
+	 set-sync-method! set-table! set-template! set-translations!
+	 set-type-restriction! set-value! set-write-prot! setter setter-forms
+	 spare-0 state superclasses
+	 sync-method table template translations type-restriction value
+	 write-object write-prot
+	 to-string
+	 
+	 size element set-element!
+
+	 miss-count         set-miss-count!
+	 gf-cache-overflow  set-gf-cache-overflow!
+	 gf-cache-0-k       gf-cache-0-v
+	 gf-cache-1-k       gf-cache-1-v
+	 gf-cache-2-k       gf-cache-2-v
+	 gf-cache-3-k       gf-cache-3-v
+	 gf-cache-V-k       gf-cache-V-v
+ 	 
+	 set-gf-cache-0-k!  set-gf-cache-0-v!
+	 set-gf-cache-1-k!  set-gf-cache-1-v!
+	 set-gf-cache-2-k!  set-gf-cache-2-v!
+	 set-gf-cache-3-k!  set-gf-cache-3-v!
+	 set-gf-cache-V-k!  set-gf-cache-V-v!)
+ (export string-length string-set! string-ref)
+ (export <condition>
+         <simple-warning>
+         <serious-condition>
+         <error>
+         <os-error>
+         <simple-error>
+         <type-check-failed>
+         <argument-error>
+         <argument-type-error>)
+
+ ;; fluid variables
+ (fluid *signal-handler* *handler-chain*))

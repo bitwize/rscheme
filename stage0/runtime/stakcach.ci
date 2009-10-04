@@ -1,0 +1,88 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/runtime/stakcach.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.6
+ * File mod date:    1998-10-13 07:54:28
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ *------------------------------------------------------------------------*/
+
+#include <rscheme/vinsns.h>
+
+CI_DECL UINT_32 alloc_cache_frame( unsigned num_slots )
+{
+UINT_32 cr = VAL(continuation_reg);
+
+    assert( num_slots <= MAX_FRAME_SIZE );
+    
+    if (cr < cache_upper_limit)
+    {
+	if (cr >= cache_lower_margin)
+	{
+	    return (cr - SLOT(num_slots));
+	}
+	else if (cr >= cache_lower_limit)
+	    flush_stack_cache();
+    }
+    return (cache_upper_limit - SLOT(num_slots));
+}
+
+CI_DECL obj *push_cont( jump_addr label, unsigned reg_space )
+{
+UINT_32 cr = alloc_cache_frame(CONT_FIXED+reg_space);
+#define x  ((obj *)(cr-POINTER_TAG))
+
+    if (rsprof_active)
+      rsprof_saves();
+
+    x[0] = envt_reg;
+    x[1] = literals_reg;
+    x[2] = JUMP_ADDR_TO_OBJ(label);
+    x[3] = continuation_reg;
+    continuation_reg = OBJ(cr);
+
+    return &x[CONT_FIXED];
+#undef x
+}
+
+CI_DECL rs_bool in_stack_cache( obj value )
+{
+    if (VAL(value) < cache_upper_limit && VAL(value) >= cache_lower_limit)
+	return YES;
+    return NO;
+}
+
+
+
+CI_DECL void cache_iterator_reset( void )
+{
+extern obj *cache_iteration;
+
+    cache_iteration = (obj *)(cache_upper_limit - POINTER_TAG);
+}
+
+CI_DECL void *cache_iterator_next( void )
+{
+obj item, *stop;
+UINT_32 cr = VAL(continuation_reg);
+extern obj *cache_iteration;
+
+    if (!in_stack_cache(continuation_reg))
+	return NULL;
+
+    stop = (obj *)(cr - POINTER_TAG);
+
+    while (cache_iteration > stop)
+    {
+	item = *--cache_iteration;
+	if (OBJ_ISA_PTR(item) && !in_stack_cache(item))
+	{
+	    return PTR_TO_GCPTR(item);
+	}
+    }
+    return NULL;
+}

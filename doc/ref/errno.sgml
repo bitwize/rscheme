@@ -1,0 +1,34 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}errno{/RefName}
+  {RefPurpose}Return errno.{/RefPurpose}
+  {RefClass role="Type"}primop{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/errno/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+{/ParamDef}{ParamDef role="returns"}
+{Parameter}errno{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}errno{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Return the last error.  Deprecated, but still needed as not
+everything signals errors (e.g., {Phrase Role="var"}fd-open{/Phrase} still returns
+status info, which breaks w/threads){/para}
+{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,142 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/hasht/special.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.5
+ * File mod date:    1997-11-29 23:10:52
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ * Purpose:          specialized (but parameterized) hash table functions
+ *------------------------------------------------------------------------*/
+
+obj SPECIAL_TABLE_LOOKUP( obj table, obj h, obj key )
+{
+UINT_32 i;
+obj vec, bucket;
+
+    vec = gvec_read( table, HASHTABLE_DIRECTORY );
+    
+    bucket = read_dir( vec, h );
+    
+    while (!EQ(bucket,FALSE_OBJ))
+    {
+        for (i=SLOT(2); i<SLOT(2+BUCKET_CAPACITY); i+=sizeof(obj))
+	{
+	    if (SPECIAL_CMP(h,read_bucket_hash(bucket,i),
+			    key,read_bucket_key(bucket,i)))
+		    return read_bucket_value(bucket,i);
+	}
+	bucket = gvec_read( bucket, BUCKET_OVERFLOW );
+    }
+    return FALSE_OBJ;
+}
+
+rs_bool SPECIAL_TABLE_PROBE( obj table, obj h, obj key )
+{
+UINT_32 i;
+obj vec, bucket;
+
+    vec = gvec_read( table, HASHTABLE_DIRECTORY );
+    
+    bucket = read_dir( vec, h );
+    
+    while (!EQ(bucket,FALSE_OBJ))
+    {
+        for (i=SLOT(2); i<SLOT(2+BUCKET_CAPACITY); i+=sizeof(obj))
+	{
+	    if (SPECIAL_CMP(h,read_bucket_hash(bucket,i),
+			    key,read_bucket_key(bucket,i)))
+	      return YES;
+	}
+	bucket = gvec_read( bucket, BUCKET_OVERFLOW );
+    }
+    return NO;
+}
+
+obj SPECIAL_TABLE_REMOVE( obj table, obj h, obj key )
+{
+UINT_32 i;
+obj vec, bucket;
+
+    vec = gvec_read( table, HASHTABLE_DIRECTORY );
+    
+    bucket = read_dir( vec, h );
+    
+    while (!EQ(bucket,FALSE_OBJ))
+    {
+        for (i=SLOT(2); i<SLOT(2+BUCKET_CAPACITY); i+=sizeof(obj))
+	{
+	    if (SPECIAL_CMP(h,read_bucket_hash(bucket,i),
+			    key,read_bucket_key(bucket,i)))
+		{
+		obj item = read_bucket_value(bucket,i);
+
+		gvec_write_non_ptr( bucket, HASH_SLOT(i), FALSE_OBJ );
+		gvec_write_non_ptr( bucket, KEY_SLOT(i), FALSE_OBJ );
+		gvec_write_non_ptr( bucket, VALUE_SLOT(i), FALSE_OBJ );
+
+		    removing_one( table );
+		    return item;
+		}
+	}
+	bucket = gvec_read( bucket, BUCKET_OVERFLOW );
+    }
+    return FALSE_OBJ;
+}
+
+obj SPECIAL_TABLE_INSERT( obj table, obj h, obj key, obj value )
+{
+UINT_32 i;
+obj vec, bucket;
+obj nf_bucket = ZERO;
+UINT_32 nf_slot = 0;
+
+    vec = gvec_read( table, HASHTABLE_DIRECTORY );
+    
+    bucket = read_dir( vec, h );
+    while (!EQ(bucket,FALSE_OBJ))
+    {
+        for (i=SLOT(2); i<SLOT(2+BUCKET_CAPACITY); i+=sizeof(obj))
+	{
+	  obj bh = read_bucket_hash(bucket,i);
+	  if (SPECIAL_CMP(h,bh,key,read_bucket_key(bucket,i)))
+	    {
+	      obj prev;
+	      
+	      prev = read_bucket_value( bucket, i );
+	      write_bucket_key( bucket, i, key );
+	      write_bucket_value( bucket, i, value );
+	      return prev;
+	    }
+	  else if (EQ(bh,FALSE_OBJ) && !nf_slot)
+	    {
+	      nf_slot = i;
+	      nf_bucket = bucket;
+	    }
+	}
+	bucket = gvec_read( bucket, BUCKET_OVERFLOW );
+    }
+    /* it wasn't found; so write it into an empty bucket slot
+     * that we found, if we had found one 
+     */
+    inserting_one( table );
+    if (nf_slot)
+      {
+	write_bucket_hash( nf_bucket, nf_slot, h );
+	write_bucket_key( nf_bucket, nf_slot, key );
+	write_bucket_value( nf_bucket, nf_slot, value );
+      }
+    else
+      {
+	/* there wasn't an empty slot, so grow things...
+	 * (split_bucket will just add a bucket if there is none
+	 *  at the given directory position)
+	 */
+	split_bucket( table, read_dir( vec, h ), h, key, value );
+      }
+    /* return #f, the effective "previous" value */
+    return FALSE_OBJ;
+}

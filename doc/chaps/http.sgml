@@ -1,0 +1,233 @@
+{Chapter}
+{Title}HTML and HTTP{/Title}
+{Para}
+One of the many uses to which &rs; has been put is as
+an application server for building intranet and internet
+web servers.
+
+There are several modules which are used to make the construction of
+web servers and web-based services convenient.
+The {UserInput/rs.net.html/ module provides basic procedures
+for generating HTML programmatically.
+
+{Sect1}
+{Title}HTML{/Title}
+{Para}
+Most web-enabled facilities have a strong requirement for
+the dynamic generation of HTML.  &rs; meets this need by
+supplying procedures for producing marked-up output.
+One distinguishing characteristic of &rs;'s approach to 
+generating dynamic HTML is that the markup is passed
+"out-of-band" using a specialized {ClassName/<output-port>/
+so that normal output can be automatically escaped.
+
+{Para}
+For example, if you are generating a fragment of HTML
+dynamically, you do not need to worry about whether or not
+the text you're generating contains HTML special characters
+like '<' or '&amp;'.
+Consider this program fragment:
+{/Para}
+
+{ProgramListing}
+(define (gen-user-name (fullname <string>) (email <string>))
+  (bold (display fullname))
+  (display " <")
+  (emph (display email))
+  (display ">"))
+{/ProgramListing}
+
+{Para}
+The gen-user-name procedure need not be concerned about whether the 
+fullname
+might contain characters special to HTML, as in "Alice & Bob".  
+An in
+displaying the "<" and ">" email address delimiters, the programmer
+need not recall that these should appear as "&amp;lt;" and "&amp;gt;"
+in HTML -- the system will automatically substitute the correct
+translation.
+
+{Sect1}
+{Title}Web Server Support{/Title}
+{Para}
+&rs;'s strengths are best revealed when it can be the web server
+itself.
+
+{Sect2}
+{Title}Connecting the service{/Title}
+{Para}
+To build an actual web server, the first thing to do is
+to hook up a protocol interpreter to an appropriate
+TCP/IP socket.
+
+{Sect2}
+{Title}Session Management{/Title}
+{Para}
+Facilities are included to manage sessions in two
+ways: using cookies, and using virtual subspaces.
+We could also support the hidden-variable approach,
+but that is too inconvenient to deploy services based
+on it and there is no apparent advantage, so we leave
+that as an exercise for the user.
+
+{Sect2}
+{Title}Web spaces{/Title}
+{Para}
+An web server built using rs.net.http
+has an internal representation of the
+shape of the web space it serves.  This
+space is structured mostly as a tree,
+reflecting the hierarchy of a URL.
+
+{Para}
+When a request comes in, the server starts
+at the "web root" and walks down the tree,
+following links labelled by the elements
+in the request.  For example, if a request for
+the object "/pub/build/0.7.3.1" comes in
+(as, for example, from the URL "http://www.rscheme.org/pub/build/0.7.3.1"),
+then the system will start at the root,
+follow the "pub" link from there,
+follow the "build" link from that location,
+and finally deliver the request to the result
+of following the "0.7.3.1" link from there.
+
+{Sect2}
+{Title}Forms (POST){/Title}
+{Para}
+A web-enabled service likely has a need to put data
+{Emphasis/into/ the system.  This is typically done
+with the HTTP POST method.
+
+{Sect2}
+{Title}Queries (GET){/Title}
+{Para}
+Sometimes it is convenient to encode a request as
+part of the URL.  This shows up as a '?' after the
+last element in the URL path, as in "/pub/inspect?cr=123",
+which is a reference to the queryable resource "/pub/inspect"
+with the parameter "cr" with a value of "123".
+
+{Para}
+As a matter of convention, I reserve this notation
+for side-effect-free operations (hence, I call them
+"queries").  For operations which update some persistent
+representation, I use POST.
+
+{Sect2}
+{Title}Authentication and Security{/Title}
+{Para}
+Some portions of the web space may be protected.  There
+is built-in support for using HTTP-based authentication
+as well as identd-based authentication.
+
+{Para}
+A protected web node has a value for
+the {Symbol/protect/ property.
+When the web space traversal procedure gets
+to such a node, the generic function {Phrase Role="var"/check-protection/
+is invoked
+on the value of the {Symbol/protect/ property.
+Typically, this value will 
+be an instance of {ClassName/<http-protection>/,
+which has a method for doing basic authentication.
+{/Para}
+
+{ProgramListing}
+(define *confidential* 
+  (make <http-protection>
+        in-realm: "ABC Inc."
+        password-check-proc: my-password-ok?
+        use-identd: '("*.abc.com")))
+{/ProgramListing}
+{Para}
+The {Phrase Role="var"/check-protection/ method will signal
+an appropriate condition if the request does not
+satisfy the security constraints.  In the case of
+HTTP authorization, using {Phrase Role="var"/in-realm/, this
+condition may be an {Classname/<http-error>/ with
+code 401 (Unauthorized), with appropriate headers
+to elicit authorization from the web client and/or user.
+
+{Sect1}
+{Title}Web Client Support{/Title}
+{Para}
+There are also facilities for building http clients.  This
+is useful if some service is being deployed over an
+underlying HTTP protocol, or if one is building a web
+browser or web-crawling agent of some sort.
+
+{Sect1}
+{Title}CGI Support{/Title}
+{Para}
+If &rs; is being used to augment an existing web server
+via the standard service process interface, CGI, there
+are facilities to assist in parsing the CGI environment.
+
+{Sect1}
+{Title}Extended Example{/Title}
+{Para}
+In this extended example, we will go walk the development
+of a web-enabled service for source code control and
+build tracking.  This example is taken from the system
+and facilities used in the development of &rs; itself.
+
+{Sect2}
+{Title}Object Analysis{/Title}
+{Para}
+The first step in building a web-enabled service is to
+understand the domain.  This means understanding what
+the conceptual
+objects are, what their relationships are, and
+what procedures or operations are to be web-enabled.
+
+{Para}
+For this example application, the domain is that of
+source code control and build tracking.  The objects
+are things like virtual filesystems, source files,
+filesystem snapshots, groups, users, change requests,
+and builds.
+
+{Para}
+The are several kinds of relationships among these
+objects; filesystems contain files, files are owned
+by groups and users, files changes are motivated
+by change requests, etc.
+
+{Para}
+Builds use the source from filesystems at a particular snapshots.
+
+{Sect2}
+{Title}Web-Enabling Analysis{/Title}
+
+{Para}
+The next step is to design the web space.
+This involves understanding how the conceptual objects
+map onto web pages, how their relationships map onto
+links among those pages, and how the operations
+and procedures are appropriately represented using forms.
+
+{Para}
+For this application, I chose a fairly direct mapping
+of application objects to web pages; each object is represented
+by a single page in the web space, with top-level web
+space links encoding type information.
+
+{Para}
+For example, the page that describes change request 803
+has the path {Filename}/cr/803{/Filename}.
+
+{Para}
+Since some
+of the objects being mapped are files, we get what appears
+to be a virtual filesystem of metadata published on the web.
+For example, the page describing the file
+{Filename}/handc/configure.in{/Filename} in the filesystem
+rs-0.7
+is located at {Filename}/fs/rs-0.7/file/handc/configure.in{/Filename}.
+It isn't necessary to use file names in this case -- the
+equivalent of inode numbers could be used as well -- but using
+the file names corresponds more closely with the an intuition
+about the shape of the web space.
+
+{/Chapter}

@@ -1,0 +1,3015 @@
+  {chapter}
+    {title}Introduction to RScheme Internals{/title}
+     {para}This part of the book describes the internals
+           of RScheme.{/para}
+     {para}Most of this part, especially the higher level
+           chapters, was written by Paul Wilson who inspired much of the
+           design of RScheme's internals.{/para}
+   {/chapter}
+
+    {chapter}
+      {title}Representation of Objects.{/title}
+
+        {para}Since Scheme is a dynamically typed language, the type of an object
+must be possible to determine from the object itself at runtime.
+To accomplish that, we use tags.  {/para}
+        {para}In the general case, an RScheme object is a pointer to some area of
+memory, and the type of the object, which is usually a class, is part
+of the contents of that area of memory.{/para}
+        {para}However, it is wasteful to represent objects this way.  Therefore, a
+different method is used for some commonly used object types.  The
+method consists of marking the pointer itself (rather than the area of
+memory it is pointing to) so that the type of the object can be
+determined directly from the pointer, which is much faster since this
+operation does not require an additional memory access. {/para}
+        {para}Once we have tagged pointers, we realize that some simple objects need
+no area of memory at all.  The entire object can be fully represented
+in the pointer itself.  This is the case for small integers, booleans,
+characters, and some unique objects such as the EOF object used in
+input/output operations. {/para}
+        {para}In RScheme, all objects have a primary tag.  This tag is stored in the
+two least significant bits of the pointer.  Thus, there are four
+possible values for the primary tag.  Currently, the tag 01 is unused
+and reserved for future use.{/para}
+        {para}RScheme data values are represented as two-bit, low-tagged 32-bit
+quantities.  This means that RScheme values are generally 32 bits,
+where the low two bits is a primary tag that says what basic kind of
+value it is, and the upper 30 bits holds either the actual value, or
+a pointer to a heap-allocated object that is the actual value.{/para}
+        {para}Every heap-allocated object, whether of a built-in type or a user-defined
+type has a header that says exactly what kind of object it is.  This
+header includes a CLASS POINTER, which is a pointer to a class object
+that represents that kind of object.{/para}
+        {para}Plain, standard Scheme objects such as vectors and strings have class
+pointers---unlike some systems, there is NO DISTINCTION between objects
+that are plain Scheme values and objects that are instances of classes.{/para}
+        {para}In fact EVERY value in RScheme has a class, and there's a primitive in the
+abstract instruction set that will give you back a pointer to the class
+of an object, even if the object is a built-in immediate value.  For
+immediate values, this primitive looks in a special table to find
+the class pointer, preserving the illusion that every object is allocated
+on the heap and has a header with a class pointer.{/para}
+        {para}Notice that this small feature is important, in that it will allow us
+to implement a good object system with a metaobject protocol efficiently
+with little or no compiler cooperation.{/para}
+
+      {sect1}
+        {title}Small Integers{/title}
+        {para}A tag of 00 indicates that the object is a small signed integer.  We
+call such a number a fixnum (abbreviation for fixed number).  On a 32
+bit machine, fixnums are integers greater than or equal to -2^29 and
+strictly less than 2^29.  A two's complement representation of the
+fixnum is stored in the 30 most significant bits of the pointer.
+Another way of expressing this is to say that a fixnum n is
+represented by the machine integer N=4*n.{/para}
+        {para}The choice of a tag of 00 for fixnums was not made arbitrarily.  Some
+very common operations on fixnums become very simple if a tag of 00 is
+used.  We can use the ordinary machine instructions for addition and
+subtraction.  Multiplication of two fixnums requires one of them to be
+shifted to the right by two positions before the use of the ordinary
+machine multiplication operation.  Division of two fixnums requires
+that we first use machine division and then shift the result to the
+left by two positions.{/para}
+        {para}In addition, no extra work is necessary to accomplish operations such
+as AND, OR, exclusive OR, and shift.  The NOT operation has to be
+followed by a mask operation to make sure the last two bits are zero. {/para}
+        {para}For most of the operations above we have to check for overflow so that
+we either can signal an error or invoke code to convert the fixnum to
+some more appropriate representation.  RScheme currently does not have
+bignums (arbitrary precision integers), so overflow only provokes an
+error.{/para}
+        {para}Some architectures such as the SPARC have special instructions that
+work on tagged fixnums.  In a single instruction cycle such
+instructions are able to verify that the tag is 00, apply the
+operation, and verify that there is no overflow.  In the case of
+failed verification, these instructions provoke a hardware trap that
+can then be converted into a software signal that can be captured so
+that the appropriate conversion code can be invoked.  However, we
+currently do not use these instructions as it would make the system
+less portable.  Instead we use explicit code for testing the error
+situations.{/para}
+        {para}{/para}
+      {/sect1}
+      {sect1}
+        {title}Immediate Objects{/title}
+        {para}A tag of 10 indicates that the object is an immediate object (immob
+for short).  Immediate objects are objects that like fixnums can be
+represented in the pointer itself, and therefore do not need
+additionally allocated memory.  {/para}
+        {para}Since there are many types of immediate objects, RScheme uses a
+secondary tag to distinguish between those different types.  The
+secondary tag is located in the three bits immedately to the left
+(less significant bits are to the right of more significant) of the
+primary tag.  {/para}
+        {para}IMMEDIATE VALUES are the values that are represented directly within
+the upper 30 bits of a word.  Two different primary tags are used
+for immediate values---one just for short integers, and another for
+all other kinds of immediate values.  Integers have a primary tag of
+00, which is convenient because it turns out not to get in the way
+of most arithmetic operations. (You don't actually have to strip out
+the tag to do integer addition for example, because the 00 tags of
+the operands will add together and form a 00 tag in the low bits of
+the result.){/para}
+        {para}Other (non-integer) immediate values have a secondary tag saying what
+kind of noninteger immediate value they are---e.g., boolean, empty
+list, ASCII character.  This secondary tag is in the next-to-lowest
+range of a few bits, just above the primary tag.  The remaining bits
+are available to store the actual value, e.g., the ASCII code representing
+a character.{/para}
+        {sect2}
+          {title}Booleans{/title}
+          {para}A secondary tag of 000 indicates that the object is of type Boolean,
+i.e., either {literal}#f{/literal} or {literal}#t{/literal}.  The bit immediately to the left of the
+secondary tag indicates whether the value is {literal}#t{/literal} (1) or {literal}#f{/literal} (0).  Thus,
+the value {literal}#t{/literal} is represented as the machine integer 34 (binary 100010)
+and the value {literal}#f{/literal} is represented as the machine integer 2 (binary
+000010).{/para}
+          {para}{/para}
+        {/sect2}
+        {sect2}
+          {title}The Empty List{/title}
+          {para}The empty list () is a commonly used immediate object which has a
+secondary tag of 001.  There is only one such object so all bits to
+the left of the secondary tag are zero.{/para}
+          {para}{/para}
+        {/sect2}
+        {sect2}
+          {title}Ascii Characters{/title}
+          {para}A secondary tag of 010 indicates an immediate object of type ascii
+characters.  The bits to the left of the secondary tag represent the
+ascii code for the character.  In fact, there are not seven but eight
+significant bits to the left of the secondary tag, so we can in fact
+represent more than the ascii alphabet and cover the ISO-latin
+alphabets as well.{/para}
+          {para}{/para}
+        {/sect2}
+        {sect2}
+          {title}Unicode Characters{/title}
+          {para}A secondary tag of 011 indicates an immediate object of type unicode
+character.  The sixteen bits to the left or the secondary tag indicate
+the unicode of the character.{/para}
+          {para}{/para}
+        {/sect2}
+        {sect2}
+          {title}Unique Objects{/title}
+          {para}A secondary tag of 100 indicates one of a number of unique objects.
+Enough bits to the left of the secondary tag are used to represent the
+particular unique object. {/para}
+          {para}{/para}
+          {sect3}
+            {title}No Value Object{/title}
+            {para}A numeric value of these additional bits of 0 indicates that the
+object is the "no value object".  This value is deprecated, since
+the Dylan convention is that no values should be interpreted
+as {literal}#f{/literal}, the most distinguished value.{/para}
+            {para}{/para}
+          {/sect3}
+          {sect3}
+            {title}Undefined Object{/title}
+            {para}A numeric value of 1 indicates that the object is the "undefined"
+object.  This is used in some cases to indicate a value which
+is not defined.  However, it's use is deprecated, the tendency
+being instead to {emphasis}define{/emphasis} the appropriate return value.{/para}
+            {para}{/para}
+          {/sect3}
+          {sect3}
+            {title}Uninitialized Object{/title}
+            {para}A numeric value of 2 indicates that the object is the "uninitialized" 
+object.  This is used as a marker for storage that has not
+yet been initialized at the language level, such as slots of an
+object during it's construction process, and variables in a letrec
+before the final values are installed.{/para}
+            {para}{/para}
+          {/sect3}
+          {sect3}
+            {title}Unbound Object{/title}
+            {para}A numeric value of 3 indicates that the object is the "unbound" 
+object.  This value is used by the runtime system to detect
+references to unbound variables (because storage for top-level
+variables is allocated
+by the compiler when the variable name is first seen, but before
+it may have been defined.  The compiler initialized the storage
+with #unbound, and the runtime system checks for this value
+at runtime, signalling an error if it is found}{/para}
+            {para}{/para}
+          {/sect3}
+          {sect3}
+            {title}Rest object{/title}
+            {para}A numeric value of 4 indicates the "rest" object.
+This object is used in function parameter lists to indicate a rest
+parameter. {/para}
+            {para}{/para}
+          {/sect3}
+          {sect3}
+            {title}Key object{/title}
+            {para}{/para}
+          {/sect3}
+          {sect3}
+            {title}All Keys object{/title}
+            {para}{/para}
+          {/sect3}
+          {sect3}
+            {title}Next object{/title}
+            {para}{/para}
+          {/sect3}
+          {sect3}
+            {title}Missing object{/title}
+            {para}{/para}
+          {/sect3}
+          {sect3}
+            {title}Debug trap object{/title}
+            {para}{/para}
+          {/sect3}
+        {/sect2}
+        {sect2}
+          {title}Other secondary tags{/title}
+          {para}Secondary tag values of 101, 110, and 111 are currently unused and
+reserved for future use.{/para}
+          {para}{/para}
+        {/sect2}
+      {/sect1}
+      {sect1}
+        {title}Pointers{/title}
+        {para}A primary tag of 11 indicates an RScheme pointer, i.e., an object that
+references some allocated area of memory.  The machine address of
+the memory area allocated for the object is the the machine value of
+the object except with the primary tag replaced by 00.  Thus, when we
+need to dereference such a pointer, we must first remove the tag
+bits.   Fortunately, most modern machines have load instructions that
+accomplish an addition of a small (signed) integer to the address
+before the memory access is made.  By using such a load instruction
+with a value of -3, we are able to remove the tag and dereference the
+pointer in a single machine instruction.{/para}
+        {para}This means, for instance, that we can implement the car and cdr
+operations in a very efficient way.  The car operation would simply be
+a load instruction with an offset of -3, and the cdr operation a load
+with an offset of +1.{/para}
+        {para}Notice that for this system to work, the memory allocator must always
+return addresses that have the low two bits set to 00.  Another way of
+putting this is that addresses should be aligned on a four-byte
+boundary.  If we write our own allocator, this is not hard to
+accomplish.{/para}
+        {para}On some modern architectures, load instructions that load 32-bit words
+require at least a 4-byte alignment, so that an attempt to use a
+pointer with any of the low two bits set to load a 32-bit value would
+result in a hardware trap.  On such architectures, the car and cdr
+operations don't have to verify that the tag is in fact 11.  Any
+attempt to use car or cdr (according to the definition above) with any
+other tag would result in a trap. {/para}
+        {para}As explained above, objects with a tag of 11 always refer to some area
+of memory.  The memory location referred to by this pointer (once the
+tag has been subtracted) is the first word of the object itself, for
+instance the car field of a pair, or the first element of a vector.
+But every such object also has a header that precedes the first word.
+This header contains two words of information, namely the size of the
+object in bytes and a pointer to the class of which this object is an
+immediate instance.  Thus, in order to find out the exact type of an
+object with a 11 primary tag, you first have to find its header and
+then load the class pointer of that header.
+{/para}
+      {/sect1}
+    {/chapter}
+    {chapter}
+      {title}Runtime System{/title}
+      {sect1}
+        {title}Virtual machine{/title}
+        {para}Because part of the obligation of the virtual machine is to provide
+timely responsiveness in a user-threaded environment, and the 
+basic design is not preemptive in the low level, the compiler and
+the rest of the system conspire to ensure that execution does
+not procede indefinitely or for too long a period without reaching
+a valid thread-switch point.{/para}
+        {para}Garbage collection work is also done at these {glossterm}safe points{/glossterm}, so
+the same guarantee ensures that garbage collection can proceed in a
+sufficiently interleaved fashion.{/para}
+        {para}Primitive operations ({glossterm}primops{/glossterm}) can be invoked by C code
+and by the bytecode interpreter.  Furthermore, the system must
+reach safe points frequently so ensure progress on garbage
+collection and timely thread switching.  Accordingly, a primop
+must execute in bounded time and space.  {userinput role="binding"}append{/userinput} illustrates
+this; it is not a primitive and can't be, because there is no
+guaranteed bound on how long it would execute and many pairs it
+would allocate{footnote}
+            {para}In fact, it will never stop trying to
+allocate pairs, if the list it was given is circular{/para}
+          {/footnote}.{/para}
+        {para}{/para}
+      {/sect1}
+      {sect1}
+        {title}Bytecode Interpretation{/title}
+        {para}In order to provide an efficient yet dynamic compilation environment,
+RScheme incorporates a {glossterm}bytecode interpreter{/glossterm}.  The interpreter
+is not distinguished at the level of the runtime system calling
+convention; that is, a function whose implementation is in
+bytecodes (ie, the execution of which should proceed by interpreting
+bytecodes) is called the same way every other function is called.
+It is simply arranged that the pointer to code stored in the template
+of such a function is a pointer to the bytecode interpreter itself.{/para}
+        {para}The interpreter then 
+operates on a sequence of bytes (a bvec of class {userinput role="binding"}&lt;bytecoded&gt;{/userinput})
+which constitute the executable function body.{/para}
+        {Figure}
+          {Title}Closure Structure{/Title}
+          <!-- use fig.tech1 -->
+          {Graphic fileref="placeholder.eps"}{/Graphic}
+        {/Figure}
+      {/sect1}
+      {sect1}
+        {title}Continuation Chain and the Dynamic Environment{/title}
+        {para}The dynamic environment is used to track the values of
+dynamic variables such as the current input port, exception handler
+chain, etc.  The use of {userinput role="binding"}fluid-let{/userinput}-style dynamic binding
+is deprecated because of it's poor interaction with a multi-threaded
+environment.  Instead, a {glossterm}thread state{/glossterm} is maintained in
+the {literal}thread_state_reg{/literal}.  The structure of the state is 
+that of a vector.  The first element of the vector is a chain
+of dynamic binding entries.  The remaining elements are the values
+of the {glossterm}direct{/glossterm} dynamic variables, which are suitable for 
+frequently accessed bindings.{/para}
+        {para}There are three kinds of dynamic variable mechanisms:{/para}
+        {orderedlist}
+          {listitem}
+            {para}direct, immutable variables (e.g., {userinput role="binding"}*input-port*{/userinput})
+  {/para}
+          {/listitem}
+          {listitem}
+            {para}indirect variables (which may be mutable; the binding
+      is the entry in the dynamic chain off thread_state[0]){/para}
+          {/listitem}
+        {/orderedlist}
+        {sect2}
+          {title}Stack cache{/title}
+          {para}Of course, you don't want to allocate all those continuation
+frames on the heap, since the live a short amount of time
+and have a {emphasis}very{/emphasis} stylized lifetime pattern (ie, almost
+always stack-like).{/para}
+          {para}We take advantage of their stylized lifetime by allocated
+them in a {glossterm}stack cache{/glossterm}.{/para}
+          {para}{/para}
+        {/sect2}
+      {/sect1}
+      {sect1}
+        {title}C unit linkage{/title}
+        {para}RScheme supports portable system image files.  Because the code
+pointers that are embedded in a system image are intrinsicly
+system-dependent, a mechanism is required that allows code
+pointers to be recognized, translated into a portable format,
+and later converted back into internal representation.{/para}
+        {para}Code pointers occur in exactly the following two places:{/para}
+        {orderedlist}
+          {listitem}
+            {para}In slot 0 of {userinput role="binding"}&lt;template&gt;{/userinput} objects.
+  {/para}
+          {/listitem}
+          {listitem}
+            {para}In slot 2 of {userinput role="binding"}&lt;partial-continuation&gt;{/userinput} objects.{/para}
+          {/listitem}
+        {/orderedlist}
+        {para}The system recognizes these objects by their {glossterm}image mode{/glossterm},
+which are 4 and 5, respectively.{/para}
+      {/sect1}
+      {sect1}
+        {title}Register machine{/title}
+        {para}[TODO]{/para}
+      {/sect1}
+      {sect1}
+        {title}Abstract Machine{/title}
+        {para}RScheme is based on an abstract machine defined by a set of registers,
+data structuring conventions, and {glossterm}primitive operations{/glossterm} that are
+implemented as small fragments of C code.  This is not a virtual machine
+in the sense of many Lisp and Smalltalk systems, which interpret their
+primitive instructions at run time.  It is an abstract machine much
+like a high-level assembly language.{/para}
+        {para}In one important sense, this abstract machine is lower level than most
+virtual machines for dynamically-typed languages;  the operations are
+statically typed using a very simple type system, and the compiler in
+many cases can glue them together without type-checking code.  The compiler
+inserts type checking primitives as necessary when values are truly
+dynamically typed, but it can often omit type checking when it can be
+statically determined that the values returned by one expression are
+of the type expected by the enclosing expression.  (We will discuss
+type declarations and simple bottom-up type inference later.){/para}
+        {para}In another important sense, our abstract machine is higher-level than
+a conventional virtual machine.  Our abstract machine primitives are
+expressions that can be nested, rather than just statements that are
+glued together. {/para}
+        {para}The RScheme REGISTERS are implemented as C global variables.  Depending
+on what C compiler is used, some of these variables may be mapped to
+hardware registers in the underlying machine (GNU C supports this).{/para}
+        {para}For most of the following, we will assume that we are executing RScheme
+code that has been compiled to machine code via C.  The threaded code
+observes the same conventions, because threaded code is really just
+a bunch of closures of simple RScheme procedures.  When and if we switch
+to something like a bytecode interpreter, the calling convention will
+not change---a bytecoded procedure will be represented as a closure of
+a normal RScheme procedure, which simply interprets the bytecodes.  The
+calling convention is optimized for machine code, because we believe
+that most programs will spend most of their time in machine code rather
+than interpreting bytecodes.  (If not, they'll be slow anyway, so it
+won't matter much.)
+                                                                     {/para}
+        {sect2}
+          {title}The basic registers{/title}
+          {para}The basic registers are the {emphasis}environment{/emphasis} register, the
+{emphasis}continuation{/emphasis} register, the {emphasis}literals{/emphasis} register, the
+{emphasis}argument count{/emphasis} register, and the {emphasis}register array{/emphasis}.  
+Except for the argument count register, all these registers
+hold tagged scheme values -- never raw pointers or raw integers.{/para}
+          {para}Conceptually, the program counter is another basic register, but we
+use the underlying machine's program counter for this; our strategy
+for compiling to C makes this simple.  There are some other
+special-purpose registers which will be discussed later.{/para}
+          {para}The {emphasis}environment{/emphasis} register usually holds a pointer to the current
+heap-allocated lexical environment.  However, at the point of a
+procedure call, the runtime system uses the environment register to
+point to the function being called{footnote}
+              {para}This is useful for some
+reflective tricks like dynamically and incrementally patching up
+closures to point to new code, and make it easy to make use of what
+Common Lisp calls {emphasis}funcallable objects{/emphasis}.{/para}
+            {/footnote}
+          {/para}
+          {para}Of course, if the compiler does its job well, many environments won't
+be allocated on the heap.  In this case, the environment register will
+simply point to the chain of environment that {emphasis}are{/emphasis} on the heap.  If
+there are none, then the procedure need never load it's environment
+pointer from its own closure.{/para}
+          {para}The {emphasis}continuation{/emphasis} register holds a pointer to the chain of partial
+continuations (of suspended callers) of the currently executing procedure.{/para}
+          {para}The {emphasis}argument count{/emphasis} register is set by a caller to signify the
+number of arguments being passed.  On entry to the procedure, the
+callee checks to see if it received the right number of arguments.
+(If the procedure can take extra arguments, it pushes those into an
+argument list.)  The argument count register always holds a raw
+integer, so there is no need for the garbage collector to know about
+it.
+                                                                     {/para}
+          {sect3}
+            {title}The Register Array{/title}
+            {para}The register array is a conceptually unbounded array of registers.
+This array is used for passing argument values, holding temporary
+values of intermediate expressions, and for register-allocating local
+variables that do not need to be heap-allocated.{/para}
+            {para}Registers are used starting at one end of the array and moving toward
+the other.  At any given point in the execution of a program, the
+registers in use are a contiguous range starting at register 0.
+Typically, only the first few registers are used, and the ones nearest
+0 are most heavily used.  This allows us to allocate the first few
+registers in hardware registers (if the underlying C compiler supports
+that) and get a large benefit from a few registers.{/para}
+            {para}The fact that we use a contiguous, zero-based range of registers makes
+the interface between compiled code and the garbage collector simple.
+Hence, when garbage collection occurs, it is only necessary for the GC to
+know how many registers are in use{footnote}
+                {para}This is readily determined from the
+value of the argument count register.  The compiler arranges so that
+at any point where garbage collection can take place, the argument
+count register is up to date.  More on this later.{/para}
+              {/footnote}.
+This lets it find the root pointers for garbage
+collection easily.
+                                                                     {/para}
+          {/sect3}
+          {sect3}
+            {title}Argument Passing{/title}
+            {para}Arguments are passed in registers, and any reasonable number of
+arguments (up to 1000) can be passed there.  At the moment of a
+procedure call, the only values in the register array are the
+arguments to the call.  Any other register-allocated values will have
+been saved in a partial continuation before the call.  For a tail
+call, no values need to be saved.  For a non-tail call, a continuation
+is saved before computing the argument values for the call.{/para}
+            {para}In the general case, the arguments to a procedure must be copied
+from the argument passing registers into a heap-allocated environment
+when the procedure is entered, so that closures can capture that
+environment and keep it live indefinitely.  For procedures that create
+no closures, this is not necessary, and the argument variables can be
+left in the registers where they were passed.  We expect the latter 
+to be a very common case, as roughly half of all calls are to small
+procedures at the leaves of the call graph.{/para}
+            {para}After entering the procedure, then, the arguments will be in the
+first few registers of the auxiliary register file, or they will
+have been copied to the heap and no auxiliary registers will be in
+use.  Whichever is true, the remaining registers can be allocated
+consecutively to hold temporary values or local variable bindings.{/para}
+            {para}As mentioned above, the register array contains {emphasis}only{/emphasis} values for
+the currently-executing procedure, and any values needed by the caller
+will already have been saved in the continuation chain.  Despite this
+stack-like pattern of usage (within a procedure), the compiler can
+statically resolve which register is used for which temporary or local
+variable{footnote}
+                {para}Much like C compilers construct a static layout of
+procedure stack frames, even for variables nested blocks.{/para}
+              {/footnote},
+and there is no need to use a stack pointer at run time.  If the
+registers are mapped to hardware registers by the C compiler, accesses
+to them are extremely fast.
+                                                                     {/para}
+          {/sect3}
+          {sect3}
+            {title}Local Variables{/title}
+            {para}In the general case, local variables bindings (including argument
+bindings) are allocated on the heap, in conventional environment 
+frames.  An environment frame contains a scope link, pointing to the
+lexically-enclosing environment frame.{/para}
+            {para}In favorable cases, the compiler can determine that variable bindings
+don't really need to be allocated on the heap; it can allocate them
+in registers, much like temporary values.{/para}
+            {para}We currently use a simple rule for this.  For each binding contour,
+we construct a compile-time binding environment frame, and if we
+allocate any of those variables on the heap, we allocate all of them
+on the heap.  
+                                                                     {/para}
+          {/sect3}
+          {sect3}
+            {title}Dynamic State Register{/title}
+            {para}Used to store fluid variables 'n' stuff.{/para}
+          {/sect3}
+        {/sect2}
+        {sect2}
+          {title}AML Types (primtypes){/title}
+          {para}[TODO]{/para}
+        {/sect2}
+      {/sect1}
+      {sect1}
+        {title}The Bytecode Interpreter{/title}
+        {para}In adding interpreted code to our compiler-oriented system, we avoid
+adding any overhead at procedure call time for native-code procedures.
+We don't have to check to see if something is native-coded or compiled
+before calling it.  (Since performance critical stuff is supposed to
+be compiled to native code, we'd rather keep native-code calling fast
+even if it costs a little bit for interpreted code.){/para}
+        {para}It is straightforward to add interpreted representations to the basic
+system, allowing interpreted procedures to call native-code procedures
+and vice versa.  All that's necessary is that we make sure that
+interpreted procedures look like compiled ones, with a template and a
+code pointer that points to native code (e.g., a C function pointer in
+the usual setup).  For interpreted procedures, we simply make sure
+that the code pointer always points to a special routine that invokes
+the interpreter, and that the pointer to the actual interpreted code
+is stored in the template.  Thus calling an interpreted procedure IS
+calling a native code procedure, whose action is to interpret some
+bytecodes (or whatever interpreted representation we're using) stored
+in the template as a literal.{/para}
+        {para}Calling out of (and returning into) interpreted code can work the same way.
+Whenever an interpreted routine saves a continuation, the return address
+is a similar little routine that will resume interpreting the interpreted
+representation.  To save the interpretive return address (i.e., the point
+within the interpreted code to resume at), an integer is saved in the
+continuation as well, as though it were just some normal intermediate value
+that needed to be saved.{/para}
+        {para}The normal calling and returning conventions work fine for this.  From
+the "normal" point of view, every interpreted procedure looks pretty
+similar, and the differences between them are just in the literal data.{/para}
+        {para}Notice that this works even if different interpreted routines use different
+interpreters.  There's no problem combining routines that use different
+interpreters---they're just procedures whose code pointers point to
+different interpretive routines.{/para}
+        {para}In fact, in the current implementation, the regular expression
+facility operates as just this sort of alternative interpreter.  A
+compiled pattern is manifest as a function whose template contains a
+pointer to a "program" which is a representation of a deterministic
+finite automaton for the regular expression.  The code pointer is
+simply the interpreter for these specialized kinds of programs.
+{/para}
+      {/sect1}
+    {/chapter}
+    {chapter}
+      {title}Universal Code Interface{/title}
+
+        {para}In this chapter, we discuss the interface that all code must conform
+to, whether compiled to bytecode or to C code.  {/para}
+
+
+      {sect1}
+        {title}Introduction{/title}
+        {para}RScheme defines a register-based {glossterm} virtual machine {/glossterm}.  In order
+not to confuse this virtual machine with (say) the virtual machine
+that bytecode executes on, we call it the {glossterm} universal code interface{/glossterm}.  The universal code interface is defined in terms of
+standardized instructions on top of an ANSI C system.  Most registers
+of the universal code interface are stored in global C variables.
+However, if you are using the GNU C compiler on a machine with many
+registers, some of the registers will be stored in
+hardware registers.{/para}
+        {para}Executable machine code (compiled by the C compiler) is divided into
+{glossterm} monotones {/glossterm}.  These monotones roughly correspond to {glossterm}basic blocks {/glossterm} in the compiler literature.  But the smallest unit of
+execution you can get a pointer to in C is a procedure.  Therefore,
+monotones are really C procedures. In order to avoid unbounded
+consumption of C stack space, RScheme contains a tight loop that calls
+monotones.  When the code of a monotone has determined the next
+monotone to execute it does not call it as a C procedure, but instead
+returns its address so that the tight loop can call the new monotone
+in its place.  In C code, the type of a monotone procedure is
+jump_addr, which is a typedef for a function of zero arguments
+returning a type_addr.  Since such a type is not possible to define
+directly in C, the return type is realy void*, which is then converted
+to jump_addr through a cast.{/para}
+        {para}RScheme does not use CPS conversion (Continuation Passing Style).  In
+CPS calls and returns look the same; they are simply calls to a
+continuation.  In RScheme, we distinguish between calls and returns.
+A call is always to a procedure which causes the first monotone of a
+procedure to be executed, whereas returns are always to a what RScheme
+calls a {glossterm} partial continuation {/glossterm}, which causes some monotone
+other than the first to be executed.{/para}
+        {para}{/para}
+      {/sect1}
+      {sect1}
+        {title}Structure of a C-compiled procedure{/title}
+        {para}A C-compiled procedure is conceptually a closure, in that it consists
+of code to be executed and the environment in which it was defined.
+But things are a bit more complicated in reality.  In addition to the
+code, there is some other information needed either by the RScheme
+runtime system, or by other parts of the system, such as the code for
+reporting errors.  All this information can be devided into two parts,
+one part that is specific to a particular closure, and another part
+that is shared between all closures coming from the same source text. {/para}
+        {para}The specific part is just the environment of definition of the
+closure.  All other information is bundled up in what we call a 
+{glossterm} template {/glossterm}.  There is one template per Scheme procedure.  The
+template contains a code pointer (jump_addr) to the first monotone of
+the procedure; a function descriptor (that we don't discuss here); a
+property list, holding among other things a name of the procedure; a
+pointer to the bytecode instructions if it is a bytecoded procedure,
+and; an array of constans and top-level variables that may be needed
+during the execution of the procedure. {/para}
+        {para}You can think of the Scheme special form "lambda" as taking the
+template for its body and the current environment, creating a closure
+from them and returning the closure.{/para}
+        {para}Notice that all code must conform to this structure, whether compiled
+to C, compiled to bytecodes, or any other type of code that you might
+want to add to RScheme.  This is why we call it a universal code
+interface. {/para}
+        {para}{/para}
+      {/sect1}
+      {sect1}
+        {title}Registers of the universal code interface{/title}
+        {para}The universal code interface defines a set of registers which is
+devided into a fixed part and a variable part.  The fixed part
+contains the following registers:{/para}
+
+        {formalpara}{title}literals register{/title}
+{para}contains the template of the procedure currently executing.{/para}{/formalpara}
+        {formalpara}{title}environment register{/title}
+{para}contains the environment of the procedure currently
+executing.  During a brief period it contains the
+procedure about to be called.{/para}{/formalpara}
+        {formalpara}{title}continuation register{/title}
+{para}contains the partial continuation to be used when the
+current procedure needs to return to its caller.{/para}{/formalpara}
+        {formalpara}{title}dynamic state register{/title}
+{para}(not discussed here){/para}{/formalpara}
+        {formalpara}{title}argument count register{/title}
+{para}contains the number of arguments given to a newly
+called procedure.{/para}{/formalpara}
+
+        {para}All contain RScheme objects except the argument count register which
+contains and unsigned machine integer. {/para}
+        {para}The variable part consists of a register file with registers named
+reg0, reg1, etc.  This register file is conceptually unbounded in
+size, but in practice it is limited, currently to 1000 registers. {/para}
+        {para}{/para}
+      {/sect1}
+      {sect1}
+        {title}Structure of a partial continuation{/title}
+        {para}In order to fully understand the universal code interface, you must
+also understand the structure of a partial continuation.{/para}
+        {para}There are two parts to a partial continuation; the fixed part and the
+variable part.  The fixed part contains four fields{/para}
+        {formalpara}{title}envrionment register save{/title}
+{para}contains the contents of the environment register of
+the caller, so that when the current procedure
+returns, this value can be re-established.{/para}{/formalpara}
+        {formalpara}{title}literals register save{/title}
+{para}contains the contents of the literals register of
+the caller, so that when the current procedure
+returns, this value can be re-established.{/para}{/formalpara}
+        {formalpara}{title}return address{/title}
+{para}contains a value of type jump_addr indicating the
+monotone to be executed after the current procedure
+returns.{/para}{/formalpara}
+        {formalpara}{title}continuation register save{/title}
+{para}contains the link to the next partial continuation of
+the continuation chain.{/para}{/formalpara}
+        {para}The variable part contains all the temporary values needed by the
+continued execution of the caller.  These values are always saved
+from and restored to reg0, reg1, ..., regn-1 where n is the number of
+such values stored in the partial continuation.{/para}
+
+      {/sect1}
+      {sect1}
+        {title}Procedure call/return interface{/title}
+        {para}The main purpose of the universal code interface is to define how
+procedures are to call each other.  As we already mentioned, this
+interface is independent of how the procedure is encoded, whether
+bytecodes or compiled C code.{/para}
+        {para}The call/return interface has several components used in different
+situations.  These components are{/para}
+        {formalpara}{title}procedure prologue{/title}
+{para}The code at the start of the first monotone of a
+procedure {/para}{/formalpara}
+        {formalpara}{title}procedure epilogue{/title}
+{para}Used when the executing code needs to return to its
+caller.{/para}{/formalpara}
+        {formalpara}{title}monotone prologue{/title}
+{para}The code at the start of monotones other than the
+first one of a procedure.{/para}{/formalpara}
+        {formalpara}{title}monotone epilogue{/title}
+{para}Further divided into
+(1) procedure call,
+used when the current code needs to
+call some procedure,
+and (2) jump, used to transfer control to a diffrent
+monotone of the same procedure.  This
+is used for merge points after a test,
+for instance. {/para}{/formalpara}
+        {formalpara}{title}back jump{/title}
+{para}Used to transfer control to a previous
+monotone of the same procedure.  This
+is used for loops.{/para}{/formalpara}
+
+        {para}RScheme uses monotone transfer points to do thread switching and
+garbage collection.  Since no procedure can execute for an unbounded
+period of time without executing either a procedure call or a back
+jump, these are the instructions used to test for possible thread
+switching and garbage collection. {/para}
+
+        {sect2}
+          {title}Procedure prologue{/title}
+          {para}The procedure prologue assumes that registers reg0, reg1, ... regn-1
+contain the arguments to the procedure in the left-to-right order, and
+that the argument count register contains n, the number of arguments
+given to the procedure.  It also assumes that the procedure itself is
+contained in the environment register. {/para}
+          {para}First, the number of arguments is checked.  There are two versions
+depending on whether this procedure has a rest argument or not.  If
+not, i.e., if the procedure takes a fixed number of arguments, the
+argument count register is checked for equality with the number of arguments
+this procedure takes.  This test is accomplished by a C macro
+corresponding to a primitive operation of the universal code
+interface, COUNT_ARGS(n).   If the procedure takes a rest argument,
+this step is somewhat different.  First the argument count register is
+checked so that it is greater than or equal to the number of fixed
+arguments this procedure takes.  This test is accomplished by the
+instruction COUNT_ARGS_AT_LEAST(n).  Next, all the non-fixed arguments
+must be put on a newly created list.  This is accomplished by the
+instruction COLLECT(n), where n is the number of fixed arguments.
+COLLECT(n) takes registers regn, regn+1, ..., regm-1 where m is the
+total number of arguments as indicated by the argument count register,
+and creates a list of their values.  This list is then put in register
+regn.  For efficiency, the universal code interface also defines
+special instructions COLLECTn() for some small values of n.{/para}
+          {para}The second and final step of the prologue is necessary only of the
+execution of the procedure requires the construction of an environment
+on the heap.  In that case, the environment is extracted from the
+procedure itself (now in the environment register) and stored in the
+environment register, overwriting the previous value.  There are two
+versions of this instruction depending on whether the procedure was
+defined in the global environment or not.  If it was, then the
+environment to be extracted is the empty environment, in which case
+the instruction USE_EMPTY_ENVT is used.  Otherwise the instruction
+USE_FUNCTION_ENVT is used.{/para}
+          {para}{/para}
+        {/sect2}
+        {sect2}
+          {title}Procedure epilogue{/title}
+          {para}Since RScheme allows a procedure to return multiple values, the
+procedure epilogue must communicate not only the return value(s) but
+also the number of return values.  {/para}
+          {para}Prior to executing the procedur epilogue, the current procedure must
+make sure the return values are contained in reg0, reg1, ..., regn-1
+(for n return values).  A value of zero is allowed for the number of
+return values in which case no register contains any valid value.{/para}
+          {para}The first step of the procedure epilogue is to put n (the number of
+return values) in the argument count register.  If n is zero, then the
+object #f (Scheme false) is stored in reg0.  By doing that we avoid
+forcing the receiving procedure to test the argument count register in
+the case where it expects exactly one return value. {/para}
+          {para}The next step is to extract the saved environment register from the
+partial continuation contained in the continuation register and put it
+in the environment register.  This way, the environment of the caller
+is restored. {/para}
+          {para}Next the saved literals register is extracted from the partial
+continuation contained in the continuation register and put it in the
+literals register.  This way, the template of the caller is restored.{/para}
+          {para}The fourth and final step is to extract the return address of the
+partial continuation contained in the continuation register and "jump"
+to it.  Jumping to it, as indicated above, is done by actually
+returning the value and let the monotone-calling loop call it.  That
+way the C stack frame of the current monotone is removed.  Without
+this mechanism, we would not be able to support tail calls. {/para}
+          {para}The entire procedure epilogue is handled by an instruction of the
+universal code interface which comes in two versions depending on
+whether the number of values to be returned is zero or greater than
+zero.  For the zero case, the instruction is RETURN0().  For the other
+case, the instruction is RETURN(n) where n is strictly greater than
+zero. {/para}
+          {para}{/para}
+        {/sect2}
+        {sect2}
+          {title}Monotone prologue{/title}
+          {para}The monotone prologue consists of the code that is executed
+immediately after the return of a callee.  At the beginning of this
+code, we thus know that register reg0 always contains a valid value.
+Furthermore, the argument count register contains the number of
+arguments returned.{/para}
+          {para}The first step of the monotone prologue is optional and used only when
+multiple values are returned.  In that case, the return values are
+padded with #f up to the number of return values expected.  This is
+accomplished by the instruction PAD_WITH_FALSE(n), where n is the
+number of arguments expected.  {/para}
+          {para}The next step is also optional and used only when a variable number of
+arguments can be returned.  This situation can occur if the source
+code contains something like{/para}
+          {para}(bind ((a b # rest r (f))){/para}
+          {para}i.e., the procedure f is called and it is expected to return at least
+two values.  Return values beyond the second are put onto a list and
+stored in the variable r.  For this purpose, we use the
+instruction COLLECT(n) already defined in the procedure prologue.{/para}
+          {para}Next, the return values need to be moved to a safe place so that the
+values of reg0, reg1, ..., regm-1 can be restored from the partual
+continuation, where m is the number of valid temporaries stored in the
+partial continuation by the previous monotone.  Currently, these
+values are simply moved to regm, regm+1, ... as necessary. {/para}
+          {para}The final step of the monotone prologue is to restore the
+continuation.  Recall that the procedure epilogue restored the
+environment register, and the literals register, but not the
+continuation register.  First the saved registers are restored to
+reg0, reg1, ..., regm-1.  Then the continuation register is restored
+from the partial continuation, thereby removing the first element of
+the continuation chain.  This step is accomplished by the instruction
+RESTORE_CONT().{/para}
+          {para}{/para}
+        {/sect2}
+        {sect2}
+          {title}Monotone epilogue{/title}
+          {para}As mentioned above a monotone can end in three different ways, with a
+procedure call, with a jump, or with a back jump.{/para}
+          {para}To prepare for the procedure call, the current procedure puts the
+arguments in registers reg0, reg1, ..., regn-1 where n is the number
+of arguments.  Similarly, to prepare for a jump or a bjump, the
+current procedure puts temporaries that need to be saved across
+monotone boudaries in reg0, reg1, ..., regn-1.{/para}
+          {para}The code for a procedure call is accomplished by the instruction
+APPLY(n, expr) where expr is a C expression that evaluates to a
+procedure (see below for a complete list of legal expressions).{/para}
+          {para}The first step of the procedure call is to put n in the argument
+count register.{/para}
+          {para}In the second step, the environment register is assigned to the
+procedure itself.  A check is made that the object is a procedure.  If
+not, and error is signaled. {/para}
+          {para}Next, the literals register is set to the template of the procedure
+now in environment register. {/para}
+          {para}Finally the code pointer is extracted from the template, and the code
+pointer is "jumped" to.  Recall that jumping is implemented as a
+return of the code pointer to the monotone calling loop. {/para}
+          {para}In the case of a jump, the instruction is JUMP(n, label), where n is
+the number of valid registers and label is a jump_addr indicating the
+next monotone to execute.  For the jump epilogue, we do not have to be
+concerned with consumption of C stack, so instead of going trough the
+monotone calling loop, we can simply call the label directly and
+return its return value to the monotone calling loop.  {/para}
+          {para}For back jumps we use the instruction BJUMP(n, label) which is similar to
+the JUMP instruction.  With back jumps we need to go through the
+monotone calling loop in order to avoid consuming C stack space.{/para}
+          {para}{/para}
+          {para}{/para}
+        {/sect2}
+        {sect2}
+          {title}Continuation cache (or stack cache){/title}
+          {para}The RScheme universal code interface generates a large number of
+partial continuations.  In the general case, these partial
+continuations must be allocated on the heap.  But always allocating
+these continuations on the heap would generate much more garbage to be
+taken care of by the garbage collector.  We avoid such additional
+garbage in many cases by using a continuation cache (or a stack
+cache). {/para}
+          {para}The key observation here is that most continuations do not get
+captured by call/cc.  Thus, when the monotone prologue restores the
+continuation, usually the previous top of the chain is garbage. {/para}
+          {para}The continuation cache is a fixed size statically allocated array in
+the runtime system.  The size is chosen so that the maximum size of a
+partial continuation (4 + the number of variable registers, usually
+1000) is always smaller than or equal to the cache.  Since normally, a
+partial continuation is substantially smaller, several partial
+continuations can be stored in the cache.{/para}
+          {para}The continuation chain looks like a stack, so we make it grow toward
+lower addresses.{/para}
+          {para}The invariant we maintain is that the current top of the continuation
+chain is either in the cache, in which case everything in the cache at
+a higher adddress is also part of some valid continuation, and
+everything in the cache at lower addresses is unused, or else the top
+of the continuation chain is on the heap, in which case the entire
+continuation cache is empty.{/para}
+          {para}When we need to allocate a new partial continuation, we always
+allocate it in the cache.  There are several cases.  Case 1: the top
+of the continuation chain is on the heap.  Then the cache is empty, so
+we subtract the size of the partial continuation to be allocated from
+the size of the cache, which gives us the address of the new partial
+continuation.  Case 2: teh top of the continuation chain is in the
+stack.  We now again have two cases Case 2a: the size of the partial
+continuation to be allocated is too large to fit in what remains in
+the cache.  We then migrate (flush) the cache to the heap and we are
+back to case 1.  Case 2b: the size of the partial continuation to be
+allocated is smaller than or equal to the the remaining space in the
+cache.  We then subtract the size of the partial continuation to be
+allocated from the current top of the continuation chain to obtain the
+address of the newly allocated partial continuation.{/para}
+          {para}The final part of maintaining our invariant has to do with
+continuation capture.  Whenever call/cc captures a continuation, we
+have to migrate (flush) the cache to the heap.{/para}
+          {para}{/para}
+          {para}{/para}
+        {/sect2}
+      {/sect1}
+      {sect1}
+        {title}Other instructions of the universal code interface{/title}
+        {para}Monotone and procedure prologues and epilogues are necessary, but not
+sufficient for a complete universal code interface.  We also need
+instructions for accessing and modifying the value of variable
+bindings, for creating and destroying bindings, for primitive
+operations such as car and cdr, etc.{/para}
+        {para}In this section, we discuss the remaining instruction, i.e., those not
+already mentioned in previous sections.  We also discuss all valid
+expressions in instructions that take expression arguments.{/para}
+        {para}{/para}
+        {sect2}
+          {title}Variations on apply{/title}
+          {para}Previously, we mentioned the existance of the APPLY instruction used
+in monotone epilogues.  There are actually two more versions of the
+APPLY instruction, each for a special case of known value of what to
+apply. {/para}
+          {para}The instruction APPLYF(n, expr) is similar to APPLY(n, expr), except
+that it is known that the expression evaluates to a procedure.  Thus,
+no code is emitted to check whether the value is a procedure.{/para}
+          {para}Similarly, the instruction APPLYG(n, expr) is used when the expression
+is known to evaluate to a generic function.{/para}
+          {para}{/para}
+        {/sect2}
+        {sect2}
+          {title}Binding constructs{/title}
+          {para}The compiler tries to allocate local variables in registers (and save
+those registers in partial continuations) if possible.  However, if a
+variable is assigned (using set!), in order to preserve Scheme
+semanics, we need to allocate it in an environment on the heap. {/para}
+          {para}To create such environments, we use {glossterm} binding blocks {/glossterm}.  A
+binding block corresponds to a {glossterm} binding contour {/glossterm} in the
+source language, such as a let or a letrec.  {/para}
+          {para}In the universal code interface, a binding block starts with the
+instruction BEGIN_BIND(n), where n is the number of new local
+variables to be created.  The exectution of this instruction allocates
+space for a new frame of the environment.{/para}
+          {para}Following the allocation are n instructions of the type BIND(i, expr),
+where i is the number of the variable 0 &lt;= i &lt; n.  These instructions
+initialize the values of the new local variables to the value of the
+corresponding expression (see below for valid expressions).{/para}
+          {para}The binding block is terminated by the instruction END_BIND() which
+links the new frame of environments to the top of the environment
+chain.{/para}
+          {para}To indicate that a binding goes out of scope, we use the POP_ENVT()
+instruction which removes the topmost frame of the environment chain. {/para}
+          {para}{/para}
+        {/sect2}
+        {sect2}
+          {title}Assigning global and local variables{/title}
+          {para}Two instructions handle assignment of variables.  {/para}
+          {para}The instruction TLSET(k, expr) assigns the value of the expression to
+the k:th global variable.  The value k is used as an index into the
+template of the current procedure.  The k:th literal of the template
+is assumed to contain a top-level variable.  Actually the index into
+the template is k + 3 since there are three slots at the beginning of
+the template that cannot be accessed this way.{/para}
+          {para}The instructino LEXSET(f, k, expr) assigns the value of the expression
+to the corresponding local (lexical) variable.  The value f is the
+frame number, where 0 is the topmost frame. The value k is the slot
+number within the frame, and expr is an expression that evaluates to
+the new value. {/para}
+          {para}{/para}
+        {/sect2}
+        {sect2}
+          {title}Expressions{/title}
+          {para}In addition to instructions, the universal code interface also has
+expressions.  Such expressions are valid whenever an instruction or
+another expression takes an "expr" argument.{/para}
+          {para}To access a literal such as a character string or a symbol mentioned
+in the program source code, we use the LITERAL(k) expression.  The
+value is simply the k:th literal from the template of the current
+procedure.{/para}
+          {para}Similarly, to access the value of a top-level variable, we use the
+expression TLREF(k).  It assumes that the k:th literal in the template
+is a top-level variable and returns its value.{/para}
+          {para}To access a local (lexical) variable, we use the expression LEXREF(f,
+k) where f is the frame number and k is the slot number within the
+frame. {/para}
+          {para}The expression CLOSURE(k) assumes that the k:th literal in the current
+template is another template (that of the code of the closure to be
+created), and creates a closure from it and the current environment.{/para}
+          {para}A raw C integer can be used as an expression in some contexts, usually
+as arguments to primops (see below).{/para}
+          {para}Finally, an expression can be of the form primop(expr1, ..., exprn),
+i.e. an ordinary C function call that implements some primitive
+operation.  For a complete list of primops, see the files
+bytcodes/*.dat in the RScheme distribution.
+{/para}
+        {/sect2}
+      {/sect1}
+    {/chapter}
+    {chapter}
+      {title}Compiler Representations{/title}
+
+        {para}The RScheme compiler is organized into passes.  The first pass (called
+{userinput role="binding"}compile{/userinput}) translates the Scheme source code to intermediate code
+(icode).  The second pass (called {userinput role="binding"}gen-aml{/userinput}) takes the intermediate code
+and generates a notation called abstract machine language (AML).  The
+second pass is also responsible for generating procedure templates
+(where literal data is stored).  Finally, depending on the current target,
+the third pass
+generates byte codes or C code from the abstract machine language.{/para}
+
+      {sect1}
+        {title}Intermediate Code{/title}
+        {para}Intermediate code is a tree structure containing (mostly) instances of
+subclasses of the class {userinput role="binding"}&lt;icode&gt;{/userinput}.  Such tree structures correspond to
+Scheme expressions.  The base class contains the slots return-type
+(indicating the type of the return value of the expression if any),
+vars-referenced (a set of all the variables that were referenced in
+the subtree), and vars-captured (a set of all variables captured in a
+lambda expression in the subtree).{/para}
+        {para}The class {userinput role="binding"}&lt;icode&gt;{/userinput} has many subclasses that implement particular
+types of expressions.  These classes have their names prefixed with
+{quote}ic-{/quote} so that they will be easy to recognize.{/para}
+        {para}The {userinput role="binding"}&lt;ic-if&gt;{/userinput} class implements a test. It contains the slots condition,
+if-true, and if-false all of type {userinput role="binding"}&lt;icode&gt;{/userinput} for the condition, the
+"then" part and the "else" part respectively.{/para}
+        {para}The {userinput role="binding"}&lt;ic-multi&gt;{/userinput} class implements a sequence of expressions where all
+of the values are needed.  This class is used to implement
+multiple-value constructs as well as combinations.  There is a single
+slot in this class named args, which is a list of the expressions in
+the sequence.{/para}
+        {para}The {userinput role="binding"}&lt;ic-combo&gt;{/userinput} class is used for combinations.  It has two slots, head
+and args.  The head slot is of type {userinput role="binding"}&lt;icode&gt;{/userinput} and the args slot is of
+type {userinput role="binding"}&lt;ic-multi&gt;{/userinput}.{/para}
+        {para}The {userinput role="binding"}&lt;ic-primcall&gt;{/userinput} class is similar to {userinput role="binding"}&lt;ic-combo&gt;{/userinput}.  It also has two
+slots, head and args.  Here, however, the head slot is of type
+{userinput role="binding"}&lt;primop&gt;{/userinput} (not a subclass of {userinput role="binding"}&lt;icode&gt;{/userinput}) and the args are of type
+{userinput role="binding"}&lt;ic-combo&gt;{/userinput}. {/para}
+        {para}The {userinput role="binding"}&lt;ic-bind&gt;{/userinput} class is used for binding constructs, including
+procedures (lambda expressions).  The slots are {parameter}init-expr{/parameter} (for a
+member of the {literal}let{/literal} family, the {parameter}init-expr{/parameter} is an {userinput role="binding"}&lt;ic-multi&gt;{/userinput}.
+A {literal}bind{/literal} construct can generate an arbitrary icode expr
+for the {parameter}init-expr{/parameter}.)
+{parameter}init-expr{/parameter}
+is {literal}#f{/literal} for the binding contour for a procedure), 
+{parameter}vars{/parameter} (the formal variables, a list of {userinput role="binding"}&lt;lexical-var&gt;{/userinput}'s)
+{parameter}body{/parameter} (the body of the binding construct or the
+procedure), and {parameter}envt{/parameter} (the environment).{/para}
+        {para}The {userinput role="binding"}&lt;ic-tl-ref&gt;{/userinput} class implements references to top-level variables.
+It has a single slot named var of type {userinput role="binding"}&lt;top-level-var&gt;{/userinput} (not a subclass
+of {userinput role="binding"}&lt;icode&gt;{/userinput}). {/para}
+        {para}The {userinput role="binding"}&lt;ic-lex-ref&gt;{/userinput} class implements references to lexical variables.
+It has a single slot named var of type {userinput role="binding"}&lt;lexical-var&gt;{/userinput} (not a subclass of
+{userinput role="binding"}&lt;icode&gt;{/userinput}). {/para}
+        {para}The {userinput role="binding"}&lt;ic-tl-set&gt;{/userinput} class represents an assignment to a top-level
+variable.  It has two slots, var (the variable of type
+{userinput role="binding"}&lt;top-level-var&gt;{/userinput}) and rhs (for right-hand side) of type {userinput role="binding"}&lt;icode&gt;{/userinput} that
+represents the expression to produce the value to be assigned to the
+variable. {/para}
+        {para}The {userinput role="binding"}&lt;ic-lex-set&gt;{/userinput} class is similar to {userinput role="binding"}&lt;ic-tl-set&gt;{/userinput} except that the
+assigment is to a lexical variable.  It has two slots, var (the
+variable of type {userinput role="binding"}&lt;lexical-var&gt;{/userinput}) and rhs (for right-hand side) of type
+{userinput role="binding"}&lt;icode&gt;{/userinput} that represents the expression to produce the value to be
+assigned to the variable.{/para}
+        {para}The {userinput role="binding"}&lt;ic-loop&gt;{/userinput} class is the result of a named let provided that the let
+label is used only in tail position in the body.  It has two slots,
+vars (the variables in the let), and body (the body of the let).  The
+compiler tries optimistically to compile all named lets as loops.  If
+in doing so it finds that the let label is used in non-tail position,
+it backtracks and recompiles the expression as a normal binding
+construct. {/para}
+        {para}The {userinput role="binding"}&lt;ic-jump&gt;{/userinput} class represents the tail recursive calls to the let
+label in the case where a named let was possible to compile into a
+loop.  It has one slot named loop which is of type {userinput role="binding"}&lt;ic-loop&gt;{/userinput}, and
+which represents the loop to jump to.{/para}
+        {para}The {userinput role="binding"}&lt;ic-lambda&gt;{/userinput} class represents a lambda expression.  It has a single
+slot named procedure of type {userinput role="binding"}&lt;ic-procedure&gt;{/userinput}.  In fact, {userinput role="binding"}&lt;ic-procedure&gt;{/userinput}
+is not a subclass of {userinput role="binding"}&lt;icode&gt;{/userinput}.  It is an independent class that
+contains one slot named body (of type {userinput role="binding"}&lt;ic-bind&gt;{/userinput} (see above)).{/para}
+        {para}Above, we used the classes {userinput role="binding"}&lt;lexical-var&gt;{/userinput} and
+{userinput role="binding"}&lt;top-level-var&gt;{/userinput} in constructs that involve variables.  These two
+classes are subclasses of the class {userinput role="binding"}&lt;binding&gt;{/userinput}.  Futhermore,
+{userinput role="binding"}&lt;lexical-var&gt;{/userinput} objects contain a boolean slot called
+{userinput role="binding"}ever-set?{/userinput}, keeping track of whether the variable is ever
+assigned to (this information is used at by the {userinput role="binding"}gen-aml{/userinput} process
+to do register allocation).{/para}
+        {para}{/para}
+        {para}{/para}
+      {/sect1}
+      {sect1}
+        {title}Abstract Machine Language (AML){/title}
+        {para}Abstract machine language is the result of applying the procedure
+{userinput role="binding"}gen-aml{/userinput} to an object of type {userinput role="binding"}&lt;icode&gt;{/userinput}.  The level
+of abstraction of abstract machine language is similar to that of a
+high-level assembly language.  The top-level abstract machine language
+object represents one Scheme procedure, and is just a list of
+statments that are either ordinary statements or labels.  Labels
+indicate the beginning of monotones, but monotones are not separate
+objects in abstract machine language.  Ordinary statements contain
+expressions and expressions contain effective addresses.{/para}
+        {para}If you are using the on-line compiler, you can see the resulting
+abstract machine language code for each expression you type if you
+type ,aml at the top-level REPL-loop. {/para}
+        {para}Abstract machine language, unlike intermediate code is not represented
+by instances of classes.  Instead, ordinary Scheme lists are used in
+which the first element indicates the type of abstract machine
+language object. {/para}
+        {para}An expression is a pair that contains type information in the car
+field and an untyped expression in the cdr field.
+{userinput role="binding"}{/userinput}
+        {/para}
+        {sect2}
+          {title}Statements{/title}
+          {para}{/para}
+          {refentry}
+            {refnamediv}
+              {refname}apply{/refname}
+              {refpurpose}Call a procedure.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+{funcdef}{function}apply{/function}{/funcdef} {paramdef role="arguments"}{parameter/n/ {parameter/e/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}The expression should evaluate to a procedure which is applied to the
+first N registers.  A check is emitted to verify that the value of the
+expression is indeed a procedure (in the C back end, if {parameter}e{/parameter}
+is known to evaluate to a procedure at compile-time, then the check
+is elided by use of the APPLYF vinsn).{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}applyg{/refname}
+              {refpurpose}Call a generic function.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+{funcdef}{function}applyg{/function}{/funcdef} {paramdef role="arguments"}{parameter/n/ {parameter/e/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}The expression is known to evaluate to a generic function, which is
+applied to the first N registers.  No check is necessary to verify
+that the value of the expression is a procedure.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}save{/refname}
+              {refpurpose}Save a continuation.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+{funcdef}{function}save{/function}{/funcdef} {paramdef role="arguments"}{parameter/n/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Create a continuation and save the first N registers in it.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}restore{/refname}
+              {refpurpose}Restore the (rest of) a continuation.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+{funcdef}{function}restore{/function}{/funcdef} {paramdef role="arguments"}{parameter/n/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Restore the first N registers from the continuation and
+the continuation_reg itself (ie, perform the caller's restore obligation){/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}label{/refname}
+              {refpurpose}Label a section of code.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+{funcdef}{function}label{/function}{/funcdef} {paramdef role="arguments"}{parameter/l/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}This statement is the monotone separator.  The label {userinput role="binding"}l{/userinput} is 
+either a symbol
+or integer
+that indicates the start of a monotone.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}return{/refname}
+              {refpurpose}Return from current procedure.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+{funcdef}{function}return{/function}{/funcdef} {paramdef role="arguments"}{parameter/n/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Return the first N registers as values of the current procedure.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}jump{/refname}
+              {refpurpose}Jump to another monotone.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+{funcdef}{function}jump{/function}{/funcdef} {paramdef role="arguments"}{parameter/n/ {parameter/label/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Transfer unconditionally to the monotone with the label indicated. {/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}bjump{/refname}
+              {refpurpose}Backwards jump.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+{funcdef}{function}bjump{/function}{/funcdef} {paramdef role="arguments"}{parameter/n/ {parameter/label/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Same as (jump N label), except the jump is "backwards", meaning it is
+safe to garbage collect or to thread switch.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}use-empty-envt{/refname}
+              {refpurpose}Procedure doesn't use an (outer) environment.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+ {funcdef}{function}use-empty-envt{/function}{/funcdef}{paramdef}{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Put a null object in the environment register to be used as the parent
+of a new environment.  This statement is used by top-level procedures
+to create their environments of execution.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}use-function-envt{/refname}
+              {refpurpose}Use captured (outer) environment.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+ {funcdef}{function}use-function-envt{/function}{/funcdef}{paramdef}{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Assuming the environment register contains the current procedure,
+extract from it its environment of definition and put it in the
+environment register, replacing the previous value.  This statement is
+used by nested (non top-level) procedures to create their environments
+of execution.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}check={/refname}
+              {refpurpose}Check for exactly n arguments.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+{funcdef}{function}check={/function}{/funcdef} {paramdef role="arguments"}{parameter/n/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Check that the argument count register contains N.  Signal an error
+otherwise. {/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}check&gt;={/refname}
+              {refpurpose}Check for at least n arguments.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+{funcdef}{function}check&gt;={/function}{/funcdef} {paramdef role="arguments"}{parameter/n/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Check that the argument count register contains at least N.  Signal an
+error otherwise.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}collect&gt;{/refname}
+              {refpurpose}Collect arguments beyond a fixed n.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+{funcdef}{function}collect&gt;{/function}{/funcdef} {paramdef role="arguments"}{parameter/n/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Create a list of all arguments in registers starting at N and up and
+put the created list in register N.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}set-false&lt;{/refname}
+              {refpurpose}Pad arguments fewer than n.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+{funcdef}{function}set-false&lt;{/function}{/funcdef} {paramdef role="arguments"}{parameter/n/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Implement Dylan multiple-value return semantics.  
+When more values are requested
+than were returned from the procedure call, fill in the rest with {literal}#f{/literal}.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}bind{/refname}
+              {refpurpose}Bind expression values into an environment frame.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+{funcdef}{function}bind{/function}{/funcdef} {paramdef role="arguments"}{parameter/expr/ ...{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Create a new level of partial environments from the values of the
+expressions given.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}unbind{/refname}
+              {refpurpose}Pop an environment frame.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+ {funcdef}{function}unbind{/function}{/funcdef} {paramdef role="arguments"}{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Remove the top partial environment.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}if{/refname}
+              {refpurpose}Conditionally execute statements.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+ {funcdef}{function}if{/function}{/funcdef} {paramdef role="arguments"}{parameter/s1/ {parameter/s2/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}The conditional statement.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}do{/refname}
+              {refpurpose}Execute an expression.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+ {funcdef}{function}do{/function}{/funcdef} {paramdef role="arguments"}{parameter/expr/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Convert an expression into a statement.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}seq{/refname}
+              {refpurpose}Execute statements in sequence.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+ {funcdef}{function}seq{/function}{/funcdef} {paramdef role="arguments"}{parameter/stmt/ ...{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Sequence of statements.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}primop{/refname}
+              {refpurpose}Call a primitive procedure.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+ {funcdef}{function}primop{/function}{/funcdef} {paramdef role="arguments"}{parameter/op/ {parameter}expr{/parameter} ...{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Call the primop op with the values of the expressions as arguments.
+This statement is used for primops that do not have return values. {/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}set!{/refname}
+              {refpurpose}Side effect a location{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+  {funcdef}{function}set!{/function}{/funcdef} {paramdef role="arguments"}{parameter/ea/ {parameter}e{/parameter}{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Assign the value of the expression to the effective address.{/para}
+              {/refsect1}
+          {/refentry}
+        {/sect2}
+        {sect2}
+          {title}Effective addresses{/title}
+          {para}An effective address is used to denote storage,
+and is of one of the following forms:{/para}
+          {refentry}
+            {refnamediv}
+              {refname}reg{/refname}
+              {refpurpose}Register n.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+  {funcdef}{function}reg{/function}{/funcdef} {paramdef role="arguments"}{parameter/n/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}The top-level variable whose pointer is in the {parameter}k{/parameter}th slot
+of the literal frame.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}lexvar{/refname}
+              {refpurpose}Variable with lexical address f:s.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+   {funcdef}{function}lexvar{/function}{/funcdef} {paramdef role="arguments"}{parameter/f/ {parameter/s/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}The lexical variable at offset (slot) {parameter}s{/parameter} in frame (partial environment) 
+number {parameter}f{/parameter}. {/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}tl-var{/refname}
+              {refpurpose}Top-level variable k.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+   {funcdef}{function}tl-var{/function}{/funcdef} {paramdef role="arguments"}{parameter/k/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}The top-level variable contained in slot {parameter}k{/parameter} of the template. [TODO: is this right? I thought we used tlref and tlset, like the C bindings]{/para}
+              {/refsect1}
+          {/refentry}
+        {/sect2}
+        {sect2}
+          {title}Untyped expressions{/title}
+          {para}{/para}
+          {refentry}
+            {refnamediv}
+              {refname}literal{/refname}
+              {refpurpose}The literal in slot kth of the template.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+   {funcdef}{function}literal{/function}{/funcdef} {paramdef role="arguments"}{parameter/k/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}
+                  {parameter}k{/parameter}th literal.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}closure{/refname}
+              {refpurpose}Create a closure{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+   {funcdef}{function}closure{/function}{/funcdef} {paramdef role="arguments"}{parameter/k/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}A closure created from the template in slot {parameter}k{/parameter} of the template. {/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}this-function{/refname}
+              {refpurpose}The current function object.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+   {funcdef}{function}this-function{/function}{/funcdef} {paramdef role="arguments"}{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}The contents of the environment register.  Recall that this register
+contains a procedure for a brief moment between the time it is called
+and the time it creates its own environment.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}ref{/refname}
+              {refpurpose}Reference an effective address.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+    {funcdef}{function}ref{/function}{/funcdef} {paramdef role="arguments"}{parameter}ea{/parameter}{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Convert an effective address to an expression.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}seq{/refname}
+              {refpurpose}A sequence of expressions.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+    {funcdef}{function}seq{/function}{/funcdef} {paramdef role="arguments"}{parameter}expr{/parameter} ...{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Like C's comma operator.{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}primop{/refname}
+              {refpurpose}Primop call{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+ {funcdef}{function}primop{/function}{/funcdef} {paramdef role="arguments"}{parameter/op/ {parameter}expr{/parameter} ...{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}Call the primop op with the values of the expressions as arguments.
+This expression is used for primops that have return values. {/para}
+                {para}{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}immob{/refname}
+              {refpurpose}The immediate object with representation z.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+  {funcdef}{function}immob{/function}{/funcdef} {paramdef role="arguments"}{parameter/z/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}int{/refname}
+              {refpurpose}The integer with raw value z.{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+  {funcdef}{function}int{/function}{/funcdef} {paramdef role="arguments"}{parameter/z/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}{/para}
+              {/refsect1}
+          {/refentry}
+          {refentry}
+            {refnamediv}
+              {refname}raw-bool{/refname}
+              {refpurpose}A raw boolean value{/refpurpose}
+              {refclass role="Type"}AML{/refclass}
+            {/refnamediv}
+            {refsynopsisdiv}
+              {funcsynopsis role="Scheme"}
+                {funcprototype}
+  {funcdef}{function}raw-bool{/function}{/funcdef} {paramdef role="arguments"}{parameter/bool/{/paramdef}
+                {/funcprototype}
+              {/funcsynopsis}
+            {/refsynopsisdiv}
+              {refsect1}
+                {title}Description{/title}
+                {para}{/para}
+              {/refsect1}
+          {/refentry}
+        {/sect2}
+      {/sect1}
+    {/chapter}
+    {chapter id="T.GC"}
+      {title}Garbage Collection{/title}
+
+        {para}Garbage collection in RScheme is done at {quote}safe points{/quote}.
+One of the benefits of RScheme's safe-point based garbage collection is that
+pointer finding can be precise {emphasis}without{/emphasis} having to know the stack layout
+and register/temporary representation of intermediate results.{/para}
+        {para}To support [cite wilson92gcsurvey] garbage collection, it
+must be possible for the collector to find the {glossterm}root set{/glossterm} of
+pointers from which it traces to find all reachable data.  If
+variables were allocated in a stack, we would need to be able to find
+all of the pointer variables in the stack so that we could trace
+outward from them.  Our use of registers means that we only need to
+start at the registers and the stack cache, and trace outward from
+there.  The tracer for the stack cache will find all the cached
+continuations and a pointer to any heap-allocated overflow
+continuations.  The register scan will find the heap continuations
+from the continuation register, if the stack cache is
+empty{footnote}
+            {para}This applies to the current implementation -- using the
+bottom-stub trick would simplify this explanation{/para}
+          {/footnote}.  From
+these the garbage collector will find all of the saved temporary
+values, and pointers to saved binding environments.  Then it can
+continue tracing, to find all of the values of variables and follow
+those outward until all live data are traced.{/para}
+        {para}(For the moment, when we talk about finding the registers that
+are in use, we are talking about the abstract machine registers.  The
+C compiler may also compile our code so that it use other registers,
+and we assume for the moment that we can ignore those.  Later we will
+explain how certain restrictions on our code generator do in fact
+allow us to ignore the registers allocated by the C compiler.){/para}
+        {para}The collector must also be able to scan from the other registers,
+including the auxiliary registers holding temporaries.  At any
+point where GC occurs, it must be able to determine how many
+registers are in use, and decode their representations.  This is
+why we ensure that the values in these registers are always in
+a tagged format, so that the collector can tell whether they are
+immediate values or pointers that must be traced.
+                                                                     {/para}
+
+      {sect1}
+        {title}Safe Points{/title}
+        {para}We have chosen a "safe points" strategy for locating execution-model
+registers.  Rather than ensuring that it's safe to GC at any point in
+a program's execution, we ensure that GC can only happen at certain
+safe points.  For this to work, there must be a bound on the amount of
+allocation that can occur between safe points, so that a safe point
+can always be reached before memory is completely exhausted.  We keep
+some memory in reserve, so that if memory is "exhausted" (excluding
+this reserve memory), we can set a flag and continue to operate until
+the next safe point, cutting into this reserved space.  At each safe
+point, we check the flag to see if memory is exhausted; if so, we
+garbage collect, restore our reserve space, and reset the flag before
+continuing execution.{/para}
+        {para}To a first approximation, our strategy for ensuring that safe points
+occur frequently enough is to make every procedure call and backward
+branch a safe point.  A program cannot run indefinitely without
+calling another procedure or branching backward---the longest path
+of execution between safe points is the longest forward path through
+a single procedure.  If a program sits in a loop, for example, at
+the end of the loop it will reach a safe point before branching backward
+to begin the next iteration.  (If a loop is coded as tail recursion, the
+tail calls that iterate the loop will also be safe points because they
+are procedure calls.)
+                                                                     {/para}
+      {/sect1}
+      {sect1}
+        {title}Interrupts{/title}
+        {para}Support for interrupts -- asynchronous changes to program flow -- is
+provided by making use of the safe-point mechanism.  Essentially, at
+each safe point, an {glossterm}interrupt pending{/glossterm} flag is checked.  If the
+flag is set, a continuation is constructed using the runtime system's
+knowledge of the number of slots live in the register array (ie, using
+the {literal}arg_count_reg{/literal}).  Then the runtime system makes a call
+to the system interrupt handler.{/para}
+        {para}Hence, the effect is that a conditional call to the interrupt handler
+is present at every monotone boundary (safe point), with the runtime
+system inserting the conditional test and calls as part of its
+quasi-interpretive loop.{/para}
+        {para}Since we cannot control when actual operating system interrupts
+({quote}signals{/quote} in unix) occur{footnote}
+            {para}without the use of signal
+blocking functions, that is -- but that would be 
+prohibitively expensive{/para}
+          {/footnote}, the idea is to have the actual
+OS-level handler simply set the interrupt pending flag.{/para}
+        {para}(In fact, the runtime system maintains a queue of pending interrupts.
+Inserting an interrupt into the queue causes the flag to be set assuming
+interrupts are not disabled at the scheme level.){/para}
+        {para}For example, at a timer interrupt, all that happens is the C interrupt
+handler records the fact that a timer expired, and sets flags so that
+a Scheme interrupt will occur.  The Scheme-level interrupt handler can
+then do all of the interesting processing, which might be to switch
+threads.{/para}
+        {para}When a the scheme-level interrupt handler is called, scheme-level interrupts
+are automatically disabled.  The continuation constructed by the
+runtime system will re-enable interrupts before continuing the
+suspended code.  This ensures that multiple interrupts are not delivered
+all in a rapid succession before the system can deal with it.
+                                                                     {/para}
+      {/sect1}
+      {sect1}
+        {title}Supporting Threads{/title}
+        {para}With the interrupt mechanism described above in place, implementing
+threads becomes a simple matter.  All that is necessary is to install
+a scheme-level handler for timer interrupts and set a timer.  When
+the handler is called, it can capture the current continuation, store
+it in a thread structure, and invoke the continuation of the next thread
+to be run.{/para}
+        {para}...{/para}
+        {para}Supporting preemptive threads requires two things:{/para}
+        {para}{/para}
+        {orderedlist}
+          {listitem}
+            {para}making sure that that every thread yields control frequently enough
+    that it can't "lock out" other threads for too long, and{/para}
+            {para}{/para}
+          {/listitem}
+          {listitem}
+            {para}making sure that the GC still functions in the presence of suspended
+    threads.{/para}
+          {/listitem}
+        {/orderedlist}
+        {para}In the RScheme system, support for GC safe points and support for
+preemption are combined into a single mechanism.  Safe points are also
+potential thread preeemption points.  In effect, the compiler turns
+preemptive multitasking into cooperative multitasking, by emitting
+extra instructions at safe points so that a thread will voluntarily
+yield control if its time slice has expired.{/para}
+        {para}Actually suspending a thread is easy, since we've already implemented
+support for first-class continuations.  The code for thread switching
+begins by saving a continuation, which encapsulates the state of the
+thread.  This can be saved in a thread-control block used by the
+scheduler.  After the thread has been suspened, another thread is chosen,
+and it is resumed by calling the escape procedure that represents its
+saved state. {/para}
+        {para}In order for it to be possible to garbage collect in the presence of
+threads, it must be possible for the collector to decode the thread
+control blocks of all suspended threads, and trace outward from their
+saved state.  We therefore ensure that threads are only suspended at
+safe points, so that if GC occurs, all threads are in a safely
+traceable state.  We need only trace the scheduler's list of suspended
+threads (itself a normal, traceable Scheme data structure), and it
+follows that we will reach all live data.
+                                                                     {/para}
+      {/sect1}
+      {sect1}
+        {title}The cost of safe points{/title}
+        {para}In principle, safe points probably slow a system down significantly.
+For a very fast system that compiles to machine code using a custom
+back-end, we would expect safe points to cost 5-10% in execution
+time (at a guess), due to frequent checking overhead:  at each
+procedure call or backward branch, a flag must be checked and a
+conditional branch (not taken, in the usual case) executed.  (This
+overhead can be kept fairly low, even for small inner loops, by
+unrolling the loop a couple of times to eliminate most of the backward
+branches.  For a high-performance system, such loop unrolling is
+desirable anyway, to enhance conventional optimizations.){/para}
+        {para}For a system like RScheme, which is not likely to ever be that fast,
+the overhead is much smaller.  If RScheme is a factor of two or so
+slower than an all-out high-performance system, the overhead will
+only be a few percent.  We consider this well worth it, because it
+preserves the ability to use copying collection and to layer RScheme
+atop persistent object stores.
+                                                                     
+{/para}
+      {/sect1}
+    {/chapter}
+    {chapter}
+      {title}Module System{/title}
+
+        {para}A module consists of a set of imported interfaces, a set of definitions,
+and a set of exported interfaces.  One kind of definition is a sub-module
+definition, so modules can be hierarchically structured.  In this case,
+an exported interface definition can include exported interface elements
+from a component module.{/para}
+        {para}The separately-compiling compiler (rsc) is capable of representing a
+module in a standalone file.  Such a file consists of two separate
+data structure images.  The first data structure is metadata describing
+what the dependent modules are.  The second data structure is a the
+contents of the module itself.{/para}
+        {para}When a module is being linked, the process is to load the metadata structure,
+use that information to locate the dependent bindings and constructs,
+and to establishing the load context for the second image.  Thus, the
+actual module content is loaded and linked in a single step (although a
+follow-on phase goes through the link-loaded image 
+and establishes other linkage connections,
+such as adding methods to imported generic functions).
+{/para}
+
+    {/chapter}
+    {chapter}
+      {title}The Build Process{/title}
+
+        {para}The RScheme build process includes three main file system
+architectures and procedures for transforming earlier 
+stages into later stages.{/para}
+        {para}Because RScheme requires itself in order to build, the
+prerequisite for a build from sources (the first step) is
+an existing version of RScheme.  Obviously, this is circular,
+since one cannot have an RScheme without having built it,
+and if one cannot build it without having it, one is in trouble.
+The circularity is broken by allowing a previous version
+of RScheme to be used to build from sources.  This process is
+called {glossterm}bootstrapping{/glossterm} or {glossterm}cross compiling{/glossterm}.{/para}
+        {para}The cross compiler and the native compiler share much of the basic
+compiler code.  This means, in turn, that much of the basic compiler
+must be written in the intersection of the two languages (source 
+and target).{/para}
+        {para}The main difference between the cross (boot?) compiler and the native
+compiler is that the cross compiler does not deal with modules; 
+{userinput role="binding"}define-module{/userinput} forms are ignored.{/para}
+        {para}The only purpose of the boot compiler is to compile the native
+compiler into an image suitable for loading by the boot system.{/para}
+        {para}The following figure shows the stages of processing:{/para}
+        {para}{/para}
+        {figure id="FIG.STAGES"}
+          <!-- use stages.lout -->
+          {title}Stages of processing in build from sources{/title}
+          {Graphic fileref="placeholder.eps"}{/Graphic}
+        {/figure}
+
+      {sect1}
+        {title}Source Code{/title}
+        {sect2}
+          {title}Source Files{/title}
+{para}[TODO... old content was all wrong anyway]{/para}
+        {/sect2}
+      {/sect1}
+      {sect1}
+        {title}Distribution{/title}
+
+        {para}The actual distribution of RScheme is usually in the
+form of a compressed tar file deposited on a well-known FTP
+site.{/para}
+
+        {para}The distribution tar file contains the results of running 
+{literal}configure{/literal} and {literal}make dist{/literal} on the source tree.{/para}
+        {para}{/para}
+        {sect2}
+          {title}Distributed Files{/title}
+        {para}[TODO]{/para}
+        {/sect2}
+      {/sect1}
+      {sect1}
+        {title}Install Tree{/title}
+        {para}[TODO]{/para}
+      {/sect1}
+      {sect1}
+        {title}Free Association{/title}
+        {para}There needs to be a little bit of explanation
+     of what config does and what directories are installed into by
+     default.  It's not enough to just give the command line stuff
+     for normal installation---people need to know a little bit about
+     what's going on.{/para}
+        {warning}
+          {para}I am trying to dump my knowledge in a slightly but not very
+structured way (I am more concerned about writing what I know than
+about where I write it and how).  In particular, some of this stuff is
+appropriate for users, some for developers, and some for people intent
+on changing the RScheme builds, for their own whatever purposes (given
+RScheme's license, they can do whatever they like!){/para}
+        {/warning}
+        {sect2}
+          {title}
+            {literal}configure{/literal}
+          {/title}
+          {para}
+            {literal}configure{/literal} is a shell script created by the autoconf program based on
+a template {literal}configure.in{/literal}, originally written by Per Bothner and
+somewhat updated by me.{/para}
+          {para}This shell script's purpose is to ascertain the configuration of the 
+system on which RS is being built, and create makefiles and other files
+as appropriate.{/para}
+          {para}In particular, the configuration process involves several steps, orchestrated
+by the configure script (roughly in order):{/para}
+          {para}(All of this is relative to the {literal}src{/literal} subdirectory of a distribution,
+     since everything above there is related to building from sources
+     which is a totally different process.){/para}
+          {para}{/para}
+          {sect3}
+            {title}Determine properties of the target system.{/title}
+            {para}This includes things
+     like how big the word size is, what kind of OS it is (AIX, SunOS,
+     Linux, etc.), and the presence and/or functioning of various 
+     semi-standard functions like getwd vs. getcwd.{/para}
+            {para}     The result of this process is RScheme's "platform.h" file, which
+     tries to collect major platform dependencies that are shared among
+     all or most rscheme C code.  (This file is often called "config.h"
+     in other applications).  Furthermore, "platform.h" is generated
+     by configure by filling in a template called "config.h.in" (a DOS
+     brokenism as you can see, but that's Per's name and the standard
+     name){/para}
+            {para}     platform.h is installed in {literal}install/include/rscheme/{/literal}, 
+which is where
+     header files are put that are needed by the naescent compile as 
+     well as external packages (the install/ directory is an direct image
+     of what will be installed in, by default, /usr/local/lib/rs/VERSION,
+     where VERSION is something like 0.7-0.6.  The destination location can be
+     overriden with a {literal}--prefix=PLACE{/literal} flag to {literal}configure{/literal}){/para}
+            {para}{/para}
+          {/sect3}
+          {sect3}
+            {title}Rearrange components for compilation{/title}
+            {para}The compile supports
+     two configuration options, GC and RDLN.  The cfg directory contains
+     file hierarchies corresponding to the available choices for these
+     two options.  Despite what may be there, however, the following options
+     are all that are supported:{/para}
+            {screen}
+  --with-gc=rtgc    ;; select real-time garbage collector
+  --with-gc=irc     ;; select irc collector
+  --enable-readline ;; select GNU readline package support{/screen}
+            {para}This part of the configuration step copies the corresponding cfg/
+     subdirectories into the top level, e.g., copies cfg/gc/irc/ into gc/,
+     so the makefile doesn't have to remember which was selected.{/para}
+            {para}     (the gc also specifies implicitly a choice for gcadapt, which is an
+     adapater layer sitting between common rscheme and the GC itself; this
+     is to make plug-and-play with off-the-ftp-site GC's easier){/para}
+          {/sect3}
+          {sect3}
+            {title}collect together header files.  {/title}
+            {para}Each subdirectory is able to provide
+     header files for install/rscheme/include.  this step actually puts them
+     there before the compilation process.  If inlining has been selected
+     ({literal}-DINLINES{/literal}) then additional files ({literal}.ci{/literal}) are copied.  This copying is
+     controlled by the {literal}include.lst{/literal} and {literal}inlines.lst{/literal} files in each 
+     subdirectory.{/para}
+          {/sect3}
+          {sect3}
+            {title}compute CFLAGS{/title}
+            {para}Finish getting ready for compilation by computing appropriate values
+     for the CFLAGS.  This primarily depends on whether optimization is
+     enabled, inlining is enabled, whether hardware registers are in
+     use, etc.{/para}
+          {/sect3}
+          {sect3}
+            {title}construct {literal}preamble.mak{/literal}
+            {/title}
+            {para}Construct a "preamble.mak" which is included first-off by every
+     subdirectory's makefile.  This is the file that contains the CFLAGS
+     and CC definitions to be shared throughout the compile.  These definitions
+     are *ALSO* written to install/resource/buildenv/preamble.mak and
+     install/resource/buildenv/module.mak, which are available for inclusion
+     by makefiles of external packages.{/para}
+            {para}     rationale:  RScheme is sensitive to compiling component modules the
+     same way the runtime environment (librs.a) is compiled.  For example,
+     if hardware registers are in use, that had {emphasis}better{/emphasis} be known by the
+     module being separately compiled.  Likewise with the choice of inlining.
+     Furthermore, this configuration information has to be installed so you
+     can delete the rscheme source tree and it's installation residue is
+     sufficient to have a happy, functioning system.{/para}
+            {para}{/para}
+            {para}{/para}
+          {/sect3}
+        {/sect2}
+      {/sect1}
+      {sect1}
+        {title}Bootstrapping Process{/title}
+        {para}[TODO]{/para}
+      {/sect1}
+      {sect1}
+        {title}Configuration Options Reference{/title}
+        {sect2}
+          {title}
+            {literal}--enable-debug{/literal}
+          {/title}
+          {para}Enables the {literal}-bcitrace{/literal} flag to {literal}rs{/literal},
+and the {literal},bci{/literal} REPL command.
+The former is useful primarily for debugging the bootstrapping process.
+The latter is useful for debugging obscure code generation problems
+(though {literal},aml{/literal} is really better for that.{/para}
+        {/sect2}
+        {sect2}
+          {title}
+            {literal}--enable-readline{/literal}
+          {/title}
+        {para}[TODO]{/para}
+        {/sect2}
+        {sect2}
+          {title}
+            {literal}--enable-dynamic-linking{/literal}
+          {/title}
+        {para}[TODO]{/para}
+        {/sect2}
+        {sect2}
+          {title}
+            {literal}--enable-profiling-hooks{/literal}
+          {/title}
+        {para}[TODO]{/para}
+        {/sect2}
+        {sect2}
+          {title}
+            {literal}--enable-read-barrier{/literal}
+          {/title}
+          {para}[TODO]{/para}
+        {/sect2}
+        {sect2}
+          {title}
+            {literal}--enable-trace-signal-latency{/literal}
+          {/title}
+          {para}[TODO]{/para}
+        {/sect2}
+        {sect2}
+          {title}
+            {literal}--disable-utf-process-code{/literal}
+          {/title}
+          {para}[TODO]{/para}
+        {/sect2}
+      {/sect1}
+    {/chapter}
+    {chapter}
+      {title}Glue and Safe Glue{/title}
+      {sect1}
+        {title}Introduction{/title}
+        {para}Sometimes it is necessary or simply more practical to use the C
+language to extend the functionality of RScheme.  For instance, if you
+want to write an interface between RScheme and some existing C
+library, it may be easier to just write the interface rather than
+rewriting the functionality entirely in RScheme.  Another example
+would be when you want a particularly fast data structure accessible
+from RScheme, but the details of which do not need to be directly
+accessible from RScheme.  In that case, it may be a good idea to write
+the core of the code for the data structure in C and write an
+interface to RScheme. {/para}
+        {para}Writing such an interface typically involves checking the types of
+arguments and translating those arguments from RScheme objects to C
+values and then writing code that respects the conventions of the
+RScheme runtime virtual machine in the body of the C function.  The
+runtime virual machine is the topic of a different chapter [Universal
+Code Interface].  This chapter discusses ways of automating argument
+type checking and translation. {/para}
+        {para}Typically, a C function implementing the functionality of an RScheme
+procedure must start by verifying that the number of arguments given
+is compatible with the number of arguments accepted by the procedure.
+RScheme puts arguments in registers of the virtual machine, so there
+is no correspondance between these arguments and the C arguments to
+the function you are writing.  Next, the function must check that the
+type of each argument is indeed the type expected.  In some cases, no
+checking needs to be done, for instance if the function implements
+insertion of an arbitrary RScheme object into a container.  Since
+there are no restrictions on the type of object that can be inserted,
+no checking needs to be performed.  Finally, before performing the
+very purpose of the function, it may have to translate some of the
+arguments to C values.  For instance, suppose again that we are
+implementing a container indexed by integers.  In order for the C code
+to know which position to use, that RScheme value must be translated
+to a C integer before used for indexing (say) a C array.{/para}
+        {para}We refer to the code that handles counting, typechecking, and
+translation of arguments as {glossterm}glue code{/glossterm} or just {glossterm}glue{/glossterm}.  
+Glue comes in
+two varieties, unsafe and safe.  Safe glue is an additional layer on
+top of unsafe glue.{/para}
+        {para}A file containing glue code is a Scheme file (extension {literal}.scm{/literal}) that
+will be processed by the off-line module compiler.  But most of the
+contents of the file will be C code.  Recall that that  off-line
+module compiler translates RScheme source code to C code that respects
+the runtime virtual machine conventions.  When the compiler sees glue
+code, it generates code for the argument processing but does not
+process the C code at all, only copies it to the resulting C file.{/para}
+        {para}{/para}
+      {/sect1}
+      {sect1}
+        {title}Unsafe Glue{/title}
+        {para}To define unsafe glue code, use the macro define-glue as follows:{/para}
+        {screen}  (define-glue ({parameter}procedure-name{/parameter} {parameter}args{/parameter} ...)
+  {
+    /* arbitrary C code */
+  }){/screen}
+        {para}When the resulting code is linked to the RScheme, {parameter}procedure-name{/parameter} will
+be a module variable whose value is an RScheme procedure.  With
+{userinput role="binding"}define-glue{/userinput} you don't get any verification of the number and types of
+the arguments.  You only get the ability to refer to the given arguments
+by convenient names.  So, for
+instance, if you wrote{/para}
+        {screen}  (define-glue (stretchable-array-insert array index value)
+  {
+     /* function body */
+  }){/screen}
+        {para}you will have module variable called {userinput role="binding"}stretchable-array-insert{/userinput} and in
+the function body, {userinput role="binding"}array{/userinput} will be a C variable that refers to the
+first argument given, {userinput role="binding"}index{/userinput} will be a C variable that refers to the
+second argument, and {userinput role="binding"}value{/userinput} will be a C variable that refers to the
+third argument given.  But you still have to check that exactly three
+arguments were passed, that the first is indeed a stretchable array,
+and that the second is an integer.{/para}
+        {para}The names of the arguments must respect the syntax of the C language,
+so for instance you can not use names with hyphens, question marks, or
+other funny symbols.{/para}
+        {para}The mechanism that allows you to refer to the arguments symbolically
+is simply the use of {literal}#define{/literal} to make an alias of the symbol to a
+particular register.  So in the case of {userinput role="binding"}stretchable-array-insert{/userinput} the
+compiler would generate something like this:
+                                                                      {/para}
+        {screen}  #define array REG0
+  #define index REG1
+  #define value REG2{/screen}
+        {para}While this kind of alias is useful, it can also be confusing.
+Consider if the following code were at the end of the previous function: 
+                                                                      {/para}
+        {screen}  REG0 = TRUE_OBJ;
+  REG1 = array;
+  RETURN(2);{/screen}
+        {para}In this example, we intended to return two values, the first is simply
+{literal}#t{/literal} and the second, the {userinput role="binding"}array{/userinput} that we were passed.  However, this code
+expands to:
+                                                                      {/para}
+        {screen}  REG0 = TRUE_OBJ;
+  REG1 = REG0;
+  RETURN(2);{/screen}
+        {para}so instead of {literal}#t{/literal} and the {userinput role="binding"}array{/userinput}, the two values will both be {literal}#t{/literal}. {/para}
+        {para}{/para}
+      {/sect1}
+      {sect1}
+        {title}Templates{/title}
+        {para}As we pointed out above, the name of the procedure given to
+{userinput role="binding"}define-glue{/userinput} will become a module variable containing an RScheme
+procedure.  The environment of that procedure will be the global
+environment of the module in which the {userinput role="binding"}define-glue{/userinput} is compiled.
+Sometimes, however, that is not exactly what you want.  In many cases
+you would like to produce the effect that {userinput role="binding"}lambda{/userinput} has in Scheme code,
+i.e., you would like to produce a closure on the fly from raw code and
+an environment of your choice. {/para}
+        {para}In the RScheme virtual machine, a closure has two components, a
+{parameter}template{/parameter} and an {parameter}environment{/parameter}.  
+The template is a table of constants and
+top-level variables used in the body of the code (hence it is
+sometimes also
+called a literal frame).  The raw code itself is
+considered such a constant.  Actually, the code is divided into
+monotones [see chapter on the rutime virtual machine], and only the
+code for the first monotone -- the procedure entry point -- is
+in the template for the corresponding
+procedure. {/para}
+        {para}Thus, in order to define an object that can be used to produce a
+closure on the fly, you need the corresponding template.  To
+accomplish this, use the keyword {literal}:template{/literal} with {userinput role="binding"}define-glue{/userinput}, 
+like
+this:
+                                                                      {/para}
+        {screen}  (define-glue ({parameter}procedure-name{/parameter} {parameter}args{/parameter} ...) :template
+  {
+     /* arbitrary C code */
+  }){/screen}
+        {para}So for our example, we would get:
+                                                                      {/para}
+        {screen}  (define-glue (stretchable-array-insert array index value) :template
+  {
+     /* C code */
+  }){/screen}
+        {para}Now, the value of the module variable 
+{userinput role="binding"}stretchable-array-insert{/userinput} will be the
+template object itself and not a complete procedure.  {/para}
+        {para}{/para}
+      {/sect1}
+      {sect1}
+        {title}Multiple Monotones{/title}
+        {para}In the previous examples, we have assumed that a single monotone is
+sufficient to implement the functionality you need.  In some cases
+that is true.  Sometimes, however, you may need several monotones, in
+particular if you want to execute an unbounded loop, you may want to
+switch monotones from time to time so that thread switching and
+garbage collection can occur (recall that thread switching and garbage
+collection can only happen in between the execution of two monotones).{/para}
+        {para}To produce several monotones, you can write:
+                                                                      {/para}
+        {screen}  (define-glue ({parameter}procedure-name{/parameter} {parameter}args{/parameter} ...)
+  {
+     /* Code for first monotone */
+  }
+  ("{parameter}label1{/parameter}" 
+  {
+     /* Code for another monotone */
+  })
+  ("{parameter}label2{/parameter}"
+  {
+     /* Code for another monotone */
+  })
+  ...
+  ){/screen}
+        {para}where "{parameter}label1{/parameter}", "{parameter}label2{/parameter}", etc are the labels of the additional
+monotones.  These labels can then be used in the {literal}JUMP{/literal} macro to
+transfer control from one monotone to another.  Notice that this
+feature can be used independently of the {literal}:template{/literal} feature.{/para}
+        {para}{/para}
+      {/sect1}
+      {sect1}
+        {title}Literals{/title}
+        {para}It is often necessary for the C code to refer to top-level variables
+or constants.  In RScheme, these objects are stored in the procedure
+template, and at runtime a dedicated register contains a pointer to
+the template of the procedure currently executing.{/para}
+        {para}To put literals in the procedure template, you can write:
+                                                                      {/para}
+        {screen}  (define-glue ({parameter}procedure-name{/parameter} {parameter}args{/parameter} ...)
+    literals: ({parameter}litspec{/parameter} ...)
+  {
+     /* C code */
+  }){/screen}
+        {para}where {literal}({parameter}litspec{/parameter} ...){/literal} 
+is a list of zero or more literal specifications.
+The form of a literal specification is either a list of the form 
+{literal}(&amp; {parameter}tlvar{/parameter}){/literal} where {parameter}tlvar{/parameter}
+is the name of a top-level variable, or any
+expression that can be evaluated at compile time.  In the latter case,
+the expression will usually be a constant such as a number, a string
+literal, or a quoted list.  Since class names are usually known at
+compile time, you can also put names of classes here so that when you
+access the corresponding slot, you get a class object. {/para}
+        {para}{/para}
+      {/sect1}
+      {sect1}
+        {title}Safe Glue{/title}
+        {para}Safe glue is a layer on top of regular unsafe glue that provides
+argument counting, type checking, and conversion.  The syntax is
+similar to that of regular unsafe glue except that parameters can be
+both symbols and of the form {literal}({parameter}name{/parameter} {parameter}type{/parameter}){/literal}.  
+So, for example, in the
+example above we could have written:
+                                                                      {/para}
+        {screen}  (define-safe-glue (stretchable-array-insert
+                        (array &lt;stretchable-array&gt;)
+                        (index &lt;fixnum&gt;)
+                        value)
+  {
+     /* C code */
+  }){/screen}
+        {para}Here we would get an automatic check that three arguments were given
+plus a test that the first argument is of type {userinput role="binding"}&lt;stretchable-array&gt;{/userinput}
+and
+the second argument is of type {userinput role="binding"}&lt;fixnum&gt;{/userinput}.{/para}
+        {para}If in addition to the argument count and type checking, we would like
+automatic conversion to C, we simply replace the regular class names
+above ({userinput role="binding"}&lt;stretchable-array&gt;{/userinput} and {userinput role="binding"}&lt;fixnum&gt;{/userinput}) 
+by special types that provide
+this conversion.  A few of these special types are already built into
+{userinput role="binding"}define-safe-glue{/userinput}, but most of the time you have to define your own as
+shown in the next section.  The existing special types are {/para}
+        {table}
+          {title}Special Types For {userinput role="binding"}define-safe-glue{/userinput}{/title}
+          {tgroup cols="2"}
+            {ColSpec colwidth="1in"}
+            {ColSpec colwidth="3in"}
+            {thead}
+              {row}{entry}type name{/entry}
+                   {entry}description{/entry}{/row}
+            {/thead}
+            {tbody}
+          {row}
+            {entry}
+              {userinput role="binding"}&lt;raw-int&gt;{/userinput}
+            {/entry}
+            {entry}fixnum argument converted to a C {literal}int{/literal}
+            {/entry}
+          {/row}
+          {row}
+            {entry}
+              {userinput role="binding"}&lt;raw-ascii-char&gt;{/userinput}
+            {/entry}
+            {entry}character argument converted to {literal}UINT_8{/literal}
+(roughly the same as unsigned char){/entry}
+          {/row}
+          {row}
+            {entry}
+              {userinput role="binding"}&lt;raw-string&gt;{/userinput}
+            {/entry}
+            {entry}string argument converted to {literal}char *{/literal}
+            {/entry}
+          {/row}
+          {/tbody}
+          {/tgroup}
+        {/table}
+        {para}So for instance, if we wanted the second argument to be converted to a
+C {literal}int{/literal}, we could write
+                                                                      {/para}
+        {screen}  (define-safe-glue (stretchable-array-insert
+                        (array &lt;stretchable-array&gt;)
+                        (index &lt;raw-int&gt;)
+                        value)
+  {
+     /* C code */
+  }){/screen}
+        {para}In this case, two identifiers, {userinput role="binding"}raw_index{/userinput} and {userinput role="binding"}index{/userinput}
+will be accessible
+to the C code of the body.  The {userinput role="binding"}raw_index{/userinput} identifier is the value of
+the argument before conversion.  It is therefore an RScheme object.
+The identifier {userinput role="binding"}index{/userinput} will be an ordinary C int.{/para}
+        {para}{/para}
+        {note}
+          {para}The {userinput role="binding"}raw_{/userinput} prefix will be changed to a {userinput role="binding"}_obj{/userinput} suffix
+by CR 726.{/para}
+        {/note}
+      {/sect1}
+      {sect1}
+        {title}Extending Safe Glue Types{/title}
+        {para}The mechanism for checking and transforming arguments to glue
+procedures is extensible, allowing the programmer to add new
+kinds of type checks and argument transformations.{/para}
+        {para}The keywords {literal}type-handler:{/literal} and {literal}type-view:{/literal} are used
+to add new checks and transformations.  These keywords are cumulative,
+with later instances overriding previous ones.{/para}
+        {para}Having later type handlers override previous ones allows
+the programmer to write a macro definition
+that adds new type handlers on top of an underlying safe-glue macro.
+The order of macro expansion will cause the higher-level definitions
+to be processed later.  For example, the {literal}syscalls{/literal} module
+defines a macro {userinput role="binding"}define-syscall-glue{/userinput} something like:{/para}
+        {para}{/para}
+        {screen}(define-macro (define-syscall-glue args . body)
+  `(define-safe-glue ,args
+     type-handler: (&lt;time&gt;
+                    (direct-instance? &lt;time&gt;)
+                    ("struct scheme_time *~a"
+                    "PTR_TO_SCMTIME(~a)"))
+     ,@body)){/screen}
+        {para}If you want to layer additional functionality on top
+of syscall glue in a subsequent module, you could write an
+additional layer like so:{/para}
+        {para}{/para}
+        {screen}(define-macro (define-my-glue args . body)
+  `(define-syscall-glue ,args
+     type-handler: (&lt;bob&gt; (instance? &lt;bob&gt;))
+     ,@body)){/screen}
+        {para}Now, when a use of {userinput role="binding"}define-my-glue{/userinput} is expanded, it will insert
+its type handlers and then invoke the {userinput role="binding"}define-syscall-glue{/userinput}
+macro.  The latter macro will insert its own handlers {emphasis}before{/emphasis}
+the handlers inserted by {userinput role="binding"}define-my-glue{/userinput}.  Hence, the higher-level
+handlers will occur later in the final, fully-expanded {userinput role="binding"}define-glue{/userinput}.{/para}
+        {para}{/para}
+        {sect2}
+          {title}Defining type handlers{/title}
+          {para}A type handler is a rule that:{/para}
+          {itemizedlist}
+            {listitem}
+              {para}describes how to determine if an object is a valid
+        occurance of the given type, and
+  {/para}
+            {/listitem}
+            {listitem}
+              {para}describes what {emphasis}views{/emphasis} will be available to the
+        glue code.{/para}
+            {/listitem}
+          {/itemizedlist}
+          {para}There are three ways the system knows how to generate code for
+checking the type of an argument:{/para}
+          {itemizedlist}
+            {listitem}
+              {para}General instance membership, indicated by {userinput role="binding"}instance?{/userinput}.
+  {/para}
+            {/listitem}
+            {listitem}
+              {para}Direct instance membership, indicated by {userinput role="binding"}direct-instance?{/userinput}.
+This considers only objects of exactly the given class
+to be compatible with the type restriction.
+  {/para}
+            {/listitem}
+            {listitem}
+              {para}C predicates.  This allows an arbitrary C predicate to determine
+type conformance.  This is used primarily for non-heap
+types, which are easier using predicates like {literal}FIXNUM_P{/literal}
+than by computing an appropriate class object and testing to
+see if that class object is the same as the {userinput role="binding"}&lt;fixnum&gt;{/userinput}
+class object.{/para}
+            {/listitem}
+          {/itemizedlist}
+        {/sect2}
+        {sect2}
+          {title}Defining views{/title}
+          {para}A view is a description of a C variable that will be used by the
+glue code.  It is denoted by a list of two or three format strings.
+The format strings are applied to argument names to determine,
+respectively:{/para}
+          {itemizedlist}
+            {listitem}
+              {para}the view variable declaration,
+  {/para}
+            {/listitem}
+            {listitem}
+              {para}the view variable initializer, and
+  {/para}
+            {/listitem}
+            {listitem}
+              {para}optionally, the view variable name{/para}
+            {/listitem}
+          {/itemizedlist}
+          {para}If the view variable name format string is omitted, it may be
+regarded as defaulting to {literal}"~a"{/literal}, meaning that the
+view variable name is the same as the variable name.{/para}
+          {para}For example, in defining a view for raw strings, the following is used:
+  {literal}("char *~a" "string_text(~a)"){/literal}
+          {/para}
+          {para}because views of character strings do not require multiple variables,
+the variable name is not transformed.{/para}
+          {para}What the above view tells the system is that when an argument {userinput role="binding"}x{/userinput} is
+specified to be a raw string, there should be a C variable named
+{userinput role="binding"}x{/userinput} (by virtue of the identity name format string), of type
+{literal}char *{/literal}, which is initialized by calling {literal}string_text{/literal}.{/para}
+          {para}Because the elements of the list which define a view are format
+strings, they should each contain exactly one
+substution of type {literal}~a{/literal}.
+{/para}
+          {para}{/para}
+        {/sect2}
+      {/sect1}
+    {/chapter}
+    {chapter}
+      {title}Image I/O{/title}
+        {para}[TODO]{/para}
+    {/chapter}
+    {chapter}
+      {title}The Compiler{/title}
+
+        {para}The RScheme compiler is designed to be relatively straightforward
+but relatively complete.  It is intended to be easy enough to understand
+that it can be modified for a variety of purposes, but complete enough
+to generate reasonably good code and serve as an illustration of basic
+issues in compiling dynamic languages like Scheme and Dylan.  These
+features, combined with reasonable documentation, should make it a good
+system for teaching and experimenting with techniques in programming
+language design and implementation.{/para}
+        {para}Parts of the design are intended to allow experimentation with particular
+implementation strategies we find interesting, but mostly the design has
+been guided by an attempt to make things simple, "right" and "clean", as
+long as that didn't sacrifice portability and performance.  (Obviously,
+this is a juggling act that involves the exercise of great taste and
+exquisite judgement, and it's faintly possible that someone might disagree
+with some of our design decisions.)  One of our design principles has
+been to attempt to do the 20% of the work that gets 80% of the performance
+benefit, and to try not to slide down the slippery slope into a very
+complex compiler design.{/para}
+        {para}One of the eventual goals of RScheme is to be a vehicle for implementing
+multiple languages.  Its syntactic extension mechanism is integrated
+into the compiler in a principled way, and we intend to extend this
+mechanism to turn the RScheme compiler into a highly programmable "open"
+compiler.  The front-end of the compiler will be reprogrammable according
+to a relatively simple and clear protocol, exploiting a simple model
+of the front end of the compiler.  (If you're familiar with the notion
+of metaobject protocols, you can view this as a similar notion, but
+allowing the programmer to control things like scope and typing, rather
+than just things like inheritance and dispatching.  The goal is to let
+programmers extend or change the language in a principled way, or to
+reimplement parts of the language and perform a variety of high-level
+optimizations without changing the guts of the compiler.)  Given this
+mechanism, it is also trivial to implement a facility for defining inline
+procedures, because most of the work is just a simple special case of
+the work done for syntax extension.{/para}
+        {para}(Our lexically-scoped syntactic extension mechanism can achieve the
+functionality of Scheme's "hygeinic macros", but it does it by a very
+different mechanism, integrated with the normal scoping mechanisms
+of a conventional Scheme compiler.  We believe that this is the "right"
+way to do it, since most of the work done by conventional hygeinic
+macroexpansion is replication of the work done by the normal scoping
+mechanisms in the compiler.  In principle, our system should require
+less redundant code than a conventional macroexpansion prepass, and
+provide a more powerful framework for compiler extensibility.  It can
+be viewed as an extension of the "syntactic closures" concept of 
+Bawden and Rees, which we believe was a fundamentally superior approach
+to the earlier "hygeinic macroexpansion" work by Kohlbecker et al. and
+later work by Clinger and Rees.) {/para}
+        {para}The compiler has two back ends:  one that generates C code which can
+be compiled by a C compiler to get machine language, and one that
+generates bytecodes.{/para}
+        {para}Compiling to C is attractive for two main reasons:{/para}
+        {itemizedlist}
+          {listitem}
+            {para}it is extremely portable.  We generate "nearly" machine-independent
+     C, using typedefs and #define's to allow us to hide differences
+     between C compilers.  (For example, we define our own type "int32"
+     that represents a 32-bit integer, which may be mapped onto an
+     int or a long int, whichever is 32 bits for that C compiler.)
+     
+   {/para}
+          {/listitem}
+          {listitem}
+            {para}it allows us to exploit the C compiler's optimizations to some
+     degree, especially register allocation and instruction scheduling.
+     We can benefit from the C register allocator by compiling nested
+     Scheme expressions to nested C expressions in many common
+     circumstances.  The temporary values will then be handled by the
+     C compiler, and allocated to machine registers in most cases.{/para}
+          {/listitem}
+        {/itemizedlist}
+        {para}There are also two disadvantages of compiling to C, however:{/para}
+        {para}{/para}
+        {itemizedlist}
+          {listitem}
+            {para}it's not the ideal intermediate language for compling languages like
+     Scheme, because of the mismatch between the semantics of the two
+     languages, and{/para}
+          {/listitem}
+          {listitem}
+            {para}there is no portable, lighweight mechanism for compiling C code and
+     linking the result into a running system.  This is a problem in
+     an interactive system, especially one that is intended to be
+     extremely portable.{/para}
+          {/listitem}
+        {/itemizedlist}
+        {para}The first problem is the price we pay for having a relatively simple,
+highly portable compiler.  It would be significantly more work to use a
+conventional back end and retarget it for different platforms, even given
+modern semi-automatic back end generators.  We settle for getting decent
+performance, rather than striving to maximum performance.{/para}
+        {para}The second problem we solve by having two back ends,
+one that generates machine code via C, and one that compiles to 
+a bytecode representation for interpretation.
+                                                                      {/para}
+
+      {sect1}
+        {title}Overview of compilation process and scope{/title}
+        {para}[TODO]{/para}
+      {/sect1}
+      {sect1}
+        {title}Compilation Phases{/title}
+        {para}The RScheme compiler is structured as two passes.  This does not include
+reading (which we view as prior to actual compilation) or generating
+machine code from C code (which we view as an assembly-like postpass);
+it refers only to the operation of the compiler proper.{/para}
+        {figure}
+          {title}Compiler Phases{/title}
+          {Graphic fileref="compiler-phases.eps"}{/Graphic}
+        {/figure}
+        {para}Each pass does some work on the way down the expression graph, and different
+work on the way up, so there are effectively four distinct phases.  (The
+phases are conceptually distinct, but are interleaved at run time because
+the compiler may return back up one part of the expression graph before
+calling itself recursively to go down the next part.){/para}
+        {para}The first phase of the compiler strongly resembles the operation of the
+example compiler in Paul Wilson's notes on Scheme compilation, and
+generates intermediate code called icode as output.  icode is structured
+essentially as nested expressions, decorated with compile-time
+environments that make scopes explicit, and the results of some simple
+analyses.  Icode is essentially a more horizontal (explicit)
+representation of the source program, and does not make much commitment
+to low-level implementation.  For example, local variables are represented
+as fields of compile-time environment frames that represent the binding
+contours of the source program, without committing to whether the runtime
+bindings of those variables will be allocated in registers or in heap
+allocated binding environment frames.  (Similarly, the representations
+of a reference to a variable within an expression does not commit to
+whether the reference will be implemented as a reference to a register
+or as an indirection through the environment register and environment
+frame chain.){/para}
+        {para}The second phase of the compiler (called code-gen in the implementation)
+traverses the icode graph, making decisions about register- and heap-
+allocation of variables, etc. on the way down, and generating abstract
+machine expression code on the way up.{/para}
+      {/sect1}
+      {sect1}
+        {title}Intermediate Code{/title}
+        {para}[TODO]{/para}
+      {/sect1}
+      {sect1}
+        {title}Abstract Machine Language{/title}
+        {para}The second phase of the compilation process generates abstract
+machine language on the way up.  This AML maps directly onto
+the operations for both the bytecoded and C back ends.{/para}
+        {para}{/para}
+      {/sect1}
+      {sect1}
+        {title}Code generation{/title}
+        {para}
+          {quote}Code generation{/quote} in RScheme really refers to
+the generation of AML from intermediate code.  It is
+the second of the two compilation phases.{/para}
+      {/sect1}
+      {sect1}
+        {title}Bytecoded back-end{/title}
+        {para}A major component of AML is its nested expressions.
+These expressions are mapped onto bytecodes by using an {quote}eval stack{/quote}
+in the bytecode interpreter.{/para}
+        {para}Transofmring nested expressions into stack operations is a traditional
+introductory compiler problem.  Basically, the
+expression (represented as a tree) is traversed pre-order,
+emitting "push" bytecodes at the leaves and
+primop invocations at the interior nodes.{/para}
+        {para}For example, {literal}(+ 1 (* 2 x)){/literal} becomes:{/para}
+        {itemizedlist}
+          {listitem}
+            {para}push 1
+ {/para}
+          {/listitem}
+          {listitem}
+            {para}push 2
+ {/para}
+          {/listitem}
+          {listitem}
+            {para}push x
+ {/para}
+          {/listitem}
+          {listitem}
+            {para}TIMES
+ {/para}
+          {/listitem}
+          {listitem}
+            {para}PLUS{/para}
+          {/listitem}
+        {/itemizedlist}
+      {/sect1}
+      {sect1}
+        {title}C Back-end{/title}
+        {para}Compiling Scheme to C poses several special problems, because C
+compilers do not support garbage collection, and because C's stack
+discipline does not correspond to Scheme's continuations.{/para}
+        {para}When compiling a conventional language (such as Pascal or C++) to C, it
+is fairly straghtforward to map the source language's procedures onto C
+procedures, and the source language's variables onto C variables.{/para}
+        {para}In the general case, Scheme variables cannot be mapped to C variables,
+because they must have indefinite extent to support closures.  We
+therefore must implement our own binding environments in terms of
+low-level C datatypes.{/para}
+        {para}It would also be awkward to use C's stack, for two reasons:{/para}
+        {para}   * continuation saving would require copying C's stack, which may be
+     expensive, and{/para}
+        {para}   * C does not support stack-scanning to find local variables.{/para}
+        {para}These problems might be surmountable if we do not expect continuations
+to be heavily used (so that it would be acceptable for them to be slow)
+and if we used conservative garbage collection.{/para}
+        {para}Instead, we have chosen to implement our own register set and a
+conventional continuation chain.  In the general case, we use C pretty
+much as a portable assembler.  (In certain important special cases,
+however, we will take advantage of features of C to let us generate
+good code.)  We implement our own procedure-calling convention in terms
+of our registers and continuation chain;  this convention is very similar
+to those of high-performance compilers for Scheme and ML.
+                                                                     {/para}
+        {sect2}
+          {title}Representing Code Addresses{/title}
+          {para}At a procedure call, we will take a Scheme closure pointer, and extract
+the parts of the closure, and put them in our basic registers.  The
+environment pointer is just a pointer to an environment frame, which
+we put in the environment register so that the procedure will see
+the right variables when we start executing its code.  Similarly, the
+template pointer is a pointer to a vector of information saved by
+the compiler for the procedure's use;  we extract that from the closure
+and put it into the template register.  We then extract the pointer
+to the actual code from the template, and start executing that.{/para}
+          {para}In RScheme, the usual representation of the code pointer is a pointer
+to a C procedure.  To "branch" to that code and start executing the
+procedure, we simply execute a C procedure call.{/para}
+          {para}The C code generated for a Scheme procedure call is thus a few
+dereferences to accomplish the "setup" of the Scheme environment,
+and a call to the C procedure that implements the code.{/para}
+          {para}It's not really quite that simple, though, because a Scheme procedure
+can't generally be implemented as a single C procedure.  For example,
+if the called procedure itself does a call, it must have a code
+pointer to use as a return address, i.e., the address of the point
+in the procedure to return to.  This must be saved in a continuation
+before a (non-tail) procedure call.  There is no way in (portable)
+C to take the address of that return point within the corresponding
+C procedure.{/para}
+          {para}We therefore break Scheme procedures up into multiple parts, each
+implemented by a C procedure.  Each return point in the Scheme procedure
+is represented as C function pointer, and "returning" into a Scheme
+procedure is implemented as a call to the procedure that implements
+the next part of the Scheme procedure.{/para}
+          {para}We refer to the resulting sections of a Scheme procedure as
+"monotones", because they represent forward-only executions of code
+between safe points.  They only execute in the forward direction.
+Because of the safe-points architecture, it is necessary to prevent
+unbounded looping within a monotone to ensure garbage collection
+and timely thread switches.{/para}
+          {para}However, this approach has two drawbacks: {/para}
+          {para}   * What should be a simple branch to executable code is implemented
+     as a C function call, which is more expensive both in instructions
+     executed and in code size.  (A simple C procedure call that
+     passes no arguments is only a few instructions, but that's more
+     than one instruction, and we do this frequently.){/para}
+          {para}   * C procedures do {emphasis}too much{/emphasis}.  In particular, calling a C procedure
+     saves a return address on the C stack, because C doesn't let
+     you specify that these are tail calls and don't need to save
+     their callers' state.{/para}
+          {para}This latter point is particularly annoying, because if we implement
+our Scheme naively, we will keep performing C calls without performing
+C returns, and the return addresses will pile up until the stack
+segment becomes huge and we exhaust memory (or swap space) and crash.{/para}
+          {para}We therefore need an extra little trick to pop a return address off
+of the stack at each call.  (This basic trick was invented by Guy Steele
+at MIT back in the 70's, and recently refined and used in a C back end
+for Standard ML of New Jersey by Tarditi et al. at CMU.  It was also
+apparently invented independently by Dmitry Nizhegorodov in Moscow 
+around 1987 for a C-friendly Lisp called CLISP.){/para}
+          {para}{/para}
+          {para}The basic trick to accomplish this is to have a single C procedure
+which acts sort of like an interpretive loop, and calls one monotone
+at a time.  The monotone executes AND RETURNS, and it is this single
+looping procedure that actually calls the next monotone.  In this way,
+we ensure that the C stack just oscillates up and down between two
+levels.  When a C procedure representing a Scheme monotone ends with
+a (Scheme) procedure call, it performs the setup part of procedure
+call sequence (extracting the environment and template pointers and
+putting them in the environment and template registers).  It then
+extracts the code pointer from the template and returns that value to
+its caller, the quasi-interpretive loop.  The loop procedure accepts
+this return value, and does the (C) call the pointed-to C procedure.
+                                                                     {/para}
+        {/sect2}
+        {sect2}
+          {title}Avoiding the Overhead of the Quasi-Interpretive Loop{/title}
+          {para}There are ways of avoiding the quasi-interpretive loop, with different
+degrees of unportability.{/para}
+          {para}One technique (used by the Glasgow Haskell compiler) is to use the C
+compiler to generate assembly code, and then postprocess the assembly
+output to strip out the unneeded (C) call and return instruction sequences,
+and replace them with labels.  The result can then be assembled, using
+the labels to denote the addresses of the actual code sequences for
+the monotones.  This works very well and avoids both runtime overhead
+and code bloat.  (For SPARCs, it also has the advantage that you
+can strip out the pesky register-window stuff and just use one register
+window as though it were a normal set of general-purpose register set.)
+Unfortunately, this requires customizing the postprocessor for each
+platform, to recognize the calling and return sequences.{/para}
+          {para}Another solution, which we have an experimental implementation of for
+RScheme, is to take advantage of the GNU C compiler's support for taking 
+the addresses of labels.  GNU C is an extended version of C, where the
+address of a label can be taken as a kind of pointer value, and jumped
+to directly without performing a normal calling sequence.  We simply
+insert labels and expressions that take the addresses of labels, and use
+those to implement the saving of return addresses in continuations, etc.{/para}
+          {para}This avoids the stacking of return addresses, and the need for the
+quasi-interpretive loop.  Unfortunately, it does not eliminate all
+of the code bloat, because the call and return sequences are still there,
+even if they're bypassed at run time.  (We expect to be able to get rid
+of most of this bloat by compiling many monotones as a single procedure,
+but there's still some bloat because we need some executable code that
+extracts the labels from those large procedures.  We may be able to
+eliminate most of the remaining bloat by being careful how we link C
+code, but we're yet sure.)  Also, it doesn't seem to work on some
+platforms (notably AIX), and we're not sure yet exactly why not.
+                                                                     {/para}
+        {/sect2}
+      {/sect1}
+      {sect1}
+        {title}Abstract Machine Instructions and C expressions{/title}
+        {para}The abstract machine that we compile for is a language of nested
+expressions.  These expressions include things like fetching the
+value of a variable, performing an integer multiply, performing a
+floating-point multiply, pushing the current state onto the continuation
+chain as a partial continuation, and so on.{/para}
+        {para}We believe that it is very advantageous to have an abstract instruction
+set of TYPED, nested expressions.  The compiler can recognize that
+the return value type of an expression is of the preferred type for
+the expression that it's nested in, and omit type checking.  In many
+cases, nested expressions that do not involve procedure calls can
+be compiled directly to nested expressions in C, with no runtime
+overhead for decoding or dispatching.{/para}
+        {para}The type system used by the back end of the compiler is concerned
+with low-level concrete types, such as raw integers, tagged integers,
+raw floats, tagged floats, pointers to objects that consist of tagged
+slots, pointers to objects that consist of untagged bits, etc.  It
+is not the same as the type system that is seen by the casual programmer,
+and it is supposed to be fairly independent of what language is actually
+being implemented.  (E.g., you should be able to put a fairly efficient
+implementation of Pascal on top of our compiler backend, with only minor
+changes.)  It is not complicated---just complicated enough that simple
+operations can be mapped onto simple C expressions that map onto simple
+(sequences of) machine instructions.  (Actually, it's also independent
+of the fact that the primitives are implemented in C---you should be
+able to plug in a more conventional low-level code generator.){/para}
+        {para}In attempting to compile to nested C expressions, the compiler uses
+a simple rule.  Any value that clearly only exists during the
+execution of a monotone can be represented in the most efficient
+format.  Values that must be saved across monotones must be represented
+as full-fledged, tagged Scheme values.{/para}
+        {para}Naturally, this simple, bottom-up analysis and representation selection
+is very sensitive to whether types are declared and whether procedures
+are inlined.  Expressions can only be compiled to nested C expressions
+within a single monotone, so it pays to inline small procedures and
+to declare the types of variables referenced within those expressions.
+For example, relatively complex floating-point expressions in the body
+of a loop may be compiled into code very similar to floating-point
+code written directly in C, but calls to small, non-inlined procedures
+will incur both procedure calling and type-checking overhead.
+                                                                     {/para}
+        {sect2}
+          {title}Literals{/title}
+          {para}Our compiler is smart enough to recognize that many simple literals
+can be represented as C literals that will be encoded in the
+instruction stream, rather than fetched from the procedure template
+at run time.  These include immediate values such as small integers,
+booleans, the empty list, and ASCII characters.   The binary
+representations of these values are encoded so that the upper bits
+are generally zeroes, increasing the chances that a C compiler will
+be able to represent them as an operand to a single instruction,
+which requires no extra instructions or memory fetches.  (The C
+#defines which yield them are in terms of small integers, rather
+than full 32-bit values, and it is expected that the C compiler
+will sign-extend these small values rather than representing them
+as full 32-bit constants.) 
+                                                                     {/para}
+        {/sect2}
+        {sect2}
+          {title}Type Inference{/title}
+          {para}Our compiler performs very simple bottom-up type inference, and the
+back end uses a simple static type system for concrete types.  Each
+expression has a type;  for literals, the type is obvious to the
+compiler, and for local variables, type declarations can make it
+trivial.  (Currently, if you don't declare the type of a variable,
+our compiler won't infer it;  once variables' types are inferred,
+however, it can often infer the types of expressions operating on
+those variables.  It therefore pays to declare the types of procedure
+arguments and let variables.){/para}
+          {para}Compound abstract machine expressions also may have several variants
+for different types of arguments, so for example there is an integer
++ primitive and a floating-point + primitive.  If the argument types
+match one of these definitions, the compiler chooses the appropriate
+opcode for that variant, and the return type is known.{/para}
+          {para}A simple framework for coercions of primitive types is also defined.
+If the compiler can see that the arguments to + are an integer and
+a float, for example it can compile that as a float + operation with
+a coercion of the integer argument to a float.{/para}
+          {para}For integers and floats, the compiler is biased towards efficient
+representations---in its bottom-up processing of the expressions,
+it attempts to keep the representations close to the native machine
+as possible.  Floating point values are preferentially kept in
+a raw IEEE double representation, not a boxed value on the heap
+referred to via a pointer.  Integer values are preferentially kept
+in a tagged format, because the low-tagging representation does
+not cost much for common integer operations.{/para}
+          {para}To do this analysis, the compiler makes a distinction between simple
+nested expressions within a monotone, and values that can "escape"
+from a monotone due to a procedure call or backward branch.{/para}
+          {para}{/para}
+          {sect3}
+            {title}Linkage issues{/title}
+        {para}[TODO]{/para}
+          {/sect3}
+        {/sect2}
+      {/sect1}
+    {/chapter}
+<!--
+    {chapter}
+      {title}Meta-Object Protocol{/title}
+        {para}[TODO]{/para}
+    {/chapter}
+    {chapter}
+      {title}C heap/GC heap interfacing{/title}
+        {para}[TODO]{/para}
+    {/chapter}
+    {chapter}
+      {title}Calling RScheme from C{/title}
+        {para}[TODO]{/para}
+    {/chapter}
+    {chapter}
+      {title}Packaging System{/title}
+        {para}[TODO]{/para}
+    {/chapter}
+-->

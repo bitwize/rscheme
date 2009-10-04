@@ -1,0 +1,85 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}date=?{/RefName}
+  {RefPurpose}Compare dates{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/date=?/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/date1/ {Parameter/date2/{/ParamDef}{ParamDef role="returns"}
+{Parameter}val{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/date>?/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/date1/ {Parameter/date2/{/ParamDef}{ParamDef role="returns"}
+{Parameter}val{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/date>=?/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/date1/ {Parameter/date2/{/ParamDef}{ParamDef role="returns"}
+{Parameter}val{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/date<?/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/date1/ {Parameter/date2/{/ParamDef}{ParamDef role="returns"}
+{Parameter}val{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/date<=?/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/date1/ {Parameter/date2/{/ParamDef}{ParamDef role="returns"}
+{Parameter}val{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}date1{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<date>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}date2{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<date>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}val{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<boolean>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+These functions compare dates, based on the ordering of days.{/para}
+{InformalExample}{Para}
+{Para}{UserInput Role="ToEval"}(define td (ymd->date 1997 9 14)){/UserInput}
+{Para}{UserInput Role="ToEval"}(define tm (ymd->date 1997 9 15)){/UserInput}
+{Para}{UserInput Role="ToEval"}(date<? td tm){/UserInput}
+{ComputerOutput Role="EvalsTo"}{UserInput}#t{/UserInput}{/ComputerOutput}
+{Para}{UserInput Role="ToEval"}(date>=? td td){/UserInput}
+{ComputerOutput Role="EvalsTo"}{UserInput}#t{/UserInput}{/ComputerOutput}
+{/InformalExample}
+{/RefSect1}
+{/RefEntry}

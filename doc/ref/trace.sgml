@@ -1,0 +1,24 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}trace{/RefName}
+  {RefPurpose}Trace function entry and exit.{/RefPurpose}
+  {RefClass role="Type"}replcmd{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/unquote/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/function/{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This debugging command causes the named function(s) to be traced.  That
+is, the function is reconfigured to print out it's arguments and
+return values when it is called.{/para}
+{para}
+Tracing is turned off using the {Phrase Role="var"}no-break{/Phrase} command.{/para}
+{/RefSect1}
+{/RefEntry}

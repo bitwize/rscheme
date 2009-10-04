@@ -1,0 +1,19 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}rsc{/RefName}
+  {RefPurpose}Compile a module.{/RefPurpose}
+  {RefClass role="Type"}unix{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+ {CmdSynopsis}
+  {Command}rsc{/Command} {Group}{Option}-p{/Option}{/Group} {Arg/file/
+ {/CmdSynopsis}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{Para}
+This unix command compiles a module, using the control and
+component instructions in the module control file given by
+{Parameter/file/.  The module's files are taken to be relative
+to {Parameter/file/, not the current working directory.
+{/RefEntry}

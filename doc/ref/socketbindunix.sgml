@@ -1,0 +1,51 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}socket-bind/unix{/RefName}
+  {RefPurpose}Bind a socket to a unix address.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function}socket-bind/unix{/Function}{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/sock/ {Parameter/path/{/ParamDef}{ParamDef role="returns"}
+{Parameter}ok{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}sock{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}path{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}ok{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<boolean>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Binds the socket to a unix domain address.  A unix
+domain address is actually a filename that refers to
+a special socket file.{/para}
+{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,90 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/cfg/gcadapt/rtgc/gcclient2.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.9
+ * File mod date:    1998-10-13 07:52:01
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ * Purpose:          provides traversal function to RTGC
+ *------------------------------------------------------------------------*/
+
+#ifndef _CI_GCCLIENT2
+#define _CI_GCCLIENT2
+
+#include <rscheme/linktype.h>
+#include <rscheme/regs.h>
+#include <rscheme/smemory.h>
+/*#include <rscheme/vinsns.h>*/
+
+void gc_weak_pointer( lang_weak_ptr_addr x );
+
+/* CI_DECL void find_pointers( gc_obj_addr client_object ) */
+
+LINK_TYPE UINT_32 find_pointers( UINT_32 max_bytes_to_trace,
+				 bool& Done,
+				 gc_obj_addr client_object )
+{
+obj item, the_class, type;
+obj *p, *limit;
+
+    item = GCPTR_TO_PTR(client_object);
+    the_class = CLASSOF_PTR(item);
+
+    gc_next_object(&(PTR_TO_HDRPTR(item)->pob_class),
+		   PTR_TO_GCPTR(the_class) );
+    type = gvec_read( the_class, SLOT(1) );
+
+    assert( OBJ_ISA_FIXNUM(type) );
+
+    if (EQ(type,ZERO))
+    {
+        p = (obj *)PTR_TO_DATAPTR(item);
+	limit = (obj *)((char *)p + SIZEOF_PTR(item));
+	while (p<limit)
+	{
+	    if (OBJ_ISA_PTR(*p))
+	    {
+		gc_next_object(p, PTR_TO_GCPTR(*p) );
+	    }
+	    p++;
+	}
+    }
+    else if (EQ(type,int2fx(5))) /* an <allocation-area> */
+    {
+      p = (obj *)PTR_TO_DATAPTR(item);
+      if (OBJ_ISA_PTR(p[0]))
+	gc_next_object( p, PTR_TO_GCPTR(p[0]) );
+      if (OBJ_ISA_PTR(p[1]))
+	gc_next_object( p+1, PTR_TO_GCPTR(p[1]) );
+    }
+    else if (EQ(type,int2fx(4))) /* a slot[0]-is-weak object */
+    {
+      /* printf( "weak pointers in: %#x\n", VAL(item) ); */
+        p = (obj *)PTR_TO_DATAPTR(item);
+	limit = (obj *)((char *)p + SIZEOF_PTR(item));
+	if (p < limit)
+	{
+	    found_weak_slot( item, p++ );
+	}
+	while (p<limit)
+	{
+	    if (OBJ_ISA_PTR(*p))
+	    {
+		gc_next_object(p, PTR_TO_GCPTR(*p) );
+	    }
+	    p++;
+	}
+    }
+    else
+    {
+	assert( !EQ(type,ZERO) );	/* better not be an IMMOB! */
+    }
+    Done = true;
+    return SIZEOF_PTR(item);
+}
+
+#endif /* _CI_GCCLIENT2 */

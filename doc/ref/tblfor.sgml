@@ -1,0 +1,49 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}table-for-each{/RefName}
+  {RefPurpose}Applies a procedure to entries in a hash table{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/table-for-each/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/table/ {Parameter/proc/{/ParamDef}{ParamDef role="returns"}
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}table{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<hash-table>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}proc{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<function>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function applies a given procedure to the entries in a hash
+table.  The procedure {Parameter}proc{/Parameter} must accept 3 arguments, which will
+be, for each entry in the hash table, the hash code, the key, and
+the associated value.{/para}
+{para}
+The number of calls to the procedure will equal the table size (modulo
+the following statement:){/para}
+{para}
+{/para}
+{para}
+The behavior of the iteration is {Emphasis}not{/Emphasis} specified if the table is
+updated while the iteration is taking place.{/para}
+{/RefSect1}
+{/RefEntry}

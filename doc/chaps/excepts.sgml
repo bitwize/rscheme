@@ -1,0 +1,74 @@
+{Chapter}
+{Title}Exception handling{/Title}
+{Para}
+{Para}
+The exception handling model of &rs; is based on that of Dylan(TM).
+All exceptions are represented by instances of a condition class,
+{ClassName/<condition>/.
+<!>
+{Sect1}
+{Title}Overview{/Title}
+{Para}
+Exception handling is a language feature available in &rs; which
+supports to the development of more robust programs by providing
+a uniform mechanism for error dispatching.  This facility
+is also used by &rs;'s built-in error recognition as well, so
+error management is uniform across built-in and
+application-level error conditions.
+{Para}
+{Sect1}
+{Title}Forms{/Title}
+{Para}
+Error conditions are injected into the dispatching system by the
+{Phrase Role="var"}signal{/Phrase} or {Phrase Role="var"}error{/Phrase} function.  These two functions operate
+similarly; the only difference is that {Phrase Role="var"}error{/Phrase} never returns,
+wheras {Phrase Role="var"}signal{/Phrase} may return, depending on the handler that is
+in place.
+{Para}
+On the receiving end, errors are {FirstTerm Role="defn"}caught{/FirstTerm} by functions and
+bodies introduced by the
+{Phrase Role="var"}handler-case{/Phrase} and {Phrase Role="var"}handler-bind{/Phrase} forms.  The former is
+more commonly used, but imposes the semantics of
+{FirstTerm Role="defn"}terminating handlers{/FirstTerm}.  {Phrase Role="var"}handler-bind{/Phrase} is more flexible,
+and can support {FirstTerm Role="defn"}calling semantics{/FirstTerm} for its handlers.
+{Para}
+&ref.signal;
+&ref.error;
+&ref.handcase;
+&ref.handbind;
+{Sect1}
+ {Title}Example usage{/Title}
+{Para}
+Consider the following definitions:
+{/Para}
+{ProgramListing}
+(define (foo x)
+  (if (not (symbol? x))
+      (error "not a symbol"))
+  (cons x x))
+
+(define (bar y)
+  (handler-case
+    (foo y)
+   ((<condition>)
+    y)))
+{/ProgramListing}
+{Para}
+{Para}
+The {Phrase Role="var"}bar{/Phrase} procedure calls {Phrase Role="var"}foo{/Phrase} procedure
+in a context in which errors are caught.  If {Phrase Role="var"}foo{/Phrase}
+signals a condition (as it will if its argument is not
+a symbol), then {Phrase Role="var"}bar{/Phrase} catches the condition and
+returns {Phrase Role="var"}bar{/Phrase}'s argument instead of whatever {Phrase Role="var"}foo{/Phrase}
+returns.
+{/Para}
+{Example}
+  {Title}Examples using exception handlers{/Title}
+
+  {Para}{UserInput Role="ToEval"}(bar 'x){/UserInput}
+        {ComputerOutput Role="EvalsTo"}(x . x){/ComputerOutput}
+  {Para}{UserInput Role="ToEval"}(bar 3){/UserInput}
+        {ComputerOutput Role="EvalsTo"}3{/ComputerOutput}
+{/Example}
+{Para}
+  

@@ -1,0 +1,47 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}file-within-dir{/RefName}
+  {RefPurpose}Compute the name of the file within it's directory{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/file-within-dir/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/pathname/{/ParamDef}{ParamDef role="returns"}
+{Parameter}string{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}pathname{/Term}
+    {ListItem}{para}
+A pathname object (an instance of {ClassName/<file-name>/){/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}string{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function returns the name of the file represented by
+the given pathname object within it's directory.  That is, if
+the pathname is {UserInput}foo/bar/baz.scm{/UserInput}, then the file
+is within the {UserInput}foo/bar{/UserInput} directory (see {Phrase Role="var"}file-directory{/Phrase})
+and the file name within the directory is {UserInput}baz.scm{/UserInput}.{/para}
+{/RefSect1}
+{/RefEntry}

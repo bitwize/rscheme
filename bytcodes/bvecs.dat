@@ -1,0 +1,118 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    bytcodes/bvecs.dat
+ |
+ |          Copyright (C)1995 Donovan Kolbly <donovan@tkg.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.2
+ | Date:    1996-04-18 20:06:04
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ `------------------------------------------------------------------------|#
+
+
+(define-primop bvec-ref ((b <bvec>) (index <raw-int>) => <raw-int>)
+  "bvec_read_uint8")
+
+(define-primop bvec-set! ((b <bvec>) (index <raw-int>) (val <raw-int>))
+  "bvec_write_uint8")
+
+(define-primop bvec-copy ((dest <bvec>) (dest-offset <raw-int>)
+			  (source <bvec>) (src-offset <raw-int>) 
+			  (len <raw-int>))
+  "bvec_copy")
+
+(define-primop bvec-length ((b <bvec>) => <raw-int>)
+  "SIZEOF_PTR")
+
+;;***** bvec [de]structuring primops ****
+;;
+;;  these primops are what will making building struct's easy
+;;  also, these are close to the hardware, so if your machine
+;;  doesn't support unaligned access, then use of these in
+;;  wrong ways can cause a bus error.
+
+(define-primop bvec-read-signed-8 ((b <bvec>) 
+				   (offset <raw-int>) => <raw-int>)
+  "bvec_read_int8")
+
+(define-primop bvec-read-signed-16 ((b <bvec>) 
+				    (offset <raw-int>) => <raw-int>)
+  "bvec_read_int16")
+
+(define-primop bvec-read-unsigned-8 ((b <bvec>) 
+				     (offset <raw-int>) => <raw-int>)
+  "bvec_read_uint8")
+
+(define-primop bvec-read-unsigned-16 ((b <bvec>) 
+				      (offset <raw-int>) => <raw-int>)
+  "bvec_read_uint16")
+
+
+
+(define-primop bvec-write-signed-8 ((b <bvec>) 
+				   (offset <raw-int>)
+				   (value <raw-int>))
+  "bvec_write_int8")
+
+(define-primop bvec-write-signed-16 ((b <bvec>) 
+				    (offset <raw-int>) 
+				    (value  <raw-int>))
+  "bvec_write_int16")
+
+(define-primop bvec-write-unsigned-8 ((b <bvec>) 
+				     (offset <raw-int>) 
+				     (value  <raw-int>))
+  "bvec_write_uint8")
+
+(define-primop bvec-write-unsigned-16 ((b <bvec>)
+				      (offset <raw-int>) 
+				      (value  <raw-int>))
+  "bvec_write_uint16")
+
+
+;;
+;;  bvec operations for Sumatra support
+;;
+
+(define-primop bvec-read-signed-32 ((b <bvec>)
+				    (offset <raw-int>)
+				    => <raw-int>)
+  "bvec_read_int32")
+
+(define-primop bvec-write-signed-32 ((b <bvec>) 
+				     (offset <raw-int>) 
+				     (value <raw-int>))
+  "bvec_write_int32")
+
+(define-primop bvec-read-signed-64 ((b <bvec>)
+				    (offset <raw-int>)
+				    => <raw-int-64>)
+  "bvec_read_int64")
+
+(define-primop bvec-write-signed-64 ((b <bvec>) 
+				     (offset <raw-int>) 
+				     (value <raw-int-64>))
+  "bvec_write_int64")
+
+
+(define-primop bvec-read-float-32 ((b <bvec>) 
+				   (offset <raw-int>)
+				   => <raw-float-32>)
+  "bvec_read_ieee32")
+
+(define-primop bvec-write-float-32 ((b <bvec>) 
+				    (offset <raw-int>) 
+				    (value <raw-float-32>))
+  "bvec_write_ieee32")
+
+
+(define-primop bvec-read-float-64 ((b <bvec>)
+				   (offset <raw-int>)
+				   => <raw-float>)
+  "bvec_read_ieee64")
+
+(define-primop bvec-write-float-64 ((b <bvec>)
+				    (offset <raw-int>)
+				    (value <raw-float>))
+  "bvec_write_ieee64")

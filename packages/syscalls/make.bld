@@ -1,0 +1,3 @@
+
+sysio.bcx sysio.ci: sysio.scm
+	rs mksyscalls.scm -e '(do-file)' -exit

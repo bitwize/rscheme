@@ -1,0 +1,41 @@
+{Chapter}
+{Title}Flow of Control{/Title}
+{Para}
+All {FirstTerm Role="defn"}forward control flow{/FirstTerm} in &rs; 
+is {Emphasis/based/ on the {Phrase Role="var"}if{/Phrase} special form.
+This form interprets all values which are not the &f; object
+as indicating true.  Hence:
+{/Para}
+
+{InformalExample}
+ {Para}
+  {UserInput Role="ToEval"}(if &t; 2 3){/UserInput}
+  {ComputerOutput Role="EvalsTo"}2{/ComputerOutput}
+ {/Para}
+
+ {Para}
+  {UserInput Role="ToEval"}(if &f; 2 3){/UserInput}
+  {ComputerOutput Role="EvalsTo"}3{/ComputerOutput}
+ {/Para}
+
+ {Para}
+  {UserInput Role="ToEval"}(if 1 2 3){/UserInput}
+  {ComputerOutput Role="EvalsTo"}2{/ComputerOutput}
+ {/Para}
+{/InformalExample}
+{Para}
+In addition, &rs; implements the standard Scheme {Phrase Role="var"}cond{/Phrase},
+{Phrase Role="var"}case{/Phrase}{footnote}
+{Para}Although our {Phrase Role="var"}case{/Phrase} 
+uses {Phrase Role="var"}eq?{/Phrase} tests
+instead of {Phrase Role="var"}eqv?{/Phrase}.  
+It works out the same except on floating-point
+discriminants.{/footnote}, 
+named {Phrase Role="var"}let{/Phrase}, 
+and {Phrase Role="var"}do{/Phrase}.
+{Para}
+&rs; also supports exceptions
+for {FirstTerm Role="defn"}backward control flow{/FirstTerm}.
+See in particular {Phrase Role="var"}handler-case{/Phrase} 
+and {Phrase Role="var"}signal{/Phrase}
+in the chapter on exception handling.

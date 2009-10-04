@@ -1,0 +1,30 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | %Z%1.5 %W% %G% 14:50:59
+ |
+ | Purpose:	TTY Windowing Interface (curses)
+ | 
+ |------------------------------------------------------------------------|
+ | Notes:
+ |
+ `------------------------------------------------------------------------|#
+
+((ttywin "$dist/ttywin" 
+	 "$dist/modules")
+ ;;
+ (require-c-header "<curses.h>")
+ ;;
+ (open start mathlib low-scheme iolib corelib primops *scheme* objsys)
+ (open tables high-scheme)
+ ;;
+ ;;  we provide an extension to the bytecode interpreter
+ ;;  for curses functions
+ ;;
+ (bytecode-extension 81 "curses")
+
+
+ (c-files "cursesx")
+
+ (files wfuncs highlevl)
+
+ (export :local)
+ (fluid *screen*))

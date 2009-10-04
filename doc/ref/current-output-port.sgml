@@ -1,0 +1,33 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}current-output-port{/RefName}
+  {RefPurpose}Returns the current default output port{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/current-output-port/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+{/ParamDef}{ParamDef role="returns"}
+{Parameter}output-port{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}output-port{/Term}
+    {ListItem}{para}
+An instance of <output-port>{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function returns the output port used by default in some
+output operations such as write, write-char, and display.{/para}
+{/RefSect1}
+{/RefEntry}

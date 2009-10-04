@@ -1,0 +1,126 @@
+#ifndef COLORSET2_CI
+#define COLORSET2_CI
+
+//****************************************************************************
+// This file contains the inline definitions for the function declared
+// in the file color-set.hh  The color-sets implement the size classes
+// for segragated storage within a generation of the real-time garbage
+// collector
+
+#include <assert.h>
+#include <rtgc/colorset.hh>
+#include <rtgc/gc.hh>
+#include <rtgc/pointers.hh>
+
+#include <rtgc/gcclient.h>
+#include <rtgc/gcserver.h>
+
+#undef LINK_TYPE
+#ifdef INLINES
+#define LINK_TYPE inline 
+#else
+#define LINK_TYPE
+#endif
+
+
+//*******************************************************************
+//* color_set::blacken_next_gray
+//*
+//* This routine takes the next gray off of the gray list, and
+//* blackens it.
+
+LINK_TYPE int color_set::blacken_next_gray(UINT_32& work_done,
+					      UINT_32 work_left_to_do)
+{
+   if(gc.incremental_tracing_state.Done == true)
+   {
+      if(scan->get_previous() == gray) { // no grays to blacken.
+	 work_done = 0;
+	 return(0);
+      } else {
+	 assert(number_of_non_black >= 0);
+	 scan = scan->get_previous();
+	 number_of_non_black--;
+	 gc.incremental_tracing_state.ptr_to_client_object = 
+	    gc_obj_addr(((char *) scan) + sizeof(gc_object_base));
+	 gc.incremental_tracing_state.object = scan;
+
+	 work_done = follow_pointers(work_left_to_do);
+	 
+	 return(1);  // were able to blacken a gray
+      }
+   } else {
+      // resume a previously interrupted scanning of an object
+      work_done = follow_pointers(work_left_to_do);
+      return(1);
+   }
+}
+
+#ifdef GENERATIONAL
+
+//*******************************************************************
+//* color_set::blacken_or_promote_next_gray
+//*
+//* This routine takes the next gray off of the gray list, and
+//* blackens or promotes it.
+//*
+//* Blacken_next_gray is called for younger generations, and check
+//* whether it should promote the next gray and actually promote it if
+//* necessary.  In that case the next gray is not blacken in this
+//* generation, but is removed from this color set and put into the
+//* next generation as white or black, depending on the situation.
+
+LINK_TYPE int color_set::blacken_or_promote_next_gray(UINT_32& work_done,
+						      UINT_32 work_left_to_do)
+{
+   if(gc.incremental_tracing_state.Done == true)
+   {
+      if(scan->get_previous() == gray) { // no grays to blacken.
+	 work_done = 0;
+	 return(0);
+      }else{
+	 scan = scan->get_previous();
+	 number_of_non_black--;
+	 gc.incremental_tracing_state.ptr_to_client_object = 
+	    gc_obj_addr(((char *) scan) + sizeof(gc_object_base));
+	 gc.incremental_tracing_state.object = scan;
+	 
+	 // call the find_pointer virtual method of the user's object
+	 work_done = follow_pointers(work_left_to_do);
+	 if(scan->to_be_promoted()){ 
+	    // Decide whether it should be promoted.
+	    // In order to promote the object, remove the promoted object from
+	    // the list and make the destination generation manage it.
+	    // The scan pointer does not change in this case.
+	    gc_object_base *obj = scan;
+	    
+	    obj->get_previous()->set_next(obj->get_next());
+	    obj->get_next()->set_previous(obj->get_previous());
+	    scan = obj->get_next();
+	    
+	    // Adjust the number of objects.
+	    number_of_objects--;
+	    // And insert it into the corresponding color list in one-step
+	    // older generation.
+	    gc.get_gen(get_gen_of_this_set() + 1)
+	       ->promote_into(obj,size_class);
+	 } else {
+	    // If the objects stays here, move the scan pointer, increment step
+	    // and follow all pointers in the object.
+	    assert(number_of_non_black >= 0);
+	 }
+	 return(1);  // were able to blacken or promote a gray
+      }
+   } else {
+      // resume a previously interrupted scanning of an object
+      work_done = follow_pointers(work_left_to_do);
+      return(1);
+   }
+}
+#endif // generational
+
+
+#endif //COLORSET2_CI
+
+
+

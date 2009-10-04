@@ -1,0 +1,58 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}pg95-field-names{/RefName}
+  {RefPurpose}Get the names of the fields in a result's tuples.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/pg95-field-names/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/result/ {Parameter/first-index/ {Parameter/index-limit/{/ParamDef}{ParamDef role="returns"}
+{Parameter}names{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}result{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<pg95-result>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}first-index{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}index-limit{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}names{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<list>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function extracts the names of the fields that are present
+in the tuples of a result.  {Parameter}first-index{/Parameter} is typically 0,
+while {Parameter}index-limit{/Parameter} is typically the number of fields.  This
+would return a list of all the field names in the result.{/para}
+{/RefSect1}
+{/RefEntry}

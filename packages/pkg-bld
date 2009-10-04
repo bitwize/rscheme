@@ -1,0 +1,47 @@
+#! /bin/sh
+#
+#  NOTE:  This *MUST* be run from the top of the distribution
+#  (it assumes that packages/ has the package sources, and that
+#   src/pkg is a good place to put the resulting C code)
+
+INSTALL_DIR="$1"
+PKG="$2"
+
+if test ! -d $INSTALL_DIR
+then echo "$INSTALL_DIR: INSTALL_DIR not found"
+     exit 1
+fi
+
+if test ! -x $INSTALL_DIR/bin/rsc
+then echo "rsc: off-line module compiler not found"
+     echo "(run 'make rsc' from the src directory)"
+     exit 1
+fi
+
+PATH=$INSTALL_DIR/bin:$PATH
+export PATH
+
+if test -r packages/$PKG/make.pkg
+then cd packages/$PKG
+     make -f make.pkg INSTALL_DIR=$INSTALL_DIR clean
+     make -f make.pkg RSC=$INSTALL_DIR/bin/rsc INSTALL_DIR=$INSTALL_DIR install
+     exit $?
+fi
+
+if test -r packages/$PKG/make.bld
+then (cd packages/$PKG ; make -f make.bld)
+fi
+
+case "$PKG" in
+  */*) P=`echo $PKG | sed 's/^.*\///'` ;;
+  *)   P=$PKG ;;
+esac
+M="`echo $PKG | sed 's/\./_/g'`"
+rsc -P src/pkg packages/$PKG/$P.mcf
+
+if test -d src/pkg/$PKG
+then cd src/pkg/$PKG
+     make INSTALL_DIR=$INSTALL_DIR install
+else cp -p src/pkg/modules/$P.mif $INSTALL_DIR/resource/modules
+     cp -p src/pkg/modules/$P.mx $INSTALL_DIR/resource/modules
+fi

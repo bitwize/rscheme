@@ -1,0 +1,45 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}table-size{/RefName}
+  {RefPurpose}Computes the number of keys in the table.{/RefPurpose}
+  {RefClass role="Type"}generic{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/table-size/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/table/{/ParamDef}{ParamDef role="returns"}
+{Parameter}integer{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}table{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<table>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}integer{/Term}
+    {ListItem}{para}
+The number of entries in the table.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This generic function on tables returns the size of the table,
+which in particular will be the number of elements in the collections
+returned by {Phrase Role="var"}key-sequence{/Phrase} and {Phrase Role="var"}value-sequence{/Phrase}.{/para}
+{/RefSect1}
+{/RefEntry}

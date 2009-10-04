@@ -1,0 +1,71 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}make-thread{/RefName}
+  {RefPurpose}Create a new thread.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/make-thread/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/thunk/ {Parameter}{Optional/name/{/Parameter} {Parameter}{Optional/group/{/Parameter}{/ParamDef}{ParamDef role="returns"}
+{Parameter}thread{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}thunk{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<procedure>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}name{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}group{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<thread-group>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}thread{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<thread>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Creates and returns a new thread of control.{/para}
+{para}
+The optional {Parameter}name{/Parameter} provides a convenient
+way of referring to the thread to the user.  If not supplied, the {Parameter}name{/Parameter}
+defaults to {UserInput}"thread"{/UserInput}.{/para}
+{para}
+The optional {Parameter}group{/Parameter} allows the new thread to be created as a
+member of a thread group other than the current thread group.  Since
+a thread's group cannot be changed once created, this is the only
+way to create a thread running in a different group.{/para}
+{para}
+The newly created thread is initially suspended, with a suspend count
+of 1.  Use {Phrase Role="var"}thread-resume{/Phrase} to make the thread available for execution.{/para}
+{para}
+The behavior of the thread is to invoke the given {Parameter}thunk{/Parameter}.  When
+{Parameter}thunk{/Parameter} returns, the thread enters the {UserInput}complete{/UserInput} state and
+{Phrase Role="var"}thread-join{/Phrase} returns (all) the values returned by {Parameter}thunk{/Parameter}.{/para}
+{/RefSect1}
+{/RefEntry}

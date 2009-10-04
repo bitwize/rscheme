@@ -1,0 +1,20 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}bt{/RefName}
+  {RefPurpose}Print continuation chain (stack).{/RefPurpose}
+  {RefClass role="Type"}replcmd{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/bt/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Show a backtrace of applications.
+{/RefSect1}
+{/RefEntry}

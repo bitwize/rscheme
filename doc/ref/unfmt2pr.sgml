@@ -1,0 +1,123 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}unformat->proc{/RefName}
+  {RefPurpose}Constructs an {Quote}unformat{/Quote} procedure{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/unformat->proc/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/format-string/{/ParamDef}{ParamDef role="returns"}
+{Parameter}proc{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}format-string{/Term}
+    {ListItem}{para}
+A format string.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}anywhere?{/Term}
+    {ListItem}{para}
+An optional {ClassName/<boolean>/.  Default value is {UserInput}#f{/UserInput}.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}proc{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<function>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function constructs a procedure which will do the inverse
+of {Phrase Role="var"}format{/Phrase} when applied to a string.{/para}
+{para}
+However, the {Parameter}format-string{/Parameter} can only contain the following
+format specifiers, and no modifiers are currently supported:{/para}
+{para}
+{/para}
+{InformalTable}
+{TGroup COLS=2}
+{THead}
+{Row}
+{Entry}specifier{/Entry}
+{Entry}meaning{/Entry}
+{/Row}
+{/THead}
+{TBody}
+{Row}
+{Entry}{UserInput}~s{/UserInput}{/Entry}
+{Entry}consume as much input as possible and interpret it
+using {Phrase Role="var"}read{/Phrase}.{/Entry}
+{/Row}
+{Row}
+{Entry}{UserInput}~a{/UserInput}{/Entry}
+{Entry}consume as much input as possible, returning it as a string.{/Entry}
+{/Row}
+{Row}
+{Entry}{UserInput}~d{/UserInput}{/Entry}
+{Entry}consume a sequence of digit and dot characters and
+interpret it using {Phrase Role="var"}string->number{/Phrase}.{/Entry}
+{/Row}
+{/TBody}
+{/TGroup}
+{/InformalTable}
+{para}
+The way this function (usually)
+works is by using the format string to build
+a regular expression, using the regex binding facility to extract 
+substrings corresponding to the format specifiers in
+{Parameter}format-string{/Parameter}.  The function returned by this function invokes
+the regular expression matcher on it's argument, and, if it matches,
+maps the appropriate interpretation procedures (e.g., {Phrase Role="var"}string->number{/Phrase})
+over the substrings.  {/para}
+{para}
+If the returned function does not find a match,
+it returns no values.  {/para}
+{para}
+If the format string contains no
+format characters, then an error is signaled by {Phrase Role="var"}unformat->proc{/Phrase},
+since there will be no way to distinguish success from
+failure cases of invocations of {Parameter}proc{/Parameter}.{/para}
+{para}
+If {Parameter}anywhere?{/Parameter} is {UserInput}#t{/UserInput}, then the returned procedure will try to
+find something that matches anywhere inside the argument string.
+In addition, it will return two additional values (the first two),
+which are the start and ending offset in it's given string of
+the substring that matched.
+Otherwise, by default, 
+the returned procedure will require an exact match between
+the format string and it's argument string.{/para}
+{InformalExample}
+{Para}
+{UserInput Role="ToEval"}(define p (unformat->proc "foo(~d,~a)")){/UserInput}
+{Para}
+{UserInput Role="ToEval"}p{/UserInput}
+{Phrase Role="NoPrintForm"}a <function>{/Phrase}
+{Para}
+{UserInput Role="ToEval"}(p "blah"){/UserInput}
+{Para}
+{UserInput Role="ToEval"}(p "foo(10,hello)"){/UserInput}
+{ComputerOutput Role="EvalsTo"}10{/ComputerOutput}
+{ComputerOutput Role="EvalsTo"}"hello"{/ComputerOutput}
+{/InformalExample}
+{para}
+As usual, you can use {Phrase Role="var"}bind{/Phrase} to capture the multiple values from
+{Parameter}proc{/Parameter}.{/para}
+{/RefSect1}
+{/RefEntry}

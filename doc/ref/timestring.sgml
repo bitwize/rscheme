@@ -1,0 +1,56 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}time->string{/RefName}
+  {RefPurpose}Render a time to a string.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/time->string/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/t/ {Parameter/fmt/ {Parameter/local/{/ParamDef}{ParamDef role="returns"}
+{Parameter}str{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}t{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<time>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}fmt{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}local{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<boolean>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}str{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Formats {Parameter}t{/Parameter} into a string.  {Parameter}fmt{/Parameter} is optional, as is {Parameter}local{/Parameter}.
+Default {Parameter}fmt{/Parameter} is as by ctime().{/para}
+{/RefSect1}
+{/RefEntry}

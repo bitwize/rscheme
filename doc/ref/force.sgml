@@ -1,0 +1,54 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}force{/RefName}
+  {RefPurpose}Await value.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/force/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/future/{/ParamDef}{ParamDef role="returns"}
+{Parameter}item{/Parameter} ...{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}future{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<future>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}item{/Term}
+    {ListItem}{para}
+Instances of {ClassName/<object>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Awaits the values from the parallel computation.  Blocks until
+the future evaluation completes.  If the future expression
+signals an exception, this procedure signals
+a {ClassName/<thread-died>/ exception.{/para}
+{para}
+{/para}
+{Note}{para}
+Maybe we should signal the same exception from the
+{Phrase Role="var"}force{/Phrase}.  That would mean that the exception's stack and the
+current stack are from two different threads.  This probably breaks
+lots of stuff.  And what about restarting after the
+exception?{/para}
+{/Note}{/RefSect1}
+{/RefEntry}

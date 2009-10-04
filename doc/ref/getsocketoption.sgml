@@ -1,0 +1,96 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}get-socket-option{/RefName}
+  {RefPurpose}Get a socket option value.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/get-socket-option/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/fd/ {Parameter/level/ {Parameter/option/{/ParamDef}{ParamDef role="returns"}
+{Parameter}value{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}fd{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}level{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<symbol>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}option{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<symbol>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}value{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<object>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Gets the value of a socket option using {Phrase Role="var"}getsockopt(){/Phrase}.
+The returned type of {Parameter}value{/Parameter} depends on the option being set.{/para}
+{para}
+The valid values for {Parameter/level/ are:
+{/para}
+
+{InformalTable}
+  {tgroup cols=1}
+    {thead}{row}{entry}Option Level{/entry}{/row}{/thead}
+    {tbody}
+      {row}{entry}{UserInput}level/socket{/UserInput}{/entry}{/row}
+      {row}{entry}{UserInput}level/ip{/UserInput}{/entry}{/row}
+      {row}{entry}{UserInput}level/tcp{/UserInput}{/entry}{/row}
+      {row}{entry}{UserInput}level/udp{/UserInput}{/entry}{/row}
+    {/tbody}
+{/InformalTable}
+
+{para}
+The valid values for {Parameter/option/ are:
+{/para}
+
+{InformalTable}
+ {tgroup cols=2}
+ {thead}{row}{entry}Socket Option{/entry}
+             {entry}Value Type{/entry}
+        {/row}
+ {/thead}
+ {tbody}              
+  {row}{entry}socket/debug{/entry}{entry}{ClassName/<boolean>/{/entry}{/row}
+  {row}{entry}socket/reuse-addr{/entry}{entry}{ClassName/<boolean>/{/entry}{/row}
+  {row}{entry}socket/keep-alive{/entry}{entry}{ClassName/<boolean>/{/entry}{/row}
+  {row}{entry}socket/dont-route{/entry}{entry}{ClassName/<boolean>/{/entry}{/row}
+  {row}{entry}socket/linger{/entry}{entry}{ClassName/<integer>/ or &f;{/entry}{/row}
+  {row}{entry}socket/broadcast{/entry}{entry}{ClassName/<boolean>/{/entry}{/row}
+  {row}{entry}socket/oob-inline{/entry}{entry}{ClassName/<boolean>/{/entry}{/row}
+  {row}{entry}socket/send-buffer{/entry}{entry}{ClassName/<integer>/{/entry}{/row}
+  {row}{entry}socket/receive-buffer{/entry}{entry}{ClassName/<integer>/{/entry}{/row}
+  {row}{entry}socket/type{/entry}{entry}{ClassName/<integer>/{/entry}{/row}
+  {row}{entry}socket/error{/entry}{entry}{ClassName/<integer>/{/entry}{/row}
+ {/tbody}
+{/InformalTable}
+
+{/RefSect1}
+{/RefEntry}

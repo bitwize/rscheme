@@ -1,0 +1,33 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    packages/sets/sets.mcf
+ |
+ |          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ |          as part of the RScheme project, licensed for free use.
+ |	    See <http://www.rscheme.org/> for the latest info.
+ |
+ | File version:     1.2
+ | File mod date:    1997-10-25 22:12:06
+ | System build:     v0.7.3.4-b7u, 2007-05-30
+ | Owned by module:  sets
+ |
+ | Purpose:          Set Utilities module descriptor file
+ `------------------------------------------------------------------------|#
+
+((sets 
+	"$dist/sets" 
+	"$dist/modules")
+ (open mathlib low-scheme iolib primops corelib *scheme*)
+ (open high-scheme tables)
+
+ (files iterate members basic intersect union)
+
+ (export initial-state
+	 next-state
+	 current-element
+	 final-state
+	 previous-state
+
+	 member?
+
+	 union
+	 intersection))

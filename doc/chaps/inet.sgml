@@ -1,0 +1,18 @@
+{Chapter}
+{Title}Internet Connectivity{/Title}
+{Para}
+{Para}
+&rs; provides some basic procedures for building internet-aware
+applications, including both clients and servers.
+Additional packages provide specialized procedures for implementing
+particular internet protocols, such as {UserInput/ident/, {UserInput/HTTP/,
+and {UserInput/X/.
+<!>
+{Sect1}
+{Title}Server-side Procedures{/Title}
+&ref.inet-server;
+&ref.make-service;
+&ref.get-next-client;
+&ref.inet-client;
+&ref.string-hostaddr;
+&ref.remote-port-owner;

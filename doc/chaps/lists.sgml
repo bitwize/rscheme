@@ -1,0 +1,98 @@
+{Chapter}
+{Title}Lists and pairs{/Title}
+{Para}
+{Para}
+Pairs and the empty list are the building blocks of programs
+that make heavy use of Lisp list-processing style.  
+Pairs are composed to
+create lists.
+{Para}
+The terminology used here and in R4RS are slightly different,
+in that we consider a list to be anything that is either
+a pair or an empty list.  A {FirstTerm Role="defn"}proper list{/FirstTerm}, on the other
+hand, is a list that is acyclic in the cdrs and for which
+every cdr itself a proper list.
+In contrast, R4RS defines a list to be what we call a proper list.
+{Para}
+{Sect1}
+{Title}Print representation{/Title}
+{Para}
+The print representation of a pair involves enclosing the
+contents in parentheses with a dot, or period, seperating
+the car and cdr.  This print representation is referred to
+as a {FirstTerm Role="defn"}dotted pair{/FirstTerm}.  
+{Para}
+Since lists are common and involve
+repeated occurrences of pairs in cdr positions, a special
+case print representation is available to these kinds of
+pairs.  In this case, the as long as the cdr of a pair
+is also a list, the dot and recursive set of parentheses
+are elided.  Furthermore, if the cdr is the empty list,
+then nothing is printed instead of {Quote}{Literal/. ()/{/Quote}.
+Hence, a proper list is represented merely as the contents
+of the list within parentheses.
+{/Para}
+{InformalExample}
+{Para}
+  {UserInput Role="ToEval"}(list 1 2 3){/UserInput}
+  {ComputerOutput Role="EvalsTo"}(1 2 3){/ComputerOutput}
+{/InformalExample}
+<!>
+{Sect1}
+{Title}Side-effects vs. functional programming{/Title}
+{Para}RScheme, like Scheme itself, is a language with side-effects.
+However, a {Quote/mostly functional/ style is encouraged.
+{Para}
+Consider the two short lists, constructed as follows:
+{/Para}
+{ProgramListing}
+(set! a (list (make-bar 1) (make-foo 2)))
+(set! b (list (make-baz 3) (make-baz 4)))
+{/ProgramListing}
+{Para}
+The resulting structure is as follows:
+{/Para}
+{Figure}
+ {Title}List structure after side-effects.{/Title}
+ {Graphic entityref="fig.list1" scale=50}{/Graphic}
+{/Figure}
+<!>
+{Para} Call the return value of {UserInput}(append a b){/UserInput}
+{Phrase Role="var"}c{/Phrase}, and you have the following
+circumstance.  Note that the c and b lists {emphasis}share
+structure{/emphasis} {/Para}
+<!>
+{figure}
+  {Title}List after append{/Title}
+{Graphic entityref="fig.list2" scale=50}{/Graphic}
+{/figure}
+<!>
+{Para} On the other hand, if {Phrase Role="var"}d{/Phrase} is the
+result of calling {UserInput}(append! a b){/UserInput}, then the
+following figure applies.  Note that the {Phrase Role="var"}a{/Phrase}
+and {Phrase Role="var"}d{/Phrase} lists share structure in this case,
+in addition to the same kind of shared structure with the {Phrase
+Role="var"}b{/Phrase} list.{/Para}
+<!>
+{figure}
+  {Title}List after append!{/Title}
+  {Graphic entityref="fig.list3" scale=50}{/Graphic}
+{/figure}
+<!>
+{Sect1}
+{Title}Functions{/Title}
+{Para}
+&ref.cons;
+&ref.car;
+&ref.cdr;
+&ref.length;
+&ref.append;
+&ref.append1;
+&ref.pair;
+&ref.null;
+&ref.list;
+&ref.set-car;
+&ref.set-cdr;
+&ref.reverse;
+&ref.reverse1;
+&ref.list-tail;

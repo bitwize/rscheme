@@ -1,0 +1,545 @@
+#ifndef GARBAGE_COLLECTOR1_CI
+#define GARBAGE_COLLECTOR1_CI
+
+// This file contains INLINE function definitions for functions declared in
+// the file garbage-collector.cc
+
+// This file should be included before the file colorset.ci so that 
+// colorset.ci can inline functions defined here.
+
+#include <assert.h>
+#include <rtgc/gc.hh>
+
+#undef LINK_TYPE
+#ifdef INLINES
+#define LINK_TYPE inline 
+#else
+#define LINK_TYPE
+#endif
+
+//****************************************************************************
+// garbage_collector::get_object_manager
+//
+// This routine returns the appropriate object manager for the object
+// at the given memory location
+
+LINK_TYPE object_manager*
+garbage_collector::get_object_manager(const void *memory_location)
+{
+    UINT_32 offset;
+
+    // first check of the memory location is in the stack
+    if (is_root(pos_ptr_addr(memory_location))) {
+	return(the_root_object_manager);
+
+    // next check of the memory location points to a global
+    } else {
+	offset = ((char *) memory_location) - start_of_heap;
+
+	// The memory location points into the heap.
+	// assert((offset >> PAGE_SIZE_BITS) >= 0);
+
+	assert((offset >> PAGE_SIZE_BITS) < NUM_HEAP_PAGES);
+	assert(object_managers[offset >> PAGE_SIZE_BITS] !=
+	       ((object_manager *)0));
+	return(object_managers[offset >> PAGE_SIZE_BITS]);
+    }
+}
+
+
+//****************************************************************************
+// garbage_collector::get_object_manager_NOT_ROOT
+//
+// This routine returns the appropriate object manager for the object
+// at the given memory location.  The user of this routine is guaranteeing
+// that the pointer passed is in the heap.
+
+LINK_TYPE object_manager 
+*garbage_collector::get_object_manager_NOT_ROOT(const void *memory_location)
+{
+
+    // The following assertions check that the memory location is in fact on
+    // the heap.
+
+    assert((((char *)memory_location) - start_of_heap) >= 0);
+    assert(((((char *)memory_location) - start_of_heap) >>
+	    PAGE_SIZE_BITS) >= 0);
+    assert(((((char *)memory_location) - start_of_heap) >>
+	    PAGE_SIZE_BITS) < NUM_HEAP_PAGES);
+
+    // The following assertion checks that there is an object manager for
+    // that location
+
+    assert(object_managers[(((char *)memory_location) - start_of_heap) >>
+			   PAGE_SIZE_BITS] != ((object_manager *)0));
+
+    // return the object manager.
+
+    return(object_managers[(((char *)memory_location) - start_of_heap) >>
+			   PAGE_SIZE_BITS]);
+}
+
+//****************************************************************************
+// garbage_collector::is_on_heap
+//
+// This routine tests a memory location to see if it is actually on
+// the heap.  Since sbrk can cause holes in our heap, we make the
+// on heap test by seeing if it is within the extent of the heap.  If
+// so, then we get the object manager for the page into which it points.
+// If this object manager is non-null, then it is an object on the
+// heap.
+
+LINK_TYPE int garbage_collector::is_on_heap(gc_obj_addr memory_location)
+{
+    object_manager *the_object_manager;
+    if (memory_location == NULL) {
+	return(1);  // NULL is considered a heap value.
+    }
+    if ((((char *)memory_location) >= start_of_heap) &&
+	(((char *)memory_location) <= end_of_heap))
+    {
+	the_object_manager = get_object_manager(memory_location);
+	if (the_object_manager == NULL) {
+	    return(0);
+	} else {
+	    return(1);
+	}
+    } else {
+	return(0); // the object is not within the extent of the heap.
+    }
+}
+
+
+#ifndef HARD_REAL_TIME
+
+LINK_TYPE void garbage_collector::record_new_sbrk_pointers(void)
+{
+    middle_sbrk_pointer_index = (last_sbrk_pointer_index+1) % 
+      SBRK_POINTER_LIST_SIZE;
+}
+
+LINK_TYPE void garbage_collector::delete_old_sbrk_pointers(void)
+{
+    while(first_sbrk_pointer_index != middle_sbrk_pointer_index) {
+	delete(sbrk_pointer_list[first_sbrk_pointer_index]);
+	first_sbrk_pointer_index = (first_sbrk_pointer_index+1) %
+	  SBRK_POINTER_LIST_SIZE;
+    }
+}
+
+LINK_TYPE void garbage_collector::record_sbrk_pointer(void *ptr)
+{
+    sbrk_pointer_list[last_sbrk_pointer_index]=ptr;
+    last_sbrk_pointer_index = (last_sbrk_pointer_index+1) &
+      (SBRK_POINTER_LIST_SIZE - 1);
+}
+#endif // HARD_REAL_TIME
+
+
+//*************************************************************************
+// garbage_collector::snapshot_write_barrier
+//
+// This is a general snapshot at beginning write barrier.
+// This write barrier function should be called by the stub write barrier
+// functions in gcserver1.ci according to the configuration of the collector
+//
+// The parameter "lvalue" is the lvalue location that is about to be
+// overwritten.
+
+void garbage_collector::snapshot_write_barrier(pos_ptr_addr lvalue)
+{
+   gc_obj_addr old_robject = cast_and_deref_ptr(lvalue);
+
+   if (old_robject == NULL) {
+      // This is a snapshot write barrier, and there is no old pointer
+      // to overwrite.  So, do nothing in this case.
+      return;
+   }
+
+   // The old rvalue should be a pointer to an object on the heap.
+   assert(is_on_heap(old_robject));
+
+   int state = 0; // This will hold a code for the state of the two objects
+
+#ifndef NO_ROOT_WRITE_BARRIER
+   // In this configuration of the garbage collectior, it is possible to
+   // call the write barrier on an assignment to a root barier.  However,
+   // since we don't need a write barrier call in this case, we need to check
+   // for it.  If the lvalue is a root, then we are simply done.  No
+   // write barrier work needs to be done.
+   state += 4 * is_root(lvalue);
+#else
+   assert(!is_root(lvalue));
+#endif
+	
+   // Get the start of the old rval object
+
+   gc_object_base *start_of_old_rval_object;
+   start_of_old_rval_object = ((gc_object_base *)(((char *)old_robject) - 
+						  sizeof(gc_object_base))); 
+#ifdef ZEN_TIMER
+   gc.write_barrier_timer.timer_on();
+#endif
+
+#ifdef GC_TURN_OFF_ABLE
+   // The garbage collector only gets turned off if we are allocating black.
+   state = 2 * gc_turned_off;
+#endif
+   
+   state += start_of_old_rval_object->is_shaded();
+
+   switch (state) {
+      case 4: case 5: case 6: case 7: // gc is turned off
+      // GC is turned off
+      {
+	 break;
+      }
+      case 2: case 3:// lval is a root.  Nothing to do.
+      {
+	 break;
+      }
+      case 1: // rval is already shaded.  Nothing to do.
+      {
+	 break;
+      }
+      case 0: // rval is not yet shaded.  Shade it now.
+      {
+	 // gray the rval object.
+	 start_of_old_rval_object->get_containing_list()
+	    ->gray_this_object(start_of_old_rval_object);
+	 break;
+      }
+   }
+
+#ifdef ZEN_TIMER
+   gc.write_barrier_timer.timer_off();
+#endif
+
+}
+
+
+//*************************************************************************
+// garbage_collector::incremental_update_write_barrier
+//
+// This routine is the write barrier that we use when we don't know
+// anything about either of the two objects.  It should be called for ever
+// pointer assignment into an object that is not known to be on the stack.
+//
+// The parameters lvalue and rvalue are the lvalue and rvalue of the
+// assignment statement respectively
+
+void garbage_collector::incremental_update_write_barrier(gc_obj_addr lobject,
+							 pos_ptr_addr lvalue,
+							 gc_obj_addr robject)
+{
+   gc_object_base *lobj,*robj;
+   
+   // rvalue should not be a root object.
+   assert(is_on_heap(robject));
+   
+#ifdef ZEN_TIMER
+   write_barrier_timer.timer_on();
+#endif
+
+#ifdef GC_TURN_OFF_ABLE
+   // The garbage collector only gets turned off if we are allocating black.
+   if(!gc_turned_off) {
+#endif	
+      
+      // If lvalue points to a root object, we do nothing.
+      // A root object is conceptually always gray, and has nothing to do
+      // with intergenerational pointers.
+#ifndef NO_ROOT_WRITE_BARRIER
+      if (!is_root(lvalue)) {
+#endif
+	 
+	 robj = (gc_object_base*)(((char *)robject) - sizeof(gc_object_base));
+	 lobj = (gc_object_base*)(((char *)lobject) - sizeof(gc_object_base));
+
+// The next two asserts are quite usefull, but take so long to run that
+// they should probably only be used for debugging.
+//	 assert(is_valid_object(robj));
+//	 assert(is_valid_object(lobj));
+
+#ifdef GENERATIONAL	 
+	 // If both objects are in a same generation,
+	 if(lobj->get_gen_num() == robj->get_gen_num()){
+#endif	    
+	    // If we have non-generational collection, we want to
+	    // unconditionally execute this case.
+
+	    // And if a pointer to a white object is being stored into
+	    // a black object, add the pointer to the stored-into list.
+	    
+	    if(lobj->is_shaded() && !robj->is_shaded()){
+	       gc.get_gen(lobj->get_gen_num())
+		  ->add_ptr_stored_into_list(lvalue); 
+	    }
+#ifdef GENERATIONAL	    
+	    // If the pointing object is younger than the pointed object,
+	 }else if(lobj->get_gen_num() < robj->get_gen_num()){
+	    // And if the pointed object is a white in the second phase
+	    // tracing,
+	    if(! robj->is_shaded() &&
+	       gc.get_gen(robj->get_gen_num())->get_tracing_phase()){ 
+#ifdef ALLOCATE_WHITE
+	       // Especially when allocating white, if the pointing
+	       // object is black...,
+	       // We don't care this when allocating black, since the
+	       // young object is conceptually black.
+	       if(lobj->is_shaded())
+	       {
+#endif			    
+		  object_manager* rval_object_manager = 
+		     get_object_manager(robj);
+		  // gray the pointed object.
+		  gc.get_gen(robj->get_gen_num())
+		     ->get_color_set(rval_object_manager
+				     ->get_size_class())
+			->gray_this_object(robj);
+#ifdef ALLOCATE_WHITE
+	       }
+#endif
+	    }
+	 } else {
+	    // Otherwise, the pointing object is older than the pointed
+	    // object, we have to add the pointing object ot the IGP
+	    // list
+	    if(lobj->is_shaded()){
+	       get_igpm()->add_black_igp(lvalue,
+					 lobj->get_gen_num(),
+					 robj->get_gen_num());
+	    } else {
+	       get_igpm()->add_white_igp(lvalue,
+					 lobj->get_gen_num(),
+					 robj->get_gen_num());
+	    }
+	 }
+#endif // GENERATIONAL
+
+#ifndef NO_ROOT_WRITE_BARRIER
+      }
+#endif
+
+#ifdef GC_TURN_OFF_ABLE
+   }
+#endif
+   
+#ifdef ZEN_TIMER
+   write_barrier_timer.timer_off();
+#endif
+}
+
+
+//*************************************************************************
+// garbage_collector::incremental_update_wb_lval_black
+//
+// This routine is the write barrier that we use when we don't know
+// anything about either of the two objects.  It should be called for ever
+// pointer assignment into an object that is not known to be on the stack.
+//
+// The parameters lvalue and rvalue are the lvalue and rvalue of the
+// assignment statement respectively
+
+void garbage_collector::incremental_update_wb_lval_black(gc_obj_addr lobject,
+							 pos_ptr_addr lvalue,
+							 gc_obj_addr robject)
+{
+   gc_object_base *lobj,*robj;
+   
+   // rvalue should not be a root object.
+   assert(is_on_heap(robject));
+   
+#ifdef ZEN_TIMER
+   write_barrier_timer.timer_on();
+#endif
+
+#ifdef GC_TURN_OFF_ABLE
+   // The garbage collector only gets turned off if we are allocating black.
+   if(!gc_turned_off) {
+#endif	
+      
+      // If lvalue points to a root object, we do nothing.
+      // A root object is conceptually always gray, and has nothing to do
+      // with intergenerational pointers.
+#ifndef NO_ROOT_WRITE_BARRIER
+      if (!is_root(lvalue)) {
+#endif
+	 
+	 robj = (gc_object_base*)(((char *)robject) - sizeof(gc_object_base));
+	 lobj = (gc_object_base*)(((char *)lobject) - sizeof(gc_object_base));
+
+// The next two asserts are quite usefull, but take so long to run that
+// they should probably only be used for debugging.
+//	 assert(is_valid_object(robj));
+//	 assert(is_valid_object(lobj));
+
+#ifdef GENERATIONAL	 
+	 // If both objects are in a same generation,
+	 if(lobj->get_gen_num() == robj->get_gen_num()){
+#endif	    
+	    // If we have non-generational collection, we want to
+	    // unconditionally execute this case.
+
+	    // And if a pointer to a white object is being stored into
+	    // a black object, add the pointer to the stored-into list.
+	    
+	    // In this write barrier, we know that the lval is black.
+	    if(!robj->is_shaded()){
+	       gc.get_gen(lobj->get_gen_num())
+		  ->add_ptr_stored_into_list(lvalue); 
+	    }
+#ifdef GENERATIONAL	    
+	    // If the pointing object is younger than the pointed object,
+	 }else if(lobj->get_gen_num() < robj->get_gen_num()){
+	    // And if the pointed object is a white in the second phase
+	    // tracing,
+	    if(! robj->is_shaded() &&
+	       gc.get_gen(robj->get_gen_num())->get_tracing_phase())
+	    { 
+	       object_manager* rval_object_manager = 
+		  get_object_manager(robj);
+	       // gray the pointed object.
+	       gc.get_gen(robj->get_gen_num())
+		  ->get_color_set(rval_object_manager
+				  ->get_size_class())
+		     ->gray_this_object(robj);
+	    }
+	 } else {
+	    // Otherwise, the pointing object is older than the pointed
+	    // object, we have to add the pointing object ot the IGP
+	    // list
+	    get_igpm()->add_black_igp(lvalue,
+				      lobj->get_gen_num(),
+				      robj->get_gen_num());
+	 }
+#endif // GENERATIONAL
+	 
+#ifndef NO_ROOT_WRITE_BARRIER
+      }
+#endif
+
+#ifdef GC_TURN_OFF_ABLE
+   }
+#endif
+   
+#ifdef ZEN_TIMER
+   write_barrier_timer.timer_off();
+#endif
+}
+
+
+//*************************************************************************
+// garbage_collector::incremental_update_wb_rval_white
+//
+// This routine is the write barrier that we use when we don't know
+// anything about either of the two objects.  It should be called for ever
+// pointer assignment into an object that is not known to be on the stack.
+//
+// The parameters lvalue and rvalue are the lvalue and rvalue of the
+// assignment statement respectively
+
+void garbage_collector::incremental_update_wb_rval_white(gc_obj_addr lobject,
+							 pos_ptr_addr lvalue,
+							 gc_obj_addr robject)
+{
+   gc_object_base *lobj,*robj;
+   
+   // rvalue should not be a root object.
+   assert(is_on_heap(robject));
+   
+#ifdef ZEN_TIMER
+   write_barrier_timer.timer_on();
+#endif
+
+#ifdef GC_TURN_OFF_ABLE
+   // The garbage collector only gets turned off if we are allocating black.
+   if(!gc_turned_off) {
+#endif	
+      
+      // If lvalue points to a root object, we do nothing.
+      // A root object is conceptually always gray, and has nothing to do
+      // with intergenerational pointers.
+#ifndef NO_ROOT_WRITE_BARRIER
+      if (!is_root(lvalue)) {
+#endif
+	 
+	 robj = (gc_object_base*)(((char *)robject) - sizeof(gc_object_base));
+	 lobj = (gc_object_base*)(((char *)lobject) - sizeof(gc_object_base));
+
+// The next two asserts are quite usefull, but take so long to run that
+// they should probably only be used for debugging.
+//	 assert(is_valid_object(robj));
+//	 assert(is_valid_object(lobj));
+
+#ifdef GENERATIONAL	 
+	 // If both objects are in a same generation,
+	 if(lobj->get_gen_num() == robj->get_gen_num()){
+#endif	    
+	    // If we have non-generational collection, we want to
+	    // unconditionally execute this case.
+
+	    // And if a pointer to a white object is being stored into
+	    // a black object, add the pointer to the stored-into list.
+	    
+	    if(lobj->is_shaded()){
+	       gc.get_gen(lobj->get_gen_num())
+		  ->add_ptr_stored_into_list(lvalue); 
+	    }
+#ifdef GENERATIONAL	    
+	    // If the pointing object is younger than the pointed object,
+	 }else if(lobj->get_gen_num() < robj->get_gen_num()){
+	    // And if the pointed object is a white in the second phase
+	    // tracing,
+	    if(gc.get_gen(robj->get_gen_num())->get_tracing_phase()){ 
+#ifdef ALLOCATE_WHITE
+	       // Especially when allocating white, if the pointing
+	       // object is black...,
+	       // We don't care this when allocating black, since the
+	       // young object is conceptually black.
+	       if(lobj->is_shaded())
+	       {
+#endif			    
+		  object_manager* rval_object_manager = 
+		     get_object_manager(robj);
+		  // gray the pointed object.
+		  gc.get_gen(robj->get_gen_num())
+		     ->get_color_set(rval_object_manager
+				     ->get_size_class())
+			->gray_this_object(robj);
+#ifdef ALLOCATE_WHITE
+	       }
+#endif
+	    }
+	 } else {
+	    // Otherwise, the pointing object is older than the pointed
+	    // object, we have to add the pointing object ot the IGP
+	    // list
+	    if(lobj->is_shaded()){
+	       get_igpm()->add_black_igp(lvalue,
+					 lobj->get_gen_num(),
+					 robj->get_gen_num());
+	    } else {
+	       get_igpm()->add_white_igp(lvalue,
+					 lobj->get_gen_num(),
+					 robj->get_gen_num());
+	    }
+	 }
+#endif // GENERATIONAL
+
+#ifndef NO_ROOT_WRITE_BARRIER
+      }
+#endif
+
+#ifdef GC_TURN_OFF_ABLE
+   }
+#endif
+   
+#ifdef ZEN_TIMER
+   write_barrier_timer.timer_off();
+#endif
+}
+
+
+
+#endif  // #ifdef GARBAGE_COLLECTOR1_CI

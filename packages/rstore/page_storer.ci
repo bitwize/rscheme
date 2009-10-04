@@ -1,0 +1,555 @@
+
+struct Writing {
+  struct RStore 	*store;
+  struct ScannedPtr     *pscan;
+  struct Compressor 	c;
+};
+
+/*-------------------------------------------------------------------*/
+
+/*
+ *  Output the next pointer object that was noticed
+ *  during scanning.
+ *
+ *  Note that there is (at least) one case where pointer
+ *  objects are noticed when, in fact, the slot being
+ *  examined does not contain a pointer -- that is the
+ *  first two words of a template!
+ *  (this is the same case where, during loading, a pointer
+ *  is turned into a non-pointer!)
+ *
+ *  Notice that for pointers into the store, the offset 
+ *  is extracted from the current pointer.  However, when
+ *  an indirect pointer had been noticed, the current
+ *  pointer (`thing') is ignored.
+ *  (a good thing, given the above comment about templates!)
+ */
+
+static void compress_ptr( struct Writing *ctx, obj thing )
+{
+  struct ScannedPtr *sp = ctx->pscan++;
+  UINT_32 offset;
+
+#if DEBUG_STORING
+  printf( "  compress_ptr(%#lx) ", thing );
+#endif
+
+  if (sp->indirect_q)
+    {
+      /* a reference number was provided.  bind it to an
+       * indirect page reference 
+       * and build the appropriate pointer which includes
+       * a POINTER_TAG so it will be recognized as an entity 
+       * deserving translation at load time
+       *
+       * (note that the refnum is a FIXNUM, and appears so
+       * on the scheme side; the `refnum' originally came,
+       * during scanning (see scan.c) from one of the pivot
+       * tables, usually store->pivot_table)
+       */
+      
+      /*
+       *  the high bits of the refnum have already been used
+       *  to assign the appropriate `local_id'
+       */
+      offset = SLOT( INDIR_CODE_ENTRY( sp->ref.refnum ) ) + POINTER_TAG;
+#if DEBUG_STORING
+      printf( "(indir %d:%d)", 
+	      INDIR_CODE_PAGE( sp->ref.refnum ),
+	      INDIR_CODE_ENTRY( sp->ref.refnum ) );
+#endif
+    }
+  else
+    {
+      /* it's into another page */
+      /*  [CR 600] need to subtract off offsets so we're pointing
+       *  to real data before we mask; otherwise, we could be masking
+       *  off a significant page bit
+       */
+      UINT_32 addr = (UINT_32)(PTR_TO_PHH(thing));
+      offset = VAL(PHH_TO_PTR(addr & MM_PAGE_MASK));
+    }
+  thing = OBJ( (sp->local_id << 16) + offset );
+
+#if DEBUG_STORING
+  printf( " local_id %d ==> %#lx\n", sp->local_id, thing );
+#endif
+
+  compress_obj( &ctx->c, thing );
+}
+
+static void unswiz_and_compress( struct Writing *ctx, obj thing )
+{
+  if (OBJ_ISA_PTR(thing))
+    {
+      compress_ptr( ctx, thing );
+    }
+  else
+    {
+      compress_obj( &ctx->c, thing );
+    }
+}
+
+static void unswiz_and_compress_pub( void *info, obj thing )
+{
+  unswiz_and_compress( (struct Writing *)info, thing );
+}
+
+static void compress_LR( struct Compressor *c, struct LocationRef lr )
+{
+  union { 
+    struct LocationRef lr;
+    UINT_32 w[2];
+  } overload;
+
+  overload.lr = lr;
+  compress_word( c, overload.w[0] );
+  compress_word( c, overload.w[1] );
+}
+
+/*  note the similarity between this procedure and `rstore_scan_pob'
+ *  in scan.c -- once they were one function, then they were two-in-one
+ *  with a flag, and now they are two.  They were split into two
+ *  because we now #include this implementation into the rich-model
+ *  implementation of "write_page", but scanning is model-independent
+ *
+ *  (HOWEVER -- Notice that the scanner will fill in the ScannedPtr's
+ *  in canonical scan order -- where canonical is defined by how
+ *  scan.c does it (which is just the straightforward order))
+ */
+
+static void write_pob( struct Writing *ctx, 
+		       struct PHeapHdr *hdr,
+		       void *src, UINT_32 from_start, 
+		       UINT_32 len )
+{
+  UINT_32 i = 0;
+  obj *gvecp = src;
+  enum SwizzleMode m = mode_for_object(hdr);
+
+  if (hdr->gc_flag_bits & 0xFFFFFF00) {
+    /*  
+     *  we don't get this far unless rstore_scan_page() returns NIL_OBJ,
+     *  which means that there are no off-heap pointers (except maybe
+     *  pivots, which are OK) on this page
+     *
+     */
+    /*printf( "write_pob: object had theap pointers [%06x], but no more\n",
+      (unsigned)(hdr->gc_flag_bits >> 8) );
+    */
+    hdr->gc_flag_bits &= 0xFF;    /* clear "extraHeapPointers" bits */
+  }
+
+  switch (m)
+    {
+    case SWIZ_MODE_TEMPLATE:
+
+      if (from_start == 0)
+	{
+	  compress_ptr( ctx, ZERO ); /* see comments at compress_ptr() */
+	  compress_ptr( ctx, ZERO );
+	  i = SLOT(2);
+	}
+      /* fall through into gvec. */
+
+    case SWIZ_MODE_GVEC:
+      for (; i<len; i+=SLOT(1), gvecp++)
+	{
+	  unswiz_and_compress( ctx, *gvecp );
+	}
+      break;
+
+    case SWIZ_MODE_ALLOC_AREA:
+      { 
+	PAllocArea *aa = src;
+	UINT_32 *p;
+        obj old_flv;
+
+	assert( from_start == 0 );
+
+	unswiz_and_compress( ctx, aa->entry );
+	unswiz_and_compress( ctx, aa->reserved );
+	
+	compress_LR( &ctx->c, aa->current_LR );
+	compress_LR( &ctx->c, aa->parent_LR );
+	
+	i = 2 * sizeof(struct LocationRef)
+	  + 2 * sizeof(obj);
+	
+	p = (UINT_32 *)((char *)src + i);
+	for (; i<len; i+=SLOT(1))
+	  {
+            if ((void *)p == (void *)&aa->free_list_vec)
+              {
+                if (EQ( aa->free_list_vec, FALSE_OBJ ))
+                  compress_word( &ctx->c, 0 );  /* backward compatability */
+                else
+                  unswiz_and_compress( ctx, aa->free_list_vec );
+              }
+            else
+              {
+                compress_word( &ctx->c, *p );
+              }
+            p++;
+	  }
+      }
+      break;
+      
+    case SWIZ_MODE_PADDR_VEC:
+      /* just verify that the owner is this pstore, and
+       * skip the first two words 
+       */
+      if (from_start == 0)
+	{
+	  if (((struct PAddrVec *)src)->owner != ctx->store)
+	    {
+	      scheme_error( "<persistent-addr> in different store: ~s",
+			    1, PHH_TO_PTR(hdr) );
+	    }
+	  i = SLOT(2);
+	  src = (char *)src + SLOT(2);
+	}
+
+    case SWIZ_MODE_FLOAT:
+    case SWIZ_MODE_UINT32:
+    case SWIZ_MODE_BVEC:
+      
+      {
+	UINT_32 *p = src;
+	
+	for (; i<len; i+=SLOT(1))
+	  {
+	    compress_word( &ctx->c, *p++ );
+	  }
+      }
+    break;
+    default:
+      {
+	struct swiz_mode_handler *h = get_swiz_mode_handler( ctx->store, m );
+	/* pass II -- write the stuff out */
+	h->trav_write( h, hdr, src, from_start, len, 
+		       ctx, unswiz_and_compress_pub );
+	break;
+      }
+    }
+}
+
+static void write_page_contents( struct Writing *ctx, 
+				 struct VMPageRecord *page )
+{
+  struct PHeapHdr *p;
+  
+  if (page->ref.first)
+    {
+      struct PHeapHdr *limit;
+      struct FirstPageHdr *fph = (struct FirstPageHdr *)page->mem_address; 
+      obj tmp;
+
+      /*
+       *  write out the page's allocation-area pointer
+       */
+
+      tmp = DATAPTR_TO_PTR(fph->area);
+      
+      unswiz_and_compress( ctx, tmp );
+
+      /*
+       *  traverse / write out the objects on the page
+       */
+
+      p = first_on_first(page);
+      limit = (struct PHeapHdr *)((char *)page->mem_address + MM_PAGE_SIZE);
+      while (p < limit)
+	{
+	  UINT_32 N;
+
+	  /* check for an early end of the page */
+	  if (p->mem_size == 0)
+	    {
+	      compress_word( &ctx->c, 0 );
+	      break;
+	    }
+
+	  /* p points to the PHeapHdr of an object on this page */
+
+	  compress_word( &ctx->c, p->mem_size );
+
+          if (p->pstore_flags == PFLAGS_FREE_OBJ)
+            {
+              struct PFreeBlock *fb = (struct PFreeBlock *)(p+1);
+              if (fb->last_on_this_page)
+                {
+                  compress_word( &ctx->c, PFLAGS_FREE_OBJ_LAST );
+                  compress_word( &ctx->c, fb->in_sizeclass );
+                  compress_word( &ctx->c, fb->next_page );
+                }
+              else
+                {
+                  compress_word( &ctx->c, PFLAGS_FREE_OBJ );
+                  compress_word( &ctx->c, fb->in_sizeclass );
+                }
+            }
+          else
+            {
+              compress_word( &ctx->c, p->pstore_flags );
+
+              unswiz_and_compress( ctx, p->rs_header.pob_class );
+
+              N = p->rs_header.pob_size;
+              compress_word( &ctx->c, N );
+	  
+              if (page->ref.nth_page > 1)
+                {
+                  /* clip the length to go only to the end of the page */
+                  N = MM_PAGE_SIZE - sizeof(struct PHeapHdr) 
+                    - sizeof(struct FirstPageHdr);
+                }
+
+              write_pob( ctx, p, p+1, 0, N );
+            }
+
+	  /* go on to the next object */
+	  p = (struct PHeapHdr *)((char *)p + p->mem_size);
+	}
+    }
+  else
+    {
+      UINT_32 M, N;
+      struct PHeapHdr *p;
+      
+      p = large_object_hdr( page ); 
+      
+      /* figure out how many bytes to decode */
+
+      M = page->ref.nth_page * MM_PAGE_SIZE;
+      N = p->rs_header.pob_size 
+	  + sizeof(struct PHeapHdr)
+	  + sizeof(struct FirstPageHdr);
+
+/*      printf( "save interior page %08x: at %08x\n",
+	     page->ref.base_page_num + page->ref.nth_page,
+	     page->mem_address );
+  */    
+      if (N > M)
+	{
+	  N -= M;
+	  
+	  /* there is at least SOMETHING to do */
+	  
+	  if (N >= MM_PAGE_SIZE)
+	    {
+	      /*  we're completely inside, so do only this page worth */
+	      N = MM_PAGE_SIZE;
+	    }
+	  write_pob( ctx, p, 
+		     page->mem_address, 
+		     (char *)page->mem_address - (char *)(p+1),
+		     N );
+	}
+    }
+}
+
+static int cmp_indir_pg( const void *a1, const void *b1 )
+{
+  struct ScannedPtr *const *a = a1;
+  struct ScannedPtr *const *b = b1;
+
+  if (FX_LT((*a)->ref.refnum,(*b)->ref.refnum))
+    {
+      return -1;
+    }
+  else
+    {
+      return 1;
+    }
+}
+
+
+  /*  compute the reference table, mainly by assigning local_id's
+   *  to the scanned pointers. 
+   *  the heuristic used is to decollate the indirect refs
+   *  from the in-store refs, and then to sort the indirect refs
+   *  by page #, to improve their global numbering (for fixed-dictionary
+   *  huffman poor-models).  However, in-store refs are not
+   *  sorted, so they will come out in reference order.  I wonder
+   *  how well this works?
+   */
+
+static void assign_local_ids( struct ScannedPtr *scans, 
+			      int num, 
+			      struct Writing *ctx )
+{
+  int i, j, num_i, num_d;
+  struct ScannedPtr *(indirs[MAX_PAGE_PTRS]);
+  struct ScannedPtr *(directs[MAX_PAGE_PTRS]);
+  
+  num_i = 0;
+  num_d = 0;
+
+  for (i=0; i<num; i++)
+    {
+#if DEBUG_STORING
+      printf( "scans[%d]: ", i );
+#endif
+      if (scans[i].indirect_q)
+	{
+	  int ipage = INDIR_CODE_PAGE( scans[i].ref.refnum );
+	  /* check for dup */
+	  for (j=0; j<num_i; j++)
+	    {
+	      if (INDIR_CODE_PAGE( indirs[j]->ref.refnum ) == ipage)
+		{
+		  int dupof = indirs[j] - scans;
+		  scans[i].local_id = -(dupof+1);
+#if DEBUG_STORING
+		  printf( "indir %d:%d - dup of scans[%d]\n", 
+			  ipage, INDIR_CODE_ENTRY( scans[i].ref.refnum ), 
+			  dupof );
+#endif
+		  goto next;
+		}
+	    }
+#if DEBUG_STORING
+	  printf( "indir %d:%d - indirect[%d]\n",
+		  ipage,
+		  INDIR_CODE_ENTRY( scans[i].ref.refnum ),
+		  num_i );
+#endif
+	  indirs[num_i++] = &scans[i];
+	}
+      else
+	{
+	  struct VMPageRecord *key = scans[i].ref.in_page;
+	  /* check for dup */
+	  for (j=0; j<num_d; j++)
+	    {
+	      if (directs[j]->ref.in_page == key)
+		{
+		  int dupof = directs[j] - scans;
+		  scans[i].local_id = -(dupof+1);
+#if DEBUG_STORING
+		  printf( "direc %p - dup of scans[%d]\n", key, dupof );
+#endif
+		  goto next;
+		}
+	    }
+#if DEBUG_STORING
+	  printf( "direc %p - direct[%d]\n", key, num_d );
+#endif
+	  directs[num_d++] = &scans[i];
+	}
+    next: ;
+    }
+
+  qsort( indirs, num_i, sizeof( struct ScannedPtr * ), cmp_indir_pg );
+
+  /*  finally, assign their ids,
+   *  writing out their stored references as we go
+   */
+
+#if DEBUG_STORING
+  printf( " TOC %d + %d\n", num_i, num_d );
+#endif
+
+  compress_word( &ctx->c, num_i + num_d );
+
+  j = 0;
+  for (i=0; i<num_i; i++)
+    {
+      UINT_32 base_page_num, flags;
+
+      /* I know i==j; this just looks more symmetric 
+       * with the directs[] loop */
+      indirs[i]->local_id = j++;
+
+      /* extract the pivot page number from the indirect reference # */
+      base_page_num = INDIR_CODE_PAGE( indirs[i]->ref.refnum );
+      flags = 2; /* how funny -- this looks like #f! */
+
+      compress_word( &ctx->c, base_page_num );
+      compress_word( &ctx->c, flags );
+    }
+
+  for (i=0; i<num_d; i++)
+    {
+      UINT_32 base_page_num, flags, nth_page;
+      int first_q;
+
+      directs[i]->local_id = j++;
+
+      base_page_num = directs[i]->ref.in_page->ref.base_page_num;
+      nth_page = directs[i]->ref.in_page->ref.nth_page;
+      first_q = directs[i]->ref.in_page->ref.first;
+
+      flags = (first_q ? 1 : 0) + (nth_page << 2);
+
+      compress_word( &ctx->c, base_page_num );
+      compress_word( &ctx->c, flags );
+    }
+
+  /*  this could just as well be done at `compress_ptr' time,
+   *  since we'll never get to reuse the computation.  For now,
+   *  this is a little cleaner -- the ScannedPtr protocol is
+   *  a little simpler in this case
+   */
+  for (i=0; i<num; i++)
+    {
+      int k = scans[i].local_id;
+      if (k < 0)
+	{
+	  scans[i].local_id = scans[-(k+1)].local_id;
+	}
+#if DEBUG_STORING
+      printf( " scanned[%d] : %s %d - %#lx\n",
+	      i,
+	      scans[i].indirect_q ? "indir." : "direct",
+	      scans[i].local_id,
+	      scans[i].ref.in_page );
+#endif
+    }
+}
+
+
+void THIS_PAGE_WRITE( struct RStore *store, 
+		      struct VMPageRecord *page,
+		      struct ScannedPtr *scans,
+		      int num_scanned )
+{
+  struct Writing ctx;
+
+  ctx.store = store;
+  ctx.pscan = scans;
+
+  /* intialize the compressor stream */
+
+  init_compressor( store, &ctx.c );
+
+  if (store->id_pages) {
+    UINT_32 id;
+    if (page->ref.first) {
+      id = 0xC1000000;
+    } else {
+      id = 0xC2000000;
+    }
+    id += page->ref.nth_page;
+    compress_word( &ctx.c, id );
+  }
+  /* start by writing out the page references (a TOC) */
+
+  assign_local_ids( scans, num_scanned, &ctx );
+  
+  /* Next, write out the page contents */
+
+  write_page_contents( &ctx, page );
+
+  /* lastly, write the data to the lss */
+
+  write_compressed( &ctx.c, 
+		    store->lss,
+		    page->ref.first 
+		    ? page->ref.base_page_num
+		    : page->ref.base_page_num + page->ref.nth_page );
+
+  close_compressor( &ctx.c );
+}
+

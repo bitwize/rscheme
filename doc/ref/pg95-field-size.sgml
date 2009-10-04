@@ -1,0 +1,51 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}pg95-field-size{/RefName}
+  {RefPurpose}Get the size of the given field.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/pg95-field-size/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/result/ {Parameter/field-num/{/ParamDef}{ParamDef role="returns"}
+{Parameter}size{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}result{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<pg95-result>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}field-num{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}size{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/, or {UserInput}#f{/UserInput}{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Returns the size of the given field in the result structure, where
+fields are named by index, {Parameter}field-num{/Parameter}.  Returns {UserInput}#f{/UserInput} instead
+of a size if the field has negative size (indicating what, again,...?){/para}
+{/RefSect1}
+{/RefEntry}

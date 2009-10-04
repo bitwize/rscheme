@@ -1,0 +1,58 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}extension-related-path{/RefName}
+  {RefPurpose}Compute the pathname of a "related" file{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/extension-related-path/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/pathname/ {Parameter/extension/{/ParamDef}{ParamDef role="returns"}
+{Parameter}new-pathname{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}pathname{/Term}
+    {ListItem}{para}
+A pathname object (an instance of {ClassName/<file-name>/).{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}extension{/Term}
+    {ListItem}{para}
+A string.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}new-pathname{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<file-name>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function computes and returns the pathname of a file
+that is {Quote}close{/Quote} to the file denoted by the given pathname, differing
+(possibly) only in it's extension.{/para}
+{para}
+{/para}
+{InformalExample}{Para}
+{UserInput Role="ToEval"}(define f (string->file "stuff/quux.c")){/UserInput}
+{Para}{UserInput Role="ToEval"}(extension-related-path f "o"){/UserInput}
+{Phrase Role="NoPrintForm"}filename {Filename}stuff/quux.o{/Filename}{/Phrase}
+{/InformalExample}
+{/RefSect1}
+{/RefEntry}

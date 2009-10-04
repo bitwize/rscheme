@@ -1,0 +1,297 @@
+#ifndef GCSERVER1_CI
+#define GCSERVER1_CI
+
+// This file contains the inline function definitions for the gcserver module.
+// See the file gcserver.h for more details.
+
+#include <rtgc/inlines.hh>
+#include <limits.h>
+#include <rtgc/gcserver.h>
+
+#ifdef TEST_LIFETIME_DIST
+#include <rtgc/gc.hh>
+#endif TEST_LIFETIME_DIST
+
+#include <rtgc/linktype.h>
+
+LINK_TYPE gc_obj_addr find_start_of_object(const void *the_object)
+{
+   object_manager *om = gc.get_object_manager(the_object);
+   gc_object_base *start_of_object = om->find_start_of_object(the_object);
+
+   // the gc_obj_addr is the memory location immediately following the
+   // gc_object_base object.  So, we can just inc the pointer to the
+   // gc_object_base to get the correct memory location.
+   return(gc_obj_addr(start_of_object+1));
+}
+
+
+LINK_TYPE void init_gc(int argc, const char **argv)
+{
+#ifndef NDEBUG
+   if(!(SIZE_OF_GC_OBJECT_BASE == sizeof(gc_object_base))){
+      cerr << "error: assertion failed at " << __LINE__ << " of " << __FILE__ << endl;
+      exit(3);
+   }
+#endif
+   gc.init(argc,argv);
+}
+
+
+LINK_TYPE  void gc_safe_point(size_t headroom)
+{
+   int done = 0;
+
+   // The next while loop is a little non-intuitive.
+   // You should think of it as two conditionals.  First, a check is
+   // made to see if we need an increment of collection.  We keep looping
+   // until either we have finished an entire collection (gc.collect returns
+   // 1), or we have accounted for headroom bytes of allocation.
+
+   while((amount_allocated - int(headroom) < 0) && !done)
+   {
+      done = gc.collect();
+      amount_allocated += AMOUNT_TO_ALLOCATE_PER_INCREMENT;
+#ifdef GC_TURN_OFF_ABLE
+      if(gc_turned_off == 1)
+      {
+	 amount_allocated = INT_MAX;
+      }
+#endif
+   }
+#ifdef GC_TURN_OFF_ABLE
+   if ((done == 1) && (gc_turned_off != 1)) {
+#else
+   if (done == 1) {
+#endif
+      // Collection finished and the collector is not turned off.
+      amount_allocated = AMOUNT_TO_ALLOCATE_PER_INCREMENT;
+   }
+}
+
+
+
+LINK_TYPE void gc_safe_point_nb(size_t number_bytes_allocated,
+				size_t headroom)
+{
+   int done = 0;
+
+   // The next while loop is a little non-intuitive.
+   // You should think of it as two conditionals.  First, a check is
+   // made to see if we need an increment of collection.  We keep looping
+   // until either we have finished an entire collection (gc.collect returns
+   // 1), or we have accounted for headroom bytes of allocation.
+
+   while ((int(number_bytes_allocated) + int(headroom)
+	  > AMOUNT_TO_ALLOCATE_PER_INCREMENT) && !done)
+   {
+      done = gc.collect();
+      number_bytes_allocated -= AMOUNT_TO_ALLOCATE_PER_INCREMENT;
+#ifdef GC_TURN_OFF_ABLE
+      if(gc_turned_off == 1)
+      {
+	 amount_allocated = INT_MAX;
+      }
+#endif
+   }
+#ifdef GC_TURN_OFF_ABLE
+   if ((done == 1) && (gc_turned_off != 1)) {
+#else
+   if (done == 1) {
+#endif
+      // Collection finished and the collector is not turned off.
+      amount_allocated = AMOUNT_TO_ALLOCATE_PER_INCREMENT;
+   }
+}
+
+
+/* If nothing is known about the lval or the rval, then call: */
+
+LINK_TYPE void write_barrier(gc_obj_addr lobject,
+			     pos_ptr_addr lvalue,
+			     untyped_addr new_robject)
+{
+
+#if defined(SNAPSHOT_WRITE_BARRIER)
+
+   gc.snapshot_write_barrier(lvalue);
+
+#elif defined(INCREMENTAL_UPDATE_WRITE_BARRIER)
+
+   gc.incremental_update_write_barrier(lobject, lvalue, new_robject);
+
+#else
+
+   // In this case, we have a configuration problem.  No write barrier
+   // has been defined for this case.
+   assert(0);
+
+#endif
+
+}
+
+    
+/* If the lval is known to be an object that is newly allocated (there has
+   been no chance for garbage collection), then call: */
+
+LINK_TYPE 
+void write_barrier_lval_fresh(gc_obj_addr lobject,
+			      pos_ptr_addr lvalue,
+			      gc_obj_addr robject)
+{
+#if defined(SNAPSHOT_WRITE_BARRIER)
+
+   gc.snapshot_write_barrier(lvalue);
+
+#elif defined(INCREMENTAL_UPDATE_WRITE_BARRIER) && defined(ALLOCATE_WHITE)
+
+   // noop
+
+#elif defined(INCREMENTAL_UPDATE_WRITE_BARRIER) && defined(ALLOCATE_BLACK)
+
+   gc.incremental_update_wb_lval_black(lobject, lvalue, robject);
+
+#else
+
+   // In this case, we have a configuration problem.  No write barrier
+   // has been defined for this case.
+   assert(0);
+
+#endif
+}
+
+    
+/* If the lval is known to be an object that is newly allocated (there has
+   been no chance for garbage collection), and this is the initializing write
+   then call: */
+
+LINK_TYPE 
+void write_barrier_lval_init(gc_obj_addr lobject,
+			     pos_ptr_addr lvalue,
+			     gc_obj_addr robject)
+{
+#if defined(SNAPSHOT_WRITE_BARRIER)
+
+   // noop
+
+#elif defined(INCREMENTAL_UPDATE_WRITE_BARRIER) && defined(ALLOCATE_WHITE)
+
+   // noop
+
+#elif defined(INCREMENTAL_UPDATE_WRITE_BARRIER) && defined(ALLOCATE_BLACK)
+
+   gc.incremental_update_wb_lval_black(lobject, lvalue, robject);
+
+#else
+
+   // In this case, we have a configuration problem.  No write barrier
+   // has been defined for this case.
+   assert(0);
+
+#endif
+}
+
+    
+/* If the lval is being written over with something that isn't a pointer
+   to an object, then call: */
+
+LINK_TYPE 
+void write_barrier_lval_clobber(gc_obj_addr lobject,
+				pos_ptr_addr lvalue)
+{
+#if defined(SNAPSHOT_WRITE_BARRIER)
+
+   gc.snapshot_write_barrier(lvalue);
+
+#elif defined(INCREMENTAL_UPDATE_WRITE_BARRIER)
+
+   // noop
+
+#else
+
+   // In this case, we have a configuration problem.  No write barrier
+   // has been defined for this case.
+   assert(0);
+
+#endif
+}
+
+						  
+/* If the rval is known to be a pointer to a fresh (allocated without any
+   intervening calls to gc_safe_point) object call:  */
+
+LINK_TYPE 
+void write_barrier_rval_fresh(gc_obj_addr lobject,
+			      pos_ptr_addr lvalue,
+			      gc_obj_addr new_robject)
+{
+#if defined(SNAPSHOT_WRITE_BARRIER)
+
+   gc.snapshot_write_barrier(lvalue);
+
+#elif defined(INCREMENTAL_UPDATE_WRITE_BARRIER) && defined(ALLOCATE_WHITE)
+
+   gc.incremental_update_wb_rval_white(lobject, lvalue, new_robject);
+
+#elif defined(INCREMENTAL_UPDATE_WRITE_BARRIER) && defined(ALLOCATE_BLACK)
+
+   // noop
+
+#else
+
+   // In this case, we have a configuration problem.  No write barrier
+   // has been defined for this case.
+   assert(0);
+
+#endif
+}
+
+
+/* If the lval and rval are known to be fresh, then call: */
+
+LINK_TYPE 
+void write_barrier_lval_fresh_rval_fresh(gc_obj_addr lobject,
+					 pos_ptr_addr lvalue,
+					 gc_obj_addr new_robject)
+{
+#if defined(SNAPSHOT_WRITE_BARRIER)
+
+   gc.snapshot_write_barrier(lvalue);
+
+#elif defined(INCREMENTAL_UPDATE_WRITE_BARRIER)
+
+   // noop
+
+#else
+
+   // In this case, we have a configuration problem.  No write barrier
+   // has been defined for this case.
+   assert(0);
+
+#endif
+}
+
+
+/* If the lval is an initializing write, and the rval is known to be fresh,
+   then call: */
+
+LINK_TYPE 
+void write_barrier_lval_init_rval_fresh(gc_obj_addr lobject,
+					pos_ptr_addr lvalue,
+					gc_obj_addr new_robject)
+{
+   // noop
+}
+
+LINK_TYPE
+bool is_object_dead(gc_obj_addr object)
+{
+   gc_object_base *obj = (gc_object_base *)((char *)object - 
+					    sizeof(gc_object_base));
+   return(!gc.is_shaded(obj));
+}
+
+#ifdef INLINES
+#include <rtgc/allocator.ci>
+#endif
+#endif

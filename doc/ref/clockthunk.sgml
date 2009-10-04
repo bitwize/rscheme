@@ -1,0 +1,45 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}clock-thunk{/RefName}
+  {RefPurpose}Measure the execution time (as by clock()) of a function.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/clock-thunk/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/thunk/{/ParamDef}{ParamDef role="returns"}
+{Parameter}elapsed{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}thunk{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<function>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}elapsed{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<interval>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Measure the execution time (as by clock()) of a function.
+The clock() function supposedly measures CPU (process) time,
+not wall clock time.{/para}
+{/RefSect1}
+{/RefEntry}

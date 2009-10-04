@@ -1,0 +1,2 @@
+-DM68K_REGS -ffixed-a3 -ffixed-a4 -ffixed-a5 \
+-ffixed-d4 -ffixed-d5 -ffixed-d6 -ffixed-d7

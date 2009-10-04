@@ -1,0 +1,62 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}string-join{/RefName}
+  {RefPurpose}Join some strings{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/string-join/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/delim/ {Parameter/list/{/ParamDef}{ParamDef role="returns"}
+{Parameter}string{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}delim{/Term}
+    {ListItem}{para}
+The delimiter to separate elements of {Parameter}list{/Parameter}.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}list{/Term}
+    {ListItem}{para}
+A proper list of {ClassName/<string>/ instances.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}string{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function does the reverse of {Phrase Role="var"}string-split{/Phrase} and
+joins together the elements of {Parameter}list{/Parameter} with occurrences
+of {Parameter}delim{/Parameter} in between.  {Parameter}delim{/Parameter} may be a character
+or a string.{/para}
+{para}
+{/para}
+{InformalExample}
+{Para}
+{UserInput Role="ToEval"}(string-join #\. '("foo" "bar" "baz")){/UserInput}
+{ComputerOutput Role="EvalsTo"}"foo.bar.baz"{/ComputerOutput}
+{Para}
+{UserInput Role="ToEval"}(string-join ".." '("hi" "there" "bob")){/UserInput}
+{ComputerOutput Role="EvalsTo"}"hi..there..bob"{/ComputerOutput}
+{/InformalExample}
+{/RefSect1}
+{/RefEntry}

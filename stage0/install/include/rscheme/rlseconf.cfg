@@ -1,0 +1,7 @@
+#ifndef _H_RSCHEME_RLSECONF
+#define _H_RSCHEME_RLSECONF
+
+#define RSCHEME_VERSION "0.7.3.4-b7u"
+#define RSCHEME_BUILD "v0.7.3.4-b7u, 2007-05-30"
+#endif /* _H_RSCHEME_RLSECONF */
+

@@ -1,0 +1,59 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    packages/threads/manager/manager.mcf
+ |
+ |          Copyright (C)1997 Donovan Kolbly <d.kolbly@rosette.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.11
+ | Date:    2005-05-03 17:22:24
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ | Purpose: Threads Package control module
+ `------------------------------------------------------------------------|#
+
+((rs.sys.threads.manager
+	"$dist/threads/manager"    ;; what directory to put resulting files in
+	"$dist/modules")           ;; what directory to put image file in
+ ;;
+ ;;  standard imports
+ ;;
+ (open primops *scheme* low-scheme objsys iolib mathlib tables high-scheme)
+ (open paths mlink start)
+ (open corelib syscalls)
+ (open sort)
+ (open unixm)           ; for its environment management
+ (open debugger)        ; for the post-mortem generic function
+ (open regex)
+ ;;
+ ;; header files that our glue code needs
+ ;;
+ (require-c-header "<sys/socket.h>")
+ (require-c-header "<termios.h>")
+ (require-c-header "<string.h>")
+ (require-c-header "<fcntl.h>")
+ (require-c-header "<errno.h>")
+ ;;
+ ;;  .c and .h files
+ ;;
+ (c-files dispatch events systime util synch xevents output process)
+ (h-files systime util struct events synch output process)
+ ;;
+ ;;  .scm files
+ ;;
+ (files critsect)
+ (files class make start)
+ (files mailbox)
+ (files fdport termios sockets)
+ (files timer)
+ (files mboxport packet outport group system futures)
+ (files semaphore condition)
+ (files processio)
+ (files pipe)
+ ;; Towards SRFI-18 support... (but not done yet)
+ (files mutex srfi18)
+ ;
+ ; hook up our roots
+ ;
+ (c-module-roots "NUM_THREAD_ROOTS" "thread_sys_root")
+ ;
+ (export :local))

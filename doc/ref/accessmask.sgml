@@ -1,0 +1,47 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}access-mask{/RefName}
+  {RefPurpose}Create an access mask for {Phrase Role="var"}file-access?{/Phrase}.{/RefPurpose}
+  {RefClass role="Type"}syntax{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/access-mask/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/accessflag/{/ParamDef}{ParamDef role="returns"}
+{Parameter}accessbits{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}accessflag{/Term}
+    {ListItem}{para}
+A name{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}accessbits{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Creates an access mask for the access types 
+{UserInput}read{/UserInput}, 
+{UserInput}write{/UserInput}, 
+{UserInput}execute{/UserInput},
+and {UserInput}exist{/UserInput}.{/para}
+{/RefSect1}
+{/RefEntry}

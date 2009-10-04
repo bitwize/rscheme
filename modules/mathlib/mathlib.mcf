@@ -1,0 +1,20 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    modules/mathlib/mathlib.mcf
+ |
+ |          Copyright (C)1995 Donovan Kolbly <donovan@tkg.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.6
+ | Date:    2005-09-16 11:06:52
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ `------------------------------------------------------------------------|#
+
+((mathlib "$dist/mathlib" "$install/resource/modules")
+ (open low-scheme primops corelib *scheme*)
+ (require-c-header "<stdlib.h>")
+ (require-c-header "<rscheme/hashfn.h>")
+ (h-files arith)
+ (files numbers arith random expt numthy numstr constants)
+ (export :local))
+

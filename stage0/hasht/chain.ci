@@ -1,0 +1,53 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/hasht/chain.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.4
+ * File mod date:    1997-11-29 23:10:52
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ *------------------------------------------------------------------------*/
+
+struct bucket_chain {
+    UINT_32	index;
+    obj		last;
+    obj		first;
+    int		bits;
+    obj         bucket_class;
+};
+
+static void init_chain( obj table, struct bucket_chain *b, int bits )
+{
+    b->index = SLOT(2+BUCKET_CAPACITY);
+    b->last = FALSE_OBJ;
+    b->first = FALSE_OBJ;
+    b->bits = bits;
+    b->bucket_class = gvec_read( table, HASHTABLE_BUCKET_CLASS );
+}
+
+static void chain_insert( struct bucket_chain *b, obj h, obj k, obj v )
+{
+obj last;
+UINT_32 ix = b->index;
+
+    if (ix >= SLOT(2+BUCKET_CAPACITY))
+    {
+	last = make_bucket( b->bucket_class, b->bits );
+	if (EQ(b->last,FALSE_OBJ))
+	    b->first = last;
+	else
+	    gvec_write_fresh_ptr( b->last, BUCKET_OVERFLOW, last );
+	b->last = last;
+	b->index = ix = SLOT(2);
+    }
+    else
+	last = b->last;
+
+    write_bucket_hash( last, ix, h );
+    write_bucket_key( last, ix, k );
+    write_bucket_value( last, ix, v );
+    b->index = ix + SLOT(1);
+}

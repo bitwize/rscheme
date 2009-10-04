@@ -1,0 +1,18 @@
+((a :var <var> pa)
+ (b :var <var> pc)
+ (d :var <var> (link pa (r d r)))
+ (pa :hvec <pair> va pb)
+ (pb :hvec <pair> vb pc)
+ (pc :hvec <pair> vc pd)
+ (pd :hvec <pair> vd ())
+ (va :gvec <bar> (id) 0 'x 'y)
+ (vb :gvec <foo> (id) 1 'p)
+ (vc :gvec <baz> (id) 2)
+ (vd :gvec <baz> (id) 3))
+;;
+
+((d  #f #f b  #f)
+ (a  pa pb pc pd)
+ (#f va vb vc vd))
+
+;;(h (v (h a c) p1 v1) (v - p2 v2) (v b p3 v3) (v - p4 v4))

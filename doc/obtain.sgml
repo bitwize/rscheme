@@ -1,0 +1,15 @@
+{appendix}
+  {title}Obtaining RScheme{/title}
+
+{para}
+This appendix describes where and how to get the
+latest release of RScheme.
+
+{para}
+The official web site for RScheme is:
+{UserInput}http://www.rscheme.org/{/UserInput}
+the latest release should always be linked
+from there, and should be available at least
+in compressed tar file format.
+
+{/appendix}

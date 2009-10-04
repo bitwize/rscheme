@@ -1,0 +1,73 @@
+{Chapter}
+{Title}Pathnames{/Title}
+{Para}
+{Para}
+<!-- per db, can use some harmonization in the abstraction 
+     levels re extn-related-path -->
+{Para}
+&rs; provides a {Emphasis/pathname abstraction/ which provides some
+insulation against the different representation of path names
+on different operating systems.  This facility is only concerned
+with the {Emphasis/naming/ of files, not with the actual files and
+directories in
+the system.
+{Para}
+The basic support provided is the notion of a directory, a base
+filename, and an extension.
+{Para}
+The canonical representation is that of Unix pathnames of the
+general form {Filename}foo/bar/baz.scm{/Filename}.  In this case,
+{Filename}foo/bar{/Filename} is the directory, {UserInput/baz/ is the
+base filename, and {UserInput/scm/ is the extension.
+{Para}
+If there are multiple periods in the part after the directory,
+the last separates the filename from the extension (hence the
+filename part can contain periods).  Periods inside directory
+names are not treated specially.
+{Para}
+The directory notion also includes the notion of {Quote/up/ a directory
+(the {Filename/../ directory in unix and MS-DOS.)
+A canonicalized directory will consist of zero or more {Quote/up/s 
+followed by zero or more directory names.
+The canonicalization process removes occurrences of the form
+{Filename}foo/..{/Filename}, so an {Quote/up/ will never occur in the
+middle of a directory pathname object.
+<!>
+{Sect1} <!--  id="u.pathfns" -->
+{Title}Functions{/Title}
+&ref.str2file;
+&ref.str2dir;
+&ref.path2str;
+&ref.filedir;
+&ref.fileindir;
+&ref.extrelated;
+&ref.apppath;
+&ref.appdirs;
+&ref.path2os;
+{Sect1} <!--  id="u.patheg" -->
+{Title}Example usage{/Title}
+{Para}
+The following examples illustrate the basic usage.
+{/Para}
+{Example}
+{Title}Filename Examples{/Title}
+
+{Para}
+{UserInput Role="ToEval"}(define f (string->file "foo/bar/baz.scm")){/UserInput}
+
+{Para}{UserInput Role="ToEval"}f{/UserInput}
+{Phrase Role="NoPrintForm"}filename {Filename}foo/bar/baz.scm{/Filename}{/Phrase}
+{Para}{UserInput Role="ToEval"}(file-within-dir f){/UserInput} {ComputerOutput Role="EvalsTo"}"baz.scm"{/ComputerOutput}
+{Para}{UserInput Role="ToEval"}(extension-related-path f "o"){/UserInput}
+{Phrase Role="NoPrintForm"}filename {Filename}foo/bar/baz.o{/Filename}{/Phrase}
+  {Para}{UserInput Role="ToEval"}(define d (file-directory f)){/UserInput}
+  {Para}{UserInput Role="ToEval"}d{/UserInput}
+    {Phrase Role="NoPrintForm"}dirname {Filename}foo/bar/{/Filename}{/Phrase}
+  {Para}{UserInput Role="ToEval"}(append-path d (string->file "INDEX")){/UserInput}
+    {Phrase Role="NoPrintForm"}filename {Filename}foo/bar/INDEX{/Filename}{/Phrase}
+  {Para}{UserInput Role="ToEval"}(append-path d (string->file "../INDEX")){/UserInput}
+    {Phrase Role="NoPrintForm"}filename {Filename}foo/INDEX{/Filename}{/Phrase}
+  {Para}{UserInput Role="ToEval"}(append-dirs d (string->dir "../CVS")){/UserInput}
+    {Phrase Role="NoPrintForm"}dirname {Filename}foo/CVS/{/Filename}{/Phrase}
+{/Example}
+{/Sect1}

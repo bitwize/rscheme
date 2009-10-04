@@ -1,0 +1,123 @@
+#! /u/donovan/bin/mrs -script
+
+,(use syscalls)
+
+;;;
+;;;  this program creates a figure for a string literal
+;;;
+
+(define *template* "%!PS-Adobe-3.0 EPSF-3.0
+%%BoundingBox: 0 0 ~a 32
+%%Creator: make-string-figure
+%%CreationDate: ~a
+%%DocumentNeededResources: Courier
+%%EndComments
+
+save
+15 dict begin
+
+/f1 /Courier findfont 8 scalefont def
+/f2 /Courier-Bold findfont 16 scalefont def
+
+% 0 0 ~a 32 rectstroke
+
+6 12 translate
+
+f2 setfont
+2 setlinecap
+
+%  index len rgn -
+
+/rgn {
+   gsave
+   0.667 setgray
+   16 mul exch 16 mul    % len*16 index*16
+   0 3 -1 roll % index*16 0 len*16
+   18 rectfill
+   grestore
+} def
+
+/tic {
+  x 0 moveto 0 3 rlineto 0.5 setlinewidth stroke
+  gsave
+    f1 setfont
+    i tmp cvs dup
+    x -8 moveto
+    stringwidth pop 2 div neg 0 rmoveto show
+  grestore
+} def
+
+/strpic { 
+  {
+    aload pop rgn
+  } forall
+  /tmp 10 string def
+  /i 0 def
+  /x 0 def
+  {
+    x 3 add 4 moveto
+    tmp 0 3 -1 roll put
+    tmp 0 1 getinterval show
+    tic
+    /x x 16 add def
+    /i i 1 add def
+  } forall
+  tic
+  0 0 moveto
+  x 0 lineto stroke
+} def
+")
+
+
+(define (main args)
+  (if (or (equal? args '("-h"))
+	  (not (= (length args) 2))
+	  (not (string=? (car args) "-o")))
+      (begin
+	(format (current-error-port) "usage: strfig2eps -o out.eps < strfig\n")
+	(process-exit 1)))
+  (let ((spec (read)))
+    (make-string-figure (cadr args) (car spec) (cadr spec))))
+
+(define (make-string-figure (output-path <string>) 
+			    (str <string>) 
+			    (regions <list>))
+  (call-with-output-file
+      output-path
+    (lambda (port)
+      (make-string-figure* port str regions))))
+
+(define (make-string-figure* (port <output-port>)
+			     (str <string>) 
+			     (regions <list>))
+  (let* ((n (string-length str))
+	 (w (* (+ n 1) 16)))
+    (format port *template* w (time) w)
+    (format port "(~a)\n[\n" str)
+    (for-each
+     (lambda (rgn)
+       (format port " [ ~d ~d ]\n"
+	       (car rgn) 
+	       (- (cadr rgn) (car rgn))))
+     regions)
+    (format port "] strpic\n")
+    (format port "end restore\n%%Trailer\n%%EOF\n")))
+
+#|
+,(use regex)
+
+(define (t)
+  (let ((str "1 2 Buckle my shoe")
+	(fw (reg-expr->offsets-proc '(let a (+ alpha)))))
+    (bind ((s e x1 x2 (fw str))
+	   (s e x3 x4 (fw str x2)))
+      (make-string-figure
+       "/tmp/test1.eps"
+       str
+       (list (list x1 x2)))
+      (make-string-figure
+       "/tmp/test2.eps"
+       str
+       (list (list x3 x4))))))
+
+|#

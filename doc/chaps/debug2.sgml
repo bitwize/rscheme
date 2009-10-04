@@ -1,0 +1,346 @@
+{Chapter}
+{Title}More Debugging in &rs;{/Title}
+ 
+{Para}
+Note: This tutorial is written for the RScheme system. Although some of these materials, such as adding display expressions in the code, would be suitable for other Scheme systems, most are specific to RScheme. The runtime messages of all examples are taken from RScheme version 0.7.1, running Solaris 2.5 on Sun SPARCstation 5.
+{Para}
+Debugging programs is never a pleasure. However, with modern debugging facilities this task is not as hard as it once was. The RScheme system has debugging facilities which will be discussed later in this tutorial. In other Scheme systems, portable debugging tricks, such as adding display expressions, are used.
+{Para}
+First, we will cover the portable ways to debug the Scheme programs. Second, we will go over the basic debugging facilities of RScheme. Finally, we will introduce advanced debugging facilities. The first two sections are easy to follow, since they do not require much background beyond a little Scheme programming experience. The final part, however, is highly related to RScheme implementation. Therefore, a fair understanding of the implementation of RScheme is required to understand the materials therein.
+{Para}
+{Para}
+{Sect1}
+{Title}Portable Debugging Methods{/Title}
+{Para}
+In this section, we will cover the portable debugging methods 
+you can use in almost any Scheme system. However, keep in mind that RScheme-specific facilities are usually easier to use for debugging an RScheme system.
+{Para}
+{subsection}Analyzing Error Messages
+{Para}
+In most imperative programming languages, the compilation of source programs into object code results in much source information loss. However, most Scheme compiler implementations reserve the expression level information in the code they produce. The result is runtime error messages that generally give out 
+more accurate descriptions regarding problems in the program.
+{Para}
+In the RScheme system, there are two kinds of errors, some that occur at
+compile time and some that occur at run time. Therefore, we have
+two kinds of error messages. However, in this section, we don't distinguish them explicitly. For debugging purposes, most kinds of error messages are treated the same.
+{Para}
+Following is a discussion of the most common error messages:
+{Para}
+{subsubsection}Reference to unbound variables.
+{Para}
+This happens when you refer to unbound variables in your code. 
+It may be caused by misspelled identifiers. If you type in an 
+undefined identifier at the RScheme prompt, you will get a
+runtime error. 
+{Para}
+{script}
+top[38]=>must
+runtime error: top-level-var `must' not bound
+in: eval
+warning in expr: must                                              
+>> (#f) references unbound variable must
+{/script}
+{Para}
+If you refer to an unbound variable in a procedure definition, you 
+will probably get a compile warning. For example, if we have the 
+following piece of code
+{Para}
+{script}
+(define (third ls)
+    (caddr lis))
+{/script}
+{Para}
+When we type it in, we will get the following message:
+<!>
+{script}
+top[40]=>(define (third ls)
+	    (caddr lis))
+value := third
+warning: (caddr third) references unbound variable lis
+top[41]=>
+{/script}
+{Para}
+Apparently, here we should use "ls" not "lis" in the body
+of the procedure "third". If we ignore this warning and 
+run procedure {UserInput/third/, we get a runtime error:
+<!>
+{script}
+top[41]=>(third '(1 2 3 4))
+runtime error: top-level-var `lis' not bound
+in: third
+break[0]=>
+{/script}
+{Para}
+Sometimes, however we do refer to some procedures defined
+in other files which will be loaded in later. We can ignore
+those warnings if we are sure that the required procedures
+will be there when the code is running.
+{Para}
+{Para}
+{subsubsection}Calling a procedure with wrong number of arguments
+{Para}
+One of the most common mistakes is to supply too few or
+too many arguments to a procedure call.  
+{Para}
+{Para}
+{subsection}Inserting display Expressions in Your Code
+{Para}
+{subsubsection}Where to put the display expressions
+{Para}
+{subsubsection}Advantages of inserting display expressions
+{Para}
+{subsubsection}Disadvantages of inserting display expressions
+{Para}
+{subsection}Infinite Loops or Recursions
+{Para}
+{Sect1}
+{Title}Basic Debugging Facilities in RScheme{/Title}
+{Para}
+It is better to use the RScheme debugging facilities than the
+methods discussed in the last section. The RScheme facilities are more
+powerful and give out more information than you can get from inserting
+a display expression. With RScheme, you can set a break point and
+control the execution just as you would with the debugging tools for
+C. RScheme is also very easy to use.
+{Para}
+{subsection}Background: REPL commands and modules
+{Para}
+Here we will give a little background information before we discuss the RScheme debugging facilities.
+{Para}
+{subsection}REPL commands
+{Para}
+The read-eval-print loop is actually the interface program that
+accepts the commands or programs (Scheme expressions) which users
+input. All of the programs we type in at the RScheme prompt are
+received by a read-eval-print loop. First, these programs are
+loaded. Then they are evaluated. Finally, the values are
+printed. Sometimes things other than Scheme expressions are typed in
+at the RScheme prompt. For instance, the command {UserInput/,exit/ is not
+evaluated. It is used to inform the RScheme system to stop. There are
+other similar commands to ,exit. We call these REPL commands. They are
+read in by a read-eval-print loop, but they are not
+evaluated. Instead, we use them to change the behavior of the RScheme
+system. The REPL commands and normal Scheme s-expressions are at two
+different levels.
+{Para}
+The REPL commands are prefixed by a comma. If the commands
+need arguments, then the command name and arguments are 
+enclosed by a pair of parenthesis. Here are some examples
+of REPL commands:
+{script}
+,exit
+,help
+,(trace my-prog)
+{/script}
+{Para}
+Because of the prefixed comma, the REPL commands sometimes
+are also known as comma commands.
+{Para}
+{subsubsection}Modules
+{Para}
+&rs; works on modules. There are several modules
+available, which can be loaded to add some functionality
+to the RScheme system. We can use a REPL command to specify what
+module we want to include. For debugging, we must load a debugger module. Here is the exact command we should type:
+{script}
+,(use debugger)
+{/script}
+{Para}
+The RScheme system will then load all the debugging facilities we discussed in this section.
+{Para}
+{Para}
+{subsection}Available Facilities
+{Para}
+The RScheme system provides handy debugging facilities at the REPL command
+level. Here are listed the REPL commands related to debugging. Some
+commands are not designed for debugging only, but we include them since
+they are often used in debugging.
+{Para}
+{subsubsection}help
+{Para}
+The REPL command help has three forms:
+<!>
+{script}
+,help
+,h
+,?
+{/script}
+{Para}
+When typed in, this shows a list of available REPL commands for 
+the default RScheme module.
+{Para}
+Strictly speaking, {UserInput/,help/ is not a debugging facility, but we
+often need it in order to check what commands are available.  This is
+similar to the use of the help command in gdb.
+{Para}
+The REPL command is available in the default user module. We do
+not need to load the debugger module to use it.
+{Para}
+{Para}
+{subsubsection}apropos
+{Para}
+{UserInput/apropos/ is used to find variable names having a given
+substring.
+{script}
+,(apropos str)
+{/script}
+{Para}
+The output of this command contains a list of top-level bindings 
+which have variable names containing this substring.
+{Para}
+For example, if we type in
+{script}
+,(apropos apropos)
+{/script}
+{Para}
+We get the following response:
+{script}
+top[45]=>,(apropos apropos)
+    user : apropos
+    repl : apropos* cmd-proc/apropos
+{/script}
+{Para}
+Here we find apropos in the {UserInput/user/ module and two variables
+whose names have the substring {UserInput/apropos/ in the {UserInput/repl/
+module.
+{Para}
+The binding information command is very useful when you debug a fairly
+large program in which there may be more than one file, and each file
+may contain many procedural definitions. These files or procedures may
+get loaded into the system several times, making it difficult to
+remember the exact names of all of the different procedures.  However,
+when the binding information command is used, only part of a procedure
+name, perhaps a keyword or other ad hoc convention, must be
+remembered.
+{Para}
+As with the help command, apropos is not a facility specific to the
+debugger module. We can also use it in the default user module.
+<!>
+{subsubsection}trace
+{Para}
+While inserting display expressions in order to see a
+trace of program execution is portable, it is also inconvenient
+and error-prone.  Instead, one can use the debugging command
+{UserInput/trace/. It achieves
+the effect of inserting display expressions, 
+without the error-prone source-code modifications.
+{Para}
+This command takes one or more arguments; each argument is the name 
+of a procedure to be traced.  The system will print out the procedure 
+name and the arguments each time the program enters a procedure being 
+traced. It also displays the return value each time the program leave 
+the procedure being traced. 
+{Para}
+If we trace a procedure, we say we set a tracepoint on that procedure.
+If we have already set a tracepoint or breakpoint (see 2.2.4) on that 
+procedure, use the trace command on that procedure will cause an error.
+The previous set tracepoint or breakpoint will be cleared by this error.
+{Para}
+The trace command is a debugger module command. We can only use it
+if the {UserInput/debugger/ module is loaded.
+{Para}
+To stop tracing, you can use the {UserInput/no-break/ command (see 2.2.5).
+{Para}
+Suppose we want to trace a procedure list-sum, we type in
+<!>
+{script}
+top[76]=>,(trace list-sum)
+#[<tracepoint> #6]: break on list-sum (installed)
+{/script}
+{Para}
+The message tells us we have set tracepoint No.6 on procedure list-sum.
+Now we try to call list-sum
+<!>
+{script}
+top[77]=>(list-sum '(5 6 7))
+entry to list-sum: (1 arguments)
+   arg[0] := (5 6 7)
+entry to list-sum: (1 arguments)
+   arg[0] := (6 7)
+entry to list-sum: (1 arguments)
+   arg[0] := (7)
+entry to list-sum: (1 arguments)
+   arg[0] := ()
+return from list-sum: 0
+return from list-sum: 7
+return from list-sum: 13
+return from list-sum: 18
+value := 18
+top[78]=>
+{/script}
+{Para}
+Here all the entrances into and exits from {Phrase Role="var"}list-sum{/Phrase} are
+recorded.  We know, even without looking at the source code, that
+{Phrase Role="var"}list-sum{/Phrase} is implemented by recursion.
+{Para}
+Using the trace command is much more convenient than inserting 
+the display expressions.  Since it doesn't change the source code, 
+it is much easier to stop tracing.  Deleting all the inserted 
+expressions for debugging in the source code, on the other hand, 
+is error-prone and tedious. 
+<!>
+{subsubsection}break
+{Para}
+The trace command doesn't stop the execution of the program being
+traced. Sometimes we do want to stop the program when it enters a
+function. The break command gives us the power to stop the execution
+of a program at a specified point. Those procedures to be traced by
+the break command are called breakpoint procedures.
+{Para}
+The break command also accepts one or more procedure names as the 
+arguments. Instead of only printing out the procedure arguments 
+when entering a procedure, it will set the system into a break-level
+read-eval-print loop, i.e. BRK, too.  At BRK prompt, we can type
+in continue command to finish this procedure call. We can use another
+procedure return to force this call to return another specified value.
+The continue command and the return command are only availalbe under
+the BRK loop. They are not the REPL command.
+{Para}
+(!!!ZQ comment: I really doubt the usefulness of the functionality of
+the return command.)
+{Para}
+As for the trace command, it is an error to use the break command 
+onup a procedure that has already been set tracepoint or breakpoint. 
+This will cause the previous set tracepoint or breakpoint being cleared.
+The no-break command is used to clear the break point on a procedure.
+{Para}
+(!!!ZQ comment: Isn't it nice to use no-argument version of the break 
+command to list all active breakpoints?)
+{Para}
+{Para}
+{subsubsection}no-break
+{Para}
+This command is used to get rid of the tracepoint or the breakpoint
+on a procedure. It accepts procedure names as the arguments. It is
+available in the debugger module only. If the no-break command is
+used on a procedure without tracepoint and breakpoint, the system
+will complain about it.
+{Para}
+ 
+{subsubsection}fg-abt
+{Para}
+We will see later that there are facilities to show the backtrace
+of function calls and the continuation chain (roughtly equivalent
+to the runtime stack in traditional programming language 
+implementations. For detailed discussion of continuation chain, see
+the chapter about call-with-current-continuation and some related
+sections in other chapters.) The 
+{Para}
+We use fg-abt, is to turn on APPLY tracing.
+{Para}
+{subsubsection}abt
+{Para}
+{subsubsection}bt
+{Para}
+{subsection}How to Use The Debugging Facilities
+{Para}
+{subsection}An Example
+{Para}
+{Sect1}
+{Title}Advanced Debugging Facilities in RScheme{/Title}
+{Para}
+{subsection}Other Useful Pre-defined Procedures 
+{Para}
+{subsection}Special Treatment with Lisp-style Macros
+{Para}
+{subsubsection}Display the expanded code

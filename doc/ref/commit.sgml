@@ -1,0 +1,55 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}commit{/RefName}
+  {RefPurpose}Commit changes to persistent store{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/commit/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/pstore/{/ParamDef}{ParamDef role="returns"}
+{Parameter}locator{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}pstore{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<persistent-store>/.
+  {/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}object{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<object>/.  Optional; default
+       is to not change the root object.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}locator{/Term}
+    {ListItem}{para}
+An object describing the location of the commit record
+       (currently an instance of {ClassName/<pair>/).{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}{Title}Description{/Title}
+{Para}
+This procedure synchronizes the in-memory object store
+with the representation on disk.  It uses the fsync system
+call to ensure the data has been pushed onto disk.
+{Comment}We should support a faster mode, where all we
+protect against is the program crashing, in which case we
+don't need to fsycn.{/Comment}
+{/RefEntry}

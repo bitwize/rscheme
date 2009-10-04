@@ -1,0 +1,74 @@
+/* OpenBSD memory management support.
+   Modified from mmglue.bsd by Bengt Kleberg.
+
+   Everything, but
+   init_mm()/handler()/<vm/vm_param.h>/DEFAULT_PAGE_SIZE/SA_SIGINFO,
+   copied from mmglue.bsd.  */
+
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <signal.h>
+
+/* We need to know the page size so we can reduce the alignment
+   overhead in memory allocations.  */
+#if HAVE_VM_VM_PARAM_H
+#include <vm/vm_param.h>
+#endif
+
+#if HAVE_UVM_UVM_PARAM_H
+#include <uvm/uvm_param.h>
+#endif
+
+#if DEFAULT_PAGE_SIZE >= MM_PAGE_SIZE
+
+/* Alignment to system pages is good enough.  */
+#define MAX_ALIGN 0
+#define mmalign(a) (a)
+
+#else /* DEFAULT_PAGE_SIZE < MM_PAGE_SIZE */
+
+/* We need to make sure the allocation is aligned according to the
+   internal page representation.  */
+#define mmalign(a) (((unsigned int)(a) + MM_PAGE_SIZE - 1) & ~MM_PAGE_MASK)
+
+/* If the size of the allocation is aligned, the maximum number of
+   extra bytes needed for aligning the position of the allocation is
+   the difference between page sizes.  */
+#define MAX_ALIGN (MM_PAGE_SIZE - DEFAULT_PAGE_SIZE)
+
+#endif /* DEFAULT_PAGE_SIZE < MM_PAGE_SIZE */
+
+static void raw_mm_free( void *base, size_t bytes )
+{
+  munmap( base, bytes );
+}
+
+static void *
+raw_mm_alloc (size_t bytes, enum mm_mode mode)
+{
+  char *p;
+
+  p = mmap (NULL, mmalign (bytes) + MAX_ALIGN, prot[mode],
+	    MAP_ANON | MAP_PRIVATE, -1, 0);
+  return p != (char *)0xffffffff ? (void *)mmalign (p) : NULL;
+}
+
+
+static void
+handler (int sig, siginfo_t *sip, struct sigcontext *scp)
+{
+  mmc_access_failed (sip->_data._fault._addr);
+}
+
+void
+init_mm (void)
+{
+  struct sigaction sa;
+
+  sa.sa_handler = (void *)handler;
+  sa.sa_mask = (sigset_t)0;
+  sa.sa_flags = SA_RESTART|SA_SIGINFO;
+
+  sigaction (SIGSEGV, &sa, NULL);
+  sigaction (SIGBUS, &sa, NULL);
+}

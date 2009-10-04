@@ -1,0 +1,52 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    packages/rstore/mmglue.aix
+ *
+ *          Copyright (C)1996 Donovan Kolbly <d.kolbly@rosette.com>
+ *          as part of the RScheme project, licensed for free use
+ *
+ * Version: 1.5
+ * Date:    2000-11-21 23:25:05
+ * Build:   v0.7.3.4-b7u, 2007-05-30
+ *
+ * Purpose: ** AIX ** memory management glue
+ *------------------------------------------------------------------------*/
+
+
+static void raw_mm_free( void *base, size_t bytes )
+{
+  munmap( base, bytes );
+}
+
+static void *raw_mm_alloc( size_t bytes, enum mm_mode mode )
+{
+caddr_t p;
+
+  p = mmap( NULL, 
+	    bytes + MM_PAGE_SIZE, 
+	    prot[mode], 
+	    MAP_ANONYMOUS|MAP_VARIABLE, 
+	    -1, 0 );
+  if (p != (caddr_t)0xffffffff)
+    {
+      return (void *)((((unsigned long)p) + MM_PAGE_SIZE - 1) & ~MM_PAGE_MASK);
+    }
+  return NULL;
+}
+
+static void handler( int sig, int code, struct sigcontext *SCP )
+{
+  mmc_access_failed( (void *)SCP->sc_jmpbuf.jmp_context.o_vaddr );
+}
+
+
+void init_mm( void )
+{
+  struct sigaction sa;
+  
+  sa.sa_handler = (void *)handler;
+  sigemptyset( &sa.sa_mask );
+  sa.sa_flags = SA_RESTART;
+  
+  sigaction( SIGSEGV, &sa, NULL );
+}
+

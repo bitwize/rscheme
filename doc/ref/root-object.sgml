@@ -1,0 +1,21 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}root-object{/RefName}
+  {RefPurpose}Return the root object for a persistent store{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/root-object/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/pstore/{/ParamDef}{ParamDef role="returns"}
+{Parameter}object{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{/RefSynopsisDiv}
+{RefSect1}{Title}Description{/Title}
+{Para}
+This procedure extracts a pointer to the object last named
+as the root object of the repository.  The root object may
+be changed with {Phrase role="var"}set-root-object!{/Phrase}.
+{/RefEntry}

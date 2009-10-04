@@ -1,0 +1,100 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}reg-expr->proc{/RefName}
+  {RefPurpose}Compiles a regular expression{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/reg-expr->proc/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/expr/{/ParamDef}{ParamDef role="returns"}
+{Parameter}proc{/Parameter} {Parameter}list{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}expr{/Term}
+    {ListItem}{para}
+A regular expression.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}proc{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<function>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}list{/Term}
+    {ListItem}{para}
+A list describing the proc's return values.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function compiles a regular expression
+into a callable object.  The valid forms of regular expressions
+are given in the table at the beginning of this section.{/para}
+{para}
+The second return value, {Parameter}list{/Parameter}, describes the values that
+will be returned from {Parameter}proc{/Parameter} when it finds a match.  The
+first element is always the symbol {UserInput}substring{/UserInput}, indicating
+that the proc returns the start and end index of the substring
+that matched.  The remaining elements are the names from each
+occurrence of a {UserInput}let{/UserInput} form in {Parameter}expr{/Parameter}, indicating the
+strings returned for each use of {UserInput}let{/UserInput}.  {UserInput}let{/UserInput}'s without
+names are assigned integer names 1, 2, 3, ...
+[really, {UserInput}save{/UserInput} is the appopriate choice for unnamed {UserInput}let{/UserInput}'s]{/para}
+{para}
+{/para}
+{InformalExample}{Para}
+{UserInput Role="ToEval"}(reg-expr->proc 
+  '(seq
+     (+ space) 
+     (let w (+ alpha)))){/UserInput}
+{Phrase Role="NoPrintForm"}#[<procedure>]{/Phrase}
+{ComputerOutput Role="EvalsTo"}(substring w){/ComputerOutput}
+{/InformalExample}
+{para}
+If the {Parameter}proc{/Parameter} finds a match, it return two values --
+the start and end index of the substring that matched --
+plus one string for each {UserInput}let{/UserInput} construct in
+the regular expression.{/para}
+{para}
+Since the {Parameter}proc{/Parameter} returns multiple values, the {Phrase Role="var"}bind{/Phrase}
+construct may be used to capture the multiple values.{/para}
+
+{InformalExample}
+{Para}
+{UserInput Role="ToEval"}<!>
+(define q
+  (reg-expr->proc
+    '(seq
+      (+ #\*)
+      (save (+ alpha))))){/UserInput}
+{Para}{UserInput Role="ToEval"}(define str "...***hello there"){/UserInput}<!>
+{Para}{UserInput Role="ToEval"}(q str){/UserInput}<!>
+{ComputerOutput Role="EvalsTo"}3{/ComputerOutput}<!>
+{ComputerOutput Role="EvalsTo"}11{/ComputerOutput}<!>
+{ComputerOutput Role="EvalsTo"}"hello"{/ComputerOutput}<!>
+{Para}{UserInput Role="ToEval"}(substring str 3 11){/UserInput}<!>
+{ComputerOutput Role="EvalsTo"}"***hello"{/ComputerOutput}<!>
+{Para}{UserInput Role="ToEval"}<!>
+(bind ((s e w (q str))) 
+  w){/UserInput}
+{ComputerOutput Role="EvalsTo"}"hello"{/ComputerOutput}
+{/InformalExample}
+{/RefSect1}
+{/RefEntry}

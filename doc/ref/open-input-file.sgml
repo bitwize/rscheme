@@ -1,0 +1,45 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}open-input-file{/RefName}
+  {RefPurpose}Creates an input port from a file name{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/open-input-file/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/string/{/ParamDef}{ParamDef role="returns"}
+{Parameter}input-port{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}string{/Term}
+    {ListItem}{para}
+An instance of <string> representing a file name.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}input-port{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<input-port>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function creates a new input port from a file name.  This
+port can then subsequently be used in input operations such as
+read, read-char, and peek-char.{/para}
+{/RefSect1}
+{/RefEntry}

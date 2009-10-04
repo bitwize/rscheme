@@ -1,0 +1,51 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}day->time{/RefName}
+  {RefPurpose}Construct a time from a day and seconds within the day.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/day->time/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/day/ {Parameter/sec/{/ParamDef}{ParamDef role="returns"}
+{Parameter}t{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}day{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}sec{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}t{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<time>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Construct a time based on the day and the seconds (CUT) within the day.
+The day is a number based at 1/1/1, so that 1/1/70 is day number
+719163.  [doesn't work if day < 719163, because times are unix based]{/para}
+{/RefSect1}
+{/RefEntry}

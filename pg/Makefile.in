@@ -1,0 +1,48 @@
+#---------------------------------------------------------*-Makefile-*----#
+#   File:    pg/Makefile.in
+#
+#          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+#          as part of the RScheme project, licensed for free use
+#
+# Version: 1.6
+# Date:    2003-08-07 07:42:38
+# Build:   v0.7.3.4-b7u, 2007-05-30
+#
+# Purpose: `rs.db.pg' top-level makefile
+#	   (invoked from make.pkg, though)
+#-------------------------------------------------------------------------#
+
+RSCHEME_DIR=@rs_prefix@
+INSTALL=@rs_prefix@
+
+RSC=$(RSCHEME_DIR)/bin/rsc
+PGINC=@pg_include@
+PGLIB=@pg_lib@
+SRCFILES=classes.scm cnxn.scm genmodel.scm gettuple.scm \
+	query.scm result.scm safeglue.scm test.scm util.scm gettuple.c \
+	module.scm
+MORE_LIBS=@more_libs@
+
+rs_db_pg.mif rs_db_pg.mak: $(SRCFILES)
+	$(RSC) -p --makefile=rs_db_pg.mak module.scm
+
+librs_db_pg.so: rs_db_pg.mif rs_db_pg.mak
+	$(MAKE) -f rs_db_pg.mak INSTALL_DIR=$(INSTALL) \
+	  XCFLAGS="-I$(PGINC)" \
+	  XLFLAGS="-L$(PGLIB) -lpq $(MORE_LIBS)" librs_db_pg.so
+
+install:: librs_db_pg.so
+	$(MAKE) -f rs_db_pg.mak INSTALL_DIR=$(INSTALL) \
+	  XCFLAGS="-I$(PGINC)" \
+	  XLFLAGS="-L$(PGLIB) -lpq $(MORE_LIBS)" install.so
+
+uninstall::
+	(cd $(INSTALL_DIR)/resource/modules ; \
+	 rm -f librs_db_pg.so rs_db_pg.mif rs_db_pg.mx)
+
+clean::
+	rm -f *.o rs_db_pg.* rs_db_pg_l.c librs_db_pg.so
+	rm -f rs_db_pg_p.h rs_db_pg_r.h includes.lst
+	rm -f result.c query.c gettuple1.c cnxn.c
+
+all:: install

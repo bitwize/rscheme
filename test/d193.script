@@ -1,0 +1,6 @@
+#!rs -script
+(display "Hello\n")
+(define (main args)
+  (for-each (lambda (a)
+              (format #t "[~a]\n" a))
+            args))

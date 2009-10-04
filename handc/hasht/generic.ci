@@ -1,0 +1,643 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/hasht/generic.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.7
+ * File mod date:    1997-11-29 23:10:52
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ *------------------------------------------------------------------------*/
+
+PROLOGUE(generic_lookup )
+
+BEGIN_FWD(generic_lookup )
+    FWD_MONOTONE(generic_lookup_0  )
+    FWD_MONOTONE(generic_lookup_1  )
+    FWD_MONOTONE(generic_lookup_2  )
+    FWD_MONOTONE(generic_lookup_3  )
+END_FWD(generic_lookup )
+
+MONOTONE( generic_lookup_0    ) 
+{
+UINT_32 i;
+obj h, vec, bucket;
+
+    assert( arg_count_reg == ((0)  + 3) );
+    assert( OBJ_ISA_FIXNUM( REG1 ) );
+
+    h = REG1;
+    
+    vec = gvec_read( REG0, HASHTABLE_DIRECTORY );
+    
+    bucket = read_dir( vec, h );
+    
+    while (!EQ(bucket,FALSE_OBJ))
+    {
+        for (i=SLOT(2); i<SLOT(2+BUCKET_CAPACITY); i+=sizeof(obj))
+	{
+	    if (EQ(read_bucket_hash(bucket,i),h))
+	    {
+	    obj proc, key = REG2;
+	    
+		proc = gvec_read( REG0, HASHTABLE_EQ_PROC );
+		
+		 
+
+		REG4  = RIBYTES_TO_FXWORDS(i);
+		REG3  = bucket;
+		SAVE_CONT5(  generic_lookup_1    ) ;
+		
+		 
+		
+		REG0 = read_bucket_key(bucket,i);
+		REG1 = key;
+		APPLYF( 2, proc );
+	    }
+	}
+	bucket = gvec_read( bucket, BUCKET_OVERFLOW );
+    }
+    JUMP(3+ (0) ,generic_lookup_3  );
+}
+
+MONOTONE( generic_lookup_1    ) 
+{
+UINT_32 i;
+obj bucket, h;
+
+    if (EQ(REG0,FALSE_OBJ))
+    {
+	RESTORE_CONT5() ;
+        bucket = REG3 ;
+	i = FXWORDS_TO_RIBYTES(REG4 ) + SLOT(1);
+	h = REG1;
+
+	do {
+	    for (; i<SLOT(2+BUCKET_CAPACITY); i+=SLOT(1))
+	    {
+		if (EQ(read_bucket_hash(bucket,i),h))
+		{
+		obj proc, key = REG2;
+		
+		    proc = gvec_read( REG0, HASHTABLE_EQ_PROC );
+		
+		     
+
+		    REG4  = RIBYTES_TO_FXWORDS(i);
+		    REG3  = bucket;
+		    SAVE_CONT5(  generic_lookup_1    ) ;
+
+		     
+		    
+		    REG0 = read_bucket_key(bucket,i);
+		    REG1 = key;
+		    APPLYF( 2, proc );
+		}
+	    }
+	    i = SLOT(2);
+	    bucket = gvec_read( bucket, BUCKET_OVERFLOW );
+	} while (!EQ(bucket,FALSE_OBJ));
+	
+	 
+	JUMP(3+ (0) ,generic_lookup_3  );
+    }
+    else
+    {
+	RESTORE_CONT5() ;
+         
+	JUMP(5+ (0) ,generic_lookup_2  );
+    }
+}
+
+MONOTONE( generic_lookup_2    )   
+{
+    REG0 = read_bucket_value( REG3, FXWORDS_TO_RIBYTES(REG4) );
+    RETURN(1);
+}
+
+MONOTONE( generic_lookup_3    )   
+{
+    REG0 = FALSE_OBJ;
+    RETURN(0);
+}
+
+EPILOGUE(generic_lookup )
+
+BEGIN_BACK(generic_lookup )
+  BACK_MONOTONE(generic_lookup_0  )
+  BACK_MONOTONE(generic_lookup_1  )
+  BACK_MONOTONE(generic_lookup_2  )
+  BACK_MONOTONE(generic_lookup_3  )
+END_BACK(generic_lookup )
+
+static struct function_descr generic_lookup_descr = {
+	&rscheme_hasht_part,
+	JUMP_TABLE(generic_lookup ),
+	"generic-hash-table-lookup"  };
+
+
+
+PROLOGUE(generic_probe )
+
+BEGIN_FWD(generic_probe )
+    FWD_MONOTONE(generic_probe_0  )
+    FWD_MONOTONE(generic_probe_1  )
+    FWD_MONOTONE(generic_probe_2  )
+    FWD_MONOTONE(generic_probe_3  )
+END_FWD(generic_probe )
+
+MONOTONE( generic_probe_0    ) 
+{
+UINT_32 i;
+obj h, vec, bucket;
+
+    assert( arg_count_reg == ((0)  + 3) );
+    assert( OBJ_ISA_FIXNUM( REG1 ) );
+
+    h = REG1;
+    
+    vec = gvec_read( REG0, HASHTABLE_DIRECTORY );
+    
+    bucket = read_dir( vec, h );
+    
+    while (!EQ(bucket,FALSE_OBJ))
+    {
+        for (i=SLOT(2); i<SLOT(2+BUCKET_CAPACITY); i+=sizeof(obj))
+	{
+	    if (EQ(read_bucket_hash(bucket,i),h))
+	    {
+	    obj proc, key = REG2;
+	    
+		proc = gvec_read( REG0, HASHTABLE_EQ_PROC );
+		
+		 
+
+		REG4  = RIBYTES_TO_FXWORDS(i);
+		REG3  = bucket;
+		SAVE_CONT5(  generic_probe_1    ) ;
+		
+		 
+		
+		REG0 = read_bucket_key(bucket,i);
+		REG1 = key;
+		APPLYF( 2, proc );
+	    }
+	}
+	bucket = gvec_read( bucket, BUCKET_OVERFLOW );
+    }
+    
+     
+    JUMP(3+ (0) ,generic_probe_3  );
+}
+
+MONOTONE( generic_probe_1    ) 
+{
+UINT_32 i;
+obj bucket, h;
+
+    if (EQ(REG0,FALSE_OBJ))
+    {
+	RESTORE_CONT5() ;
+        bucket = REG3 ;
+	i = FXWORDS_TO_RIBYTES(REG4 ) + SLOT(1);
+	h = REG1;
+
+	do {
+	    for (; i<SLOT(2+BUCKET_CAPACITY); i+=SLOT(1))
+	    {
+		if (EQ(read_bucket_hash(bucket,i),h))
+		{
+		obj proc, key = REG2;
+		
+		    proc = gvec_read( REG0, HASHTABLE_EQ_PROC );
+		
+		     
+
+		    REG4  = RIBYTES_TO_FXWORDS(i);
+		    REG3  = bucket;
+		    SAVE_CONT5(  generic_probe_1    ) ;
+
+		     
+		    
+		    REG0 = read_bucket_key(bucket,i);
+		    REG1 = key;
+		    APPLYF( 2, proc );
+		}
+	    }
+	    i = SLOT(2);
+	    bucket = gvec_read( bucket, BUCKET_OVERFLOW );
+	} while (!EQ(bucket,FALSE_OBJ));
+	
+	 
+	JUMP(3+ (0) ,generic_probe_3  );
+    }
+    else
+    {
+	RESTORE_CONT5() ;
+         
+	JUMP(5+ (0) ,generic_probe_2  );
+    }
+}
+
+MONOTONE( generic_probe_2    )   
+{
+    REG0 = TRUE_OBJ;
+    RETURN(1);
+}
+
+MONOTONE( generic_probe_3    )   
+{
+    REG0 = FALSE_OBJ;
+    RETURN(0);
+}
+
+EPILOGUE(generic_probe )
+
+BEGIN_BACK(generic_probe )
+  BACK_MONOTONE(generic_probe_0  )
+  BACK_MONOTONE(generic_probe_1  )
+  BACK_MONOTONE(generic_probe_2  )
+  BACK_MONOTONE(generic_probe_3  )
+END_BACK(generic_probe )
+
+static struct function_descr generic_probe_descr = {
+	&rscheme_hasht_part,
+	JUMP_TABLE(generic_probe ),
+	"generic-hash-table-probe"  };
+
+PROLOGUE(generic_remove )
+
+BEGIN_FWD(generic_remove )
+    FWD_MONOTONE(generic_remove_0  )
+    FWD_MONOTONE(generic_remove_1  )
+    FWD_MONOTONE(generic_remove_2  )
+    FWD_MONOTONE(generic_remove_3  )
+END_FWD(generic_remove )
+
+MONOTONE( generic_remove_0    ) 
+{
+UINT_32 i;
+obj h, vec, bucket;
+
+    assert( arg_count_reg == ((0)  + 3) );
+    assert( OBJ_ISA_FIXNUM( REG1 ) );
+
+    h = REG1;
+    
+    vec = gvec_read( REG0, HASHTABLE_DIRECTORY );
+    
+    bucket = read_dir( vec, h );
+    
+    while (!EQ(bucket,FALSE_OBJ))
+    {
+        for (i=SLOT(2); i<SLOT(2+BUCKET_CAPACITY); i+=sizeof(obj))
+	{
+	    if (EQ(read_bucket_hash(bucket,i),h))
+	    {
+	    obj proc, key = REG2;
+	    
+		proc = gvec_read( REG0, HASHTABLE_EQ_PROC );
+		
+		 
+
+		REG4  = RIBYTES_TO_FXWORDS(i);
+		REG3  = bucket;
+		SAVE_CONT5(  generic_remove_1    ) ;
+		
+		 
+		
+		REG0 = read_bucket_key(bucket,i);
+		REG1 = key;
+		APPLYF( 2, proc );
+	    }
+	}
+	bucket = gvec_read( bucket, BUCKET_OVERFLOW );
+    }
+    
+     
+    JUMP(3+ (0) ,generic_remove_3  );
+}
+
+MONOTONE( generic_remove_1    ) 
+{
+UINT_32 i;
+obj bucket, h;
+
+    if (EQ(REG0,FALSE_OBJ))
+    {
+	RESTORE_CONT5() ;
+        bucket = REG3 ;
+	i = FXWORDS_TO_RIBYTES(REG4 ) + SLOT(1);
+	h = REG1;
+
+	do {
+	    for (; i<SLOT(2+BUCKET_CAPACITY); i+=SLOT(1))
+	    {
+		if (EQ(read_bucket_hash(bucket,i),h))
+		{
+		obj proc, key = REG2;
+		
+		    proc = gvec_read( REG0, HASHTABLE_EQ_PROC );
+		
+		     
+
+		    REG4  = RIBYTES_TO_FXWORDS(i);
+		    REG3  = bucket;
+		    SAVE_CONT5(  generic_remove_1    ) ;
+
+		     
+		    
+		    REG0 = read_bucket_key(bucket,i);
+		    REG1 = key;
+		    APPLYF( 2, proc );
+		}
+	    }
+	    i = SLOT(2);
+	    bucket = gvec_read( bucket, BUCKET_OVERFLOW );
+	} while (!EQ(bucket,FALSE_OBJ));
+	
+	 
+	JUMP(3+ (0) ,generic_remove_3  );
+    }
+    else
+    {
+	RESTORE_CONT5() ;
+         
+	JUMP(5+ (0) ,generic_remove_2  );
+    }
+}
+
+MONOTONE( generic_remove_2    )   
+{
+obj bucket;
+UINT_32 index;
+
+    bucket = REG3;
+    index = FXWORDS_TO_RIBYTES(REG4);
+    
+    removing_one( REG0 );
+    write_bucket_hash( bucket, index, FALSE_OBJ );
+    write_bucket_key( bucket, index, FALSE_OBJ );
+    
+    REG0 = read_bucket_value( bucket, index );
+    write_bucket_value( bucket, index, FALSE_OBJ );
+    RETURN(1);
+}
+
+MONOTONE( generic_remove_3    )   
+{
+    REG0 = FALSE_OBJ;
+    RETURN(0);
+}
+
+EPILOGUE(generic_remove )
+
+BEGIN_BACK(generic_remove )
+  BACK_MONOTONE(generic_remove_0  )
+  BACK_MONOTONE(generic_remove_1  )
+  BACK_MONOTONE(generic_remove_2  )
+  BACK_MONOTONE(generic_remove_3  )
+END_BACK(generic_remove )
+
+static struct function_descr generic_remove_descr = {
+	&rscheme_hasht_part,
+	JUMP_TABLE(generic_remove ),
+	"generic-hash-table-remove"  };
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+PROLOGUE(generic_insert )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+BEGIN_FWD(generic_insert )
+    FWD_MONOTONE(generic_insert_0  )
+    FWD_MONOTONE(generic_insert_1  )
+    FWD_MONOTONE(generic_insert_2  )
+    FWD_MONOTONE(generic_insert_3  )
+END_FWD(generic_insert )
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+MONOTONE( generic_insert_0    ) 
+{
+UINT_32 i;
+obj h, vec, bucket;
+
+     
+
+
+    assert( arg_count_reg == ((1)  + 3) );
+    assert( OBJ_ISA_FIXNUM( REG1 ) );
+
+    h = REG1;
+    
+    vec = gvec_read( REG0, HASHTABLE_DIRECTORY );
+    
+    bucket = read_dir( vec, h );
+    
+    while (!EQ(bucket,FALSE_OBJ))
+    {
+        for (i=SLOT(2); i<SLOT(2+BUCKET_CAPACITY); i+=sizeof(obj))
+	{
+	    if (EQ(read_bucket_hash(bucket,i),h))
+	    {
+	    obj proc, key = REG2;
+	    
+		proc = gvec_read( REG0, HASHTABLE_EQ_PROC );
+		
+		 
+
+		REG5  = RIBYTES_TO_FXWORDS(i);
+		REG4  = bucket;
+		SAVE_CONT6(  generic_insert_1    ) ;
+		
+		 
+		
+		REG0 = read_bucket_key(bucket,i);
+		REG1 = key;
+		APPLYF( 2, proc );
+	    }
+	}
+	bucket = gvec_read( bucket, BUCKET_OVERFLOW );
+    }
+    
+     
+    JUMP(3+ (1) ,generic_insert_3  );
+}
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+MONOTONE( generic_insert_1    ) 
+{
+UINT_32 i;
+obj bucket, h;
+
+    if (EQ(REG0,FALSE_OBJ))
+    {
+	RESTORE_CONT6() ;
+        bucket = REG4 ;
+	i = FXWORDS_TO_RIBYTES(REG5 ) + SLOT(1);
+	h = REG1;
+
+	do {
+	    for (; i<SLOT(2+BUCKET_CAPACITY); i+=SLOT(1))
+	    {
+		if (EQ(read_bucket_hash(bucket,i),h))
+		{
+		obj proc, key = REG2;
+		
+		    proc = gvec_read( REG0, HASHTABLE_EQ_PROC );
+		
+		     
+
+		    REG5  = RIBYTES_TO_FXWORDS(i);
+		    REG4  = bucket;
+		    SAVE_CONT6(  generic_insert_1    ) ;
+
+		     
+		    
+		    REG0 = read_bucket_key(bucket,i);
+		    REG1 = key;
+		    APPLYF( 2, proc );
+		}
+	    }
+	    i = SLOT(2);
+	    bucket = gvec_read( bucket, BUCKET_OVERFLOW );
+	} while (!EQ(bucket,FALSE_OBJ));
+	
+	 
+	JUMP(3+ (1) ,generic_insert_3  );
+    }
+    else
+    {
+	RESTORE_CONT6() ;
+         
+	JUMP(5+ (1) ,generic_insert_2  );
+    }
+}
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+MONOTONE( generic_insert_2    )   
+{
+obj bucket;
+UINT_32 index;
+
+    bucket = REG4;
+    index = FXWORDS_TO_RIBYTES(REG5);
+
+    REG0 = read_bucket_value( bucket, index );
+    write_bucket_key( bucket, index, REG2 );
+    write_bucket_value( bucket, index, REG3 );
+    RETURN(1);
+}
+
+MONOTONE( generic_insert_3    )   
+{
+    hashtable_install( REG0, REG1, REG2, REG3 );
+    REG0 = FALSE_OBJ;
+    RETURN(1);
+}
+
+EPILOGUE(generic_insert )
+
+BEGIN_BACK(generic_insert )
+  BACK_MONOTONE(generic_insert_0  )
+  BACK_MONOTONE(generic_insert_1  )
+  BACK_MONOTONE(generic_insert_2  )
+  BACK_MONOTONE(generic_insert_3  )
+END_BACK(generic_insert )
+
+static struct function_descr generic_insert_descr = {
+	&rscheme_hasht_part,
+	JUMP_TABLE(generic_insert ),
+	"generic-hash-table-insert"  };

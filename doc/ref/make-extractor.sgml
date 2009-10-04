@@ -1,0 +1,64 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}make-extractor{/RefName}
+  {RefPurpose}Create a tuple extractor function.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/make-extractor/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/class/ {Parameter/cnxn/ {Parameter/result/ {Parameter/num-fields/{/ParamDef}{ParamDef role="returns"}
+{Parameter}extractor{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}class{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<<class>>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}cnxn{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<pg95-connection>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}result{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<pg95-result>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}num-fields{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}extractor{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<function>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Compiles an {FirstTerm Role="defn"}extraction plan{/FirstTerm} and returns a function which uses 
+the plan to extract the {Parameter}i{/Parameter}th tuple of the given result.  The
+function returned is a function of one argument, which is the tuple
+number.  That function returns an instance of {Parameter}class{/Parameter}.{/para}
+{/RefSect1}
+{/RefEntry}

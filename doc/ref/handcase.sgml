@@ -1,0 +1,73 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}handler-case{/RefName}
+  {RefPurpose}Catches signalled exceptions and aborts computation{/RefPurpose}
+  {RefClass role="Type"}special{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/handler-case/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/expr/ {Parameter/class/ {Parameter/body/{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}expr{/Term}
+    {ListItem}{para}
+An expression to be evaluated{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}class{/Term}
+    {ListItem}{para}
+A subclass of {ClassName/<condition>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}var{/Term}
+    {ListItem}{para}
+The name for a binding in the corresponding {Parameter}body{/Parameter} forms.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}body{/Term}
+    {ListItem}{para}
+A sequence of expressions.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+{Phrase Role="var"}handler-case{/Phrase} establishes exception handlers for the duration
+of the execution of {Parameter}expr{/Parameter}.  {/para}
+{para}
+If during the execution of {Parameter}expr{/Parameter},
+a condition is signalled, and the condition is an instance of 
+the {Parameter}class{/Parameter} of one of the handler clauses, then the corresponding
+{Parameter}body{/Parameter} forms are executed.  In this case, the 
+value(s) of the {Phrase Role="var"}handler-case{/Phrase} is the value(s) of the last {Parameter}body{/Parameter}
+form in the handler clause.  Furthermore, 
+during the execution of the {Parameter}body{/Parameter} forms,
+the handlers established by this {Phrase Role="var"}handler-case{/Phrase} are no longer active
+(the handler taking control unwinds the dynamic stack to this point before
+executing the {Parameter}body{/Parameter} forms).{/para}
+{para}
+If the {UserInput}condition:{/UserInput} keyword is used in a clause,
+then the condition object is bound to a variable {Parameter}var{/Parameter}
+with the {Parameter}body{/Parameter} forms in it's scope.{/para}
+{para}
+The clauses are checked in the order they are given in the 
+{Phrase Role="var"}handler-case{/Phrase}.{/para}
+{para}
+If {Emphasis}no{/Emphasis} condition is signalled during the execution of {Parameter}expr{/Parameter},
+then the values of the entire {Phrase Role="var"}handler-case{/Phrase} are the values returned
+by 
+the {Parameter}expr{/Parameter}.{/para}
+{/RefSect1}
+{/RefEntry}

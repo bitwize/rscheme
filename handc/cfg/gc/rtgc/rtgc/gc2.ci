@@ -1,0 +1,74 @@
+#ifndef GARBAGE_COLLECTOR2_CI
+#define GARBAGE_COLLECTOR2_CI
+
+// This file contains INLINE function definitions for functions declared in
+// the file garbage-collector.cc
+//
+// These definitions need to be included after the file colorset.ci
+// so that it can inline functions defined there.
+
+#include <assert.h>
+#include <iostream.h>
+#include <rtgc/gc.hh>
+
+#undef LINK_TYPE
+#ifdef INLINES
+#define LINK_TYPE inline 
+#else
+#define LINK_TYPE
+#endif
+
+
+
+//*************************************************************************
+// garbage_collector::set_object_manager
+//
+// This routine defines the object manager for a page of memory.
+// It expects to be passed a memory location representing the start of the
+//  page, and the object manager that should be associated with this page.
+
+LINK_TYPE void 
+garbage_collector::set_object_manager(const char* const memory_location,
+				      object_manager* manager)
+{
+    INT_32 object_manager_number = (memory_location - start_of_heap) >> 
+                                PAGE_SIZE_BITS;
+    if (object_manager_number >= NUM_HEAP_PAGES) {
+	cerr << "Number of heap pages exceeded.  Increase the value of the macro NUM_HEAP_PAGES in the file config.hh" << endl;
+	abort();
+    }
+    assert(object_manager_number >= 0);
+    assert(object_manager_number < NUM_HEAP_PAGES);
+    object_managers[object_manager_number] = manager;
+}
+
+
+LINK_TYPE void garbage_collector::reset_not_known_free_object_iterator(void)
+{
+    not_known_free_object_iterator_colorset_number = 0;
+    not_known_free_object_iterator_generation_number = 0;
+    get_gen(0)->get_color_set(0)->reset_not_known_free_object_iterator();
+}
+
+
+LINK_TYPE void garbage_collector::reset_dead_object_iterator(void)
+{
+    dead_object_iterator_colorset_number = 0;
+    dead_object_iterator_generation_number = 0;
+    get_gen(0)->get_color_set(0)->reset_dead_object_iterator();
+}
+
+LINK_TYPE void garbage_collector::register_dead_object_callback
+(void (*function_pointer)())
+{
+    if (function_pointer == NULL)
+    {
+	gc_flip_callback_function = gc_flip_callback_function_default;
+    } else {
+	gc_flip_callback_function = function_pointer;
+    }
+}
+
+
+
+#endif

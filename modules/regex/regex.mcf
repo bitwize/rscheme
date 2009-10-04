@@ -1,0 +1,46 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    modules/regex/regex.mcf
+ |
+ |          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ |          as part of the RScheme project, licensed for free use.
+ |	    See <http://www.rscheme.org/> for the latest info.
+ |
+ | File version:     1.11
+ | File mod date:    2003-02-22 16:56:13
+ | System build:     v0.7.3.4-b7u, 2007-05-30
+ | Owned by module:  regex
+ |
+ | Purpose:          The Regex Library Module Desription
+ `------------------------------------------------------------------------|#
+
+((regex
+	"$dist/regex" 
+	"$install/resource/modules")
+ (open primops *scheme* iolib low-scheme objsys mathlib high-scheme)
+ (open corelib tables)
+
+ (require-c-header "<string.h>")
+ (c-files runmatch)
+ (h-files rxmach)
+
+ (files rxinterp)
+
+ (files pdaclass rxcompil orcompil bitvectr)
+ (files onechars rxcodgen)
+ (files rxcase unformat)
+ ;;
+ (files notation generate)
+ ;;
+ ;; only export the entry points
+ ;;
+ (export reg-expr->proc 
+	 reg-expr->offsets-proc 
+	 unformat->proc
+	 reg-expr-can-start?
+         ;;
+         posix-reg-expr->proc
+	 reg-expr-case
+         ;;
+         reg-expr->match
+         reg-expr->match-generator))
+

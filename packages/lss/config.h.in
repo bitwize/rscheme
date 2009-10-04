@@ -1,0 +1,6 @@
+#ifndef _H_LSS_CONFIG
+#define _H_LSS_CONFIG
+
+#define ZIPPERS  "@zippers@"
+
+#endif /* _H_LSS_CONFIG */

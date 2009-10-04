@@ -1,0 +1,478 @@
+#ifndef COLORSET1_CI
+#define COLORSET1_CI
+
+//****************************************************************************
+// This file contains the inline definitions for the function declared
+// in the file color-set.hh  The color-sets implement the size classes
+// for segragated storage within a generation of the real-time garbage
+// collector
+
+#include <assert.h>
+#include <rtgc/colorset.hh>
+#include <rtgc/gc.hh>
+#include <rtgc/pointers.hh>
+
+#include <rtgc/gcclient.h>
+#include <rtgc/gcserver.h>
+
+#undef LINK_TYPE
+#ifdef INLINES
+#define LINK_TYPE inline 
+#else
+#define LINK_TYPE
+#endif
+
+
+#ifndef SMALL_GC_HEADERS    
+
+// The next field is a pointer to the color set that contains an object.
+// This is used so that when we find a pointer to an object we can tell
+// that object to gray itself.
+
+LINK_TYPE color_set *gc_object_base::get_containing_list(void)
+{
+   return (containing_list);
+}
+
+LINK_TYPE color_set *gc_object_base::get_containing_list(object_manager*)
+{
+   return (containing_list);
+}
+
+#else // We have SMALL_GC_HEADERS defined
+
+// In this case, we only use 2 words of header for the garbage
+// collector objects, and need to code color, step, and generation
+// information into the low bits of the pointers that make up
+// the garbage collector's header.
+
+LINK_TYPE color_set *gc_object_base::get_containing_list(void)
+{
+   object_manager *om = gc.get_object_manager(this);
+   return(gc.get_gen(get_gen_num())
+	  ->get_color_set(om->get_size_class()));
+}
+
+// Call this version if you already have a pointer to the object
+// manager for the object.
+LINK_TYPE color_set *gc_object_base::get_containing_list(object_manager *om)
+{
+   return(gc.get_gen(get_gen_num())
+	  ->get_color_set(om->get_size_class()));
+}
+
+#endif // SMALL_GC_HEADERS
+
+//**********************************************************************
+// gc_object_base::is_shaded() 
+//
+// It returns non zero if the object is shaded, otherwize 0. It is slower
+// than generation::is_shaded(), so if you know that the containing 
+// generation, you shouldn't use this member function.
+
+#ifdef GENERATIONAL
+
+LINK_TYPE int gc_object_base::is_shaded(){
+   return(gc.get_gen(this->get_gen_num())->is_shaded(this));
+}
+
+#else // non-generational
+
+LINK_TYPE int gc_object_base::is_shaded(){
+   return(gc.is_shaded(this));
+}
+
+#endif
+
+
+//***************************************************************************
+//* color_set::gray_this_object
+//*
+//* This routine grays the object passed to it.  This includes moving the
+//* object to the gray part of its size class.
+
+LINK_TYPE void color_set::gray_this_object(gc_object_base *object)
+{
+#ifdef ZEN_TIMER
+   gc.gray_timer.timer_on();
+#endif
+
+   gc_object_base* object_previous = object->get_previous();
+   gc_object_base* object_next = object->get_next();
+
+   // This routine should never get called with a shaded object
+   assert(!object->is_shaded());
+
+   // first, set the object`s color to shaded.
+
+#ifdef GENERATIONAL
+   object->set_color(gc.get_gen(object->get_gen_num())
+		     ->get_current_shade_color());
+#else
+   object->set_color(gc.get_current_shade_color());
+#endif
+
+   // By now the object must be shaded
+   assert(object->is_shaded());
+   
+#ifdef GENERATIONAL
+   object->increment_step();
+#endif
+
+#ifdef ALLOCATE_WHITE
+   // Unfortunately, when allocating white, there might be a pointer to
+   // the object being grayed, so we have to account for that.
+   if(object == old_free) {
+      old_free = old_free->get_next();
+   }
+#endif
+
+   // First splice the object out of the white list
+   // This can be done unconditionally because no set pointers can 
+   // point to any object in this set.
+   object_previous->set_next(object_next);
+   object_next->set_previous(object_previous);
+
+   // Next put the object into the correct place in the gray list
+
+#ifdef DEPTH_FIRST
+   // This code is for the case where the garbage collector is configured
+   // to preform a depth first traversal of the graph of reachable data.
+   // We put the gray object at the head of the gray list.
+
+   object->set_previous(scan->get_previous());
+   object->set_next(scan);
+   scan->get_previous()->set_next(object);
+   scan->set_previous(object);
+
+#else // BREADTH_FIRST
+   // This code is for the case where the garbage collector is configured
+   // to preform a breadth first traversal of the graph of reachable data.
+   // We put the gray object at the tail of the gray list.
+
+   object->set_previous(gray);
+   object->set_next(gray->get_next());
+   gray->get_next()->set_previous(object);
+   gray->set_next(object);
+
+#endif // Breadth first
+
+#ifdef ZEN_TIMER
+   gc.gray_timer.timer_off();
+#endif
+}
+
+
+#ifdef GENERATIONAL
+//***********************************************************************
+// color_set::gray_a_white
+//
+// This function gets the object manager for the page into which the argument
+// points.  It then has that object manager gray the pointed to object.
+
+LINK_TYPE void color_set::gray_a_white(pos_ptr_addr ptr_addr,
+				       gc_obj_addr ptr_val)
+{
+   gc_object_base *pointed,*pointing;
+   
+   // Retrieve the pointing object from the global variable.
+   // The variable is set to point to the pointing object by follow_pointers()
+   // before find_pointer() is called.
+   pointing = pointing_object;
+   
+   
+   // First, we derive the header of this rval object.  There
+   // are two ways of doing this depending on whether the language
+   // system allows derived pointers.  One just subtracts off
+   // the language level header, and the other does a virtual
+   // function call.
+#ifdef NO_DERIVED_POINTERS
+   pointed = (gc_object_base *)(((char *)ptr_val)-sizeof(gc_object_base));
+#else
+   object_manager *om = gc.get_object_manager(ptr_val);
+   pointed = om->find_start_of_object(ptr_val);
+#endif
+
+   assert((char *)pointed >= gc.start_of_heap);
+   assert((char *)pointed < gc.end_of_heap);
+   
+   // If the pointed object is in the same generation as the pointing
+   // object, 
+   if(pointing->get_gen_num() == pointed->get_gen_num()){
+      // And if the pointed object is white, gray it.
+      if(!pointed->is_shaded()){
+#ifdef NO_DERIVED_POINTERS
+	 pointed->get_containing_list()->gray_this_object(pointed);
+#else
+	 pointed->get_containing_list(om)->gray_this_object(pointed);
+#endif
+      }
+      // If the pointing object is about to be promote and the pointed 
+      // object remain in its generation, add the pointer to the IGP list.
+      // If the object is about to be promoted, nothing should be done.
+      if(pointing->get_gen_num() != NUMBER_OF_GENERATIONS - 1
+	 && pointing->to_be_promoted()
+	 && !pointed->to_be_promoted()){
+#ifdef BLACK_PROMOTION	       
+	 gc.get_igpm()->add_black_igp(ptr_addr,
+				      pointing->get_gen_num() + 1,
+				      pointed->get_gen_num());
+#else //BLACK_PROMOTION	       
+	 if(!gc.get_gen(pointed->get_gen_num() + 1)->get_tracing_phase()){
+	    gc.get_igpm()->add_white_igp(ptr_addr,
+					 pointing->get_gen_num() + 1,
+					 pointed->get_gen_num());
+	 }else{
+	    gc.get_igpm()->add_black_igp(ptr_addr,
+					 pointing->get_gen_num() + 1,
+					 pointed->get_gen_num());
+	 }
+#endif //BLACK_PROMOTION	       
+      }
+   }else if(pointing->get_gen_num() > pointed->get_gen_num()){
+      if(pointing->get_gen_num() != NUMBER_OF_GENERATIONS - 1
+	 && pointing->to_be_promoted()){
+#ifdef BLACK_PROMOTION	       
+	 gc.get_igpm()->add_igp(ptr_addr,
+				pointing->get_gen_num() + 1,
+				pointed->get_gen_num());
+#else //BLACK_PROMOTION	       
+	 if(!gc.get_gen(pointed->get_gen_num() + 1)->get_tracing_phase()){
+	    gc.get_igpm()->add_white_igp(ptr_addr,
+					 pointing->get_gen_num() + 1,
+					 pointed->get_gen_num());
+	 }else{
+	    gc.get_igpm()->add_black_igp(ptr_addr,
+					 pointing->get_gen_num() + 1,
+					 pointed->get_gen_num());
+	 }
+#endif
+      }else{
+	 gc.get_igpm()->add_black_igp(ptr_addr,
+				      pointing->get_gen_num(),
+				      pointed->get_gen_num());
+      }
+   }else if(pointing->get_gen_num() + 1 == pointed->get_gen_num()){
+      // If pointed generation is one step larger generation
+      // Shade pointed if the pointing is to be promoted as black, or
+      // the pointed generation is in the second phase.
+
+      if(!pointed->is_shaded()){
+	 if(pointing->to_be_promoted()){
+#ifndef BLACK_PROMOTION
+	    if(gc.get_gen(pointed->get_gen_num())->get_tracing_phase()
+	       != 0){
+#endif		    
+#ifdef NO_DERIVED_POINTERS
+	       pointed->get_containing_list()->gray_this_object(pointed);
+#else
+	       pointed->get_containing_list(om)->gray_this_object(pointed);
+#endif
+	    }
+	 }else{
+	    if(gc.get_gen(pointed->get_gen_num())->get_tracing_phase()
+	       != 0){
+#ifdef NO_DERIVED_POINTERS
+	       pointed->get_containing_list()->gray_this_object(pointed);
+#else
+	       pointed->get_containing_list(om)->gray_this_object(pointed);
+#endif
+	    }
+	 }
+      }
+   }else{ // if pointed generation is larger than one step larger generation.
+      // The pointed is grayed if the pointed generation is in the second
+      // phase, and the pointing is not promoted as white.
+      if(!pointed->is_shaded()){
+	 if(pointing->to_be_promoted()){
+	    if(gc.get_gen(pointed->get_gen_num())->get_tracing_phase()
+	       != 0)
+#ifndef BLACK_PROMOTION
+	       if(gc.get_gen(pointing->get_gen_num()+1)->get_tracing_phase()
+		  != 0){
+#endif		    
+#ifdef NO_DERIVED_POINTERS
+		  pointed->get_containing_list()->gray_this_object(pointed);
+#else
+		  pointed->get_containing_list(om)->gray_this_object(pointed);
+#endif
+	       }
+	 }else{
+	    if(gc.get_gen(pointed->get_gen_num())->get_tracing_phase()
+	       != 0){
+#ifdef NO_DERIVED_POINTERS
+	       pointed->get_containing_list()->gray_this_object(pointed);
+#else	    
+	       pointed->get_containing_list(om)->gray_this_object(pointed);
+#endif
+	    }
+	 }
+      }
+   }
+}
+
+#else // NON-GENERATIONAL case
+
+//***********************************************************************
+// color_set::gray_an_object
+//
+// This function first checks if the object passed to it is already shaded.
+// If not, then the object is grayed.
+//
+// In the non-generational case, the pointer to the pointer being traced
+// is not needed, and the parameter is simply ignored.
+
+LINK_TYPE void color_set::gray_a_white(pos_ptr_addr, // ignore this parameter
+				       gc_obj_addr ptr)
+{
+   gc_object_base *object;
+
+   // First, we derive the header of this rval object.  There
+   // are two ways of doing this depending on whether the language
+   // system allows derived pointers.  One just subtracts off
+   // the language level header, and the other does a virtual
+   // function call.
+
+#ifdef NO_DERIVED_POINTERS
+   object = (gc_object_base *)(((char *)ptr)-sizeof(gc_object_base));
+#else
+   object_manager *om = gc.get_object_manager(ptr);
+   object = om->find_start_of_object(ptr);
+#endif
+
+   // Next, determine if the rval object is already shaded.
+   if(!object->is_shaded()) {
+  
+    // The rval object is not shaded so shade it.
+
+#ifdef NO_DERIVED_POINTERS
+      object->get_containing_list()->gray_this_object(object);
+#else	    
+      object->get_containing_list(om)->gray_this_object(object);
+#endif
+
+   }
+}
+#endif // non generational calse
+
+//****************************************************************************
+// color_set::any_grays
+//
+// This routine returns 1 if there are any gray objects, 0 otherwise
+
+LINK_TYPE int color_set::any_grays(void) {
+   return(gray->get_next() != scan);
+}
+
+
+LINK_TYPE void color_set::reset_not_known_free_object_iterator(void)
+{
+   not_known_free_object_iterator = gray->get_next();
+}
+
+
+LINK_TYPE gc_obj_addr color_set::next_not_known_free_object(void)
+{
+#ifdef ALLOCATE_BLACK
+   if (not_known_free_object_iterator == free)
+   {
+      not_known_free_object_iterator = white;
+   }
+   if (not_known_free_object_iterator == tail)
+   {
+      return(NULL);
+   }
+#else // should be ALLOCATE_WHITE
+   if (not_known_free_object_iterator == &separator_object)
+   {
+      not_known_free_object_iterator = not_known_free_object_iterator->get_next();
+   }
+   if (not_known_free_object_iterator == free)
+   {
+      return(NULL);
+   }
+#endif
+
+
+   gc_object_base *temp = not_known_free_object_iterator;
+   not_known_free_object_iterator = not_known_free_object_iterator->get_next();
+   return(gc_obj_addr(temp+1));
+}
+
+
+LINK_TYPE void color_set::reset_dead_object_iterator(void)
+{
+   dead_object_iterator = white->get_next();
+}
+
+
+LINK_TYPE gc_obj_addr color_set::next_dead_object(void)
+{
+#ifdef ALLOCATE_BLACK
+   if (dead_object_iterator != tail)
+#else // should be ALLOCATE_WHITE
+   if (dead_object_iterator != free)
+#endif
+   {
+      gc_object_base *temp = dead_object_iterator;
+      dead_object_iterator = dead_object_iterator->get_next();
+      return(gc_obj_addr(temp+1));
+   } else {
+      return(NULL);
+   }
+}
+
+
+#ifdef GENERATIONAL
+//**********************************************************************
+//* color_set::insert_as_black
+//*
+//* This function inserts an object into this colorset in the black set.
+//* Otherwise, the object is unmodified.
+
+LINK_TYPE void color_set::insert_as_black(gc_object_base *object)
+{
+   assert(object->get_gen_num() > 0);
+   assert(get_gen_of_this_set() > 0);
+
+   object->set_previous(scan->get_previous());
+   object->set_next(scan);
+   scan->get_previous()->set_next(object);
+   scan->set_previous(object);
+   scan = object;
+
+   // Increment number_of_objects, but not number_of_non_black. 
+   number_of_objects++;
+}
+
+
+//**********************************************************************
+//* color_set::insert_as_white
+//*
+//* This function inserts an object into this color set at a right place
+//* for a white object. It doesn't change the values in object except for
+//* the double linking pointers. This function is intended for object
+//* promotion, and the implementation assumes the target colorset belongs
+//* to an older generation.
+//*
+//* we insert the object at the left end of the white set (arbitrarily).
+
+LINK_TYPE void color_set::insert_as_white(gc_object_base *object)
+{
+   assert(object->get_gen_num() > 0);
+   assert(get_gen_of_this_set() > 0);
+
+   object->set_previous(white);
+   object->set_next(white->get_next());
+   white->get_next()->set_previous(object);
+   white->set_next(object);
+
+   // Increment number_of_objects and number_of_non_black because
+   // the inserted object is non-black.
+   number_of_objects++;
+   number_of_non_black++;
+}
+#endif // GENERATIONAL
+
+
+#endif //COLORSET1_CI

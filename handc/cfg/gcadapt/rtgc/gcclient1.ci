@@ -1,0 +1,105 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/cfg/gcadapt/rtgc/gcclient1.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.6
+ * File mod date:    1998-10-15 16:36:18
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ *------------------------------------------------------------------------*/
+
+#ifndef _CI_GCCLIENT1
+#define _CI_GCCLIENT1
+
+#include <rscheme/linktype.h>
+#include <rscheme/smemory.h>
+/*#include <rscheme/vinsns.h>*/
+#include <rscheme/regs.h>
+
+extern struct module_descr **stable_root_module_ptr;
+extern unsigned stable_root_num;
+extern unsigned quasistable_root_num;
+extern struct unit_root_iterator uri;
+
+CI_DECL gc_obj_addr cast_and_deref_ptr( pos_ptr_addr slot )
+{
+    return OBJ_ISA_PTR(*slot) ? PTR_TO_GCPTR(*slot) : NULL;
+}
+
+CI_DECL int is_root( pos_ptr_addr p )
+{
+    return 0;
+}
+
+CI_DECL int on_stack( gc_obj_addr p )
+{
+    return 0;
+}
+
+CI_DECL void init_gcclient(int argc, const char **argv)
+{
+}
+
+CI_DECL void stable_root_reset( void ) 
+{
+  init_unit_root_iterator( &uri );
+}
+
+CI_DECL gc_obj_addr stable_root_next( void ) 
+{
+  obj *p;
+
+  for (p = unit_root_iterator_next( &uri ); 
+       p; 
+       p = unit_root_iterator_next( &uri ))
+    {
+      if (OBJ_ISA_PTR(*p))
+	return PTR_TO_GCPTR(*p);
+    }
+  return NULL;
+}
+
+/* we consider the registers to be the "quasistable" roots,
+   because some of them stay pretty constant, although
+   others of them are always changing
+*/
+
+CI_DECL void quasistable_root_reset( void ) 
+{
+    quasistable_root_num = 0;
+}
+
+CI_DECL gc_obj_addr quasistable_root_next( void )
+{
+obj item;
+
+    while (quasistable_root_num < NUM_REGS)
+    {
+	item = any_reg_ref(quasistable_root_num++);
+	if (OBJ_ISA_PTR(item))
+	    return PTR_TO_GCPTR(item);
+    }
+    return NULL; 
+}
+
+void rs_unstable_root_reset( void );
+gc_obj_addr rs_unstable_root_next( void );
+
+CI_DECL void unstable_root_reset( void )
+{
+  rs_unstable_root_reset();
+}
+
+CI_DECL gc_obj_addr unstable_root_next( void )
+{
+  return rs_unstable_root_next();
+}
+
+#ifndef gcserver_h
+#include <rscheme/gcxverse.h>
+#endif
+
+#endif /* _CI_GCCLIENT1 */

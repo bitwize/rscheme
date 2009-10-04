@@ -1,0 +1,14 @@
+
+P=rs_sys_threads_shell
+RSC=rsc
+SCM_FILES=bg.scm module.scm pool.scm run.scm thread-list.scm
+PRODUCTS=$P.mif $P.mx $P.doc
+
+$(PRODUCTS): $(SCM_FILES)
+	$(RSC) module.scm
+
+clean:
+	rm -f $(PRODUCTS)
+
+install:: $(PRODUCTS)
+	cp $P.mx $P.mif $(INSTALL_DIR)/resource/modules

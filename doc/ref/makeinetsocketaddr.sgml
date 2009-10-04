@@ -1,0 +1,49 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}make-inet-socket-addr{/RefName}
+  {RefPurpose}Create an internet socket address.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/make-inet-socket-addr/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/host/ {Parameter/port/{/ParamDef}{ParamDef role="returns"}
+{Parameter}addr{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}host{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<inet-addr>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}port{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}addr{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<inet-socket-addr>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Creates a socket address using a host address and a port number.{/para}
+{/RefSect1}
+{/RefEntry}

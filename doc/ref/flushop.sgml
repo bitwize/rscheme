@@ -1,0 +1,39 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}flush-output-port{/RefName}
+  {RefPurpose}Flushes an output port{/RefPurpose}
+  {RefClass role="Type"}generic{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/flush-output-port/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/output-port/{/ParamDef}{ParamDef role="returns"}
+#rest {/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}output-port{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<output-port>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Methods on this generic function flush any data that may
+be buffered internally on an output port.{/para}
+{para}
+The return value is not specified in general, though some specific
+methods may specify the return value.{/para}
+{para}
+Any error detected by the operating attempting to 
+flush any buffered data will be signalled as an OS error.{/para}
+{/RefSect1}
+{/RefEntry}

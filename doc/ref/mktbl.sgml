@@ -1,0 +1,121 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}make-table{/RefName}
+  {RefPurpose}Constructs a new hash table{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/make-table/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/test-fn/ {Parameter/hash-fn/{/ParamDef}{ParamDef role="returns"}
+{Parameter}table{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}test-fn{/Term}
+    {ListItem}{para}
+A function of two arguments that returns
+a boolean, and representing the equality predicate
+for the hash table.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}hash-fn{/Term}
+    {ListItem}{para}
+A function of one argument, which will be a table key,
+that returns the {ClassName/<fixnum>/ hash value.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}table{/Term}
+    {ListItem}{para}
+The freshly allocated hash table.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function creates a new hash table with the given
+test and hash functions.  If the test function and hash function
+are chosen from a particular set of common pairs, then a
+specialized class of hash table may be returned.{/para}
+{para}
+The {Parameter}test-fn{/Parameter} is a function of two arguments which will be used to test
+if two keys are equal. The first argument will always be a key already
+in the table, and the second argument will be a key being sought.
+The function should return {UserInput}#f{/UserInput} if and only if the keys
+are not equal. As usual, returning anything else is considered to
+indicate that the keys are equal.{/para}
+{para}
+The {Parameter}hash-fn{/Parameter} is a procedure of one argument which is used to compute a
+hash code from a key. The return value of the procedure must be a
+{ClassName/<fixnum>/. As usual for hashing techniques, the {Parameter}hash-fn{/Parameter}
+must return an
+identical value for keys that are equal according to the test-fn. Also
+as usual, the efficiency of a particular table depends on the even
+distribution in number space of the hash codes for the keys in the
+table.{/para}
+{para}
+This function will detect certain special cases and return an
+appropriate specialized subclass of {ClassName/<hash-table>/, so whenever
+appropriate for the application, one of the following combinations
+should be used:{/para}
+{para}
+{/para}
+{InformalTable}
+{TGroup COLS=3}
+{THead}
+{Row}
+{Entry}test function{/Entry}
+{Entry}hash function{/Entry}
+{Entry}specialized class{/Entry}
+{/Row}
+{/THead}
+{TBody}
+{Row}
+{Entry}{Phrase Role="var"}eq?{/Phrase}{/Entry}
+{Entry}{Phrase Role="var"}symbol->hash{/Phrase}{/Entry}
+{Entry}{ClassName/<symbol-table>/{/Entry}
+{/Row}
+{Row}
+{Entry}{Phrase Role="var"}eq?{/Phrase}{/Entry}
+{Entry}{Phrase Role="var"}integer->hash{/Phrase}{/Entry}
+{Entry}{ClassName/<hash-integer-table>/{/Entry}
+{/Row}
+{Row}
+{Entry}{Phrase Role="var"}eq?{/Phrase}{/Entry}
+{Entry}{Phrase Role="var"}identity{/Phrase}{/Entry}
+{Entry}{ClassName/<integer-table>/{/Entry}
+{/Row}
+{Row}
+{Entry}{Phrase Role="var"}string=?{/Phrase}{/Entry}
+{Entry}{Phrase Role="var"}string->hash{/Phrase}{/Entry}
+{Entry}{ClassName/<string-table>/{/Entry}
+{/Row}
+{Row}
+{Entry}{Phrase Role="var"}string-ci=?{/Phrase}{/Entry}
+{Entry}{Phrase Role="var"}string-ci->hash{/Phrase}{/Entry}
+{Entry}{ClassName/<string-ci-table>/{/Entry}
+{/Row}
+{Row}
+{Entry}{Phrase Role="var"}eq?{/Phrase}{/Entry}
+{Entry}{Emphasis}any{/Emphasis}{/Entry}
+{Entry}{ClassName/<eq-table>/{/Entry}
+{/Row}
+{/TBody}
+{/TGroup}
+{/InformalTable}
+{/RefSect1}
+{/RefEntry}

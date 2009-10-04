@@ -1,0 +1,56 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}fd-open{/RefName}
+  {RefPurpose}Open a file.{/RefPurpose}
+  {RefClass role="Type"}primop{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/fd-open/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/path/ {Parameter/mode/ {Parameter/perm/{/ParamDef}{ParamDef role="returns"}
+{Parameter}fd{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}path{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}mode{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}perm{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}fd{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Opens a file.  Get {Parameter}mode{/Parameter} using {Phrase Role="var"}make-fd-open-mode{/Phrase}. 
+Construct {Parameter}perm{/Parameter} using {Phrase Role="var"}mode-list->bits{/Phrase}.{/para}
+{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,163 @@
+#define GENERIC_SCAN(x) MONOTONE( GENERIC_SCAN_LABEL(x) )
+
+#if EXTRA_ARGS == 0
+#define SAVER(x)	SAVE_CONT5(x)
+#define RESTORER()	RESTORE_CONT5()
+#define BUCKET_REG	REG3
+#define INDEX_REG	REG4
+#else
+#if EXTRA_ARGS == 1
+#define SAVER(x)	SAVE_CONT6(x)
+#define RESTORER()	RESTORE_CONT6()
+#define BUCKET_REG	REG4
+#define INDEX_REG	REG5
+#else
+#error "EXTRA_ARGS != 0 or 1"
+#endif
+#endif
+
+BEGIN_FWD(GENERIC_SCAN_FN)
+    FWD_MONOTONE(GENERIC_SCAN_LABEL(0))
+    FWD_MONOTONE(GENERIC_SCAN_LABEL(1))
+    FWD_MONOTONE(GENERIC_SCAN_LABEL(2))
+    FWD_MONOTONE(GENERIC_SCAN_LABEL(3))
+END_FWD(GENERIC_SCAN_FN)
+
+/*
+    registers on entry --->     +----------------+
+    				|     table      |  REG0
+				+----------------+
+    				|     hash       |  REG1
+				+----------------+
+				|      key       |  REG2
+				+----------------+
+				[   Extra Thing  ]
+				+----------------+
+*/
+
+GENERIC_SCAN(0)
+{
+UINT_32 i;
+obj h, vec, bucket;
+
+    /* the user should not be calling us directly, so we
+       can make these assert()'s instead of run-time checks */
+
+    assert( arg_count_reg == (EXTRA_ARGS + 3) );
+    assert( OBJ_ISA_FIXNUM( REG1 ) );
+
+    h = REG1;
+    
+    vec = gvec_read( REG0, HASHTABLE_DIRECTORY );
+    
+    bucket = read_dir( vec, h );
+    
+    while (!EQ(bucket,FALSE_OBJ))
+    {
+        for (i=SLOT(2); i<SLOT(2+BUCKET_CAPACITY); i+=sizeof(obj))
+	{
+	    if (EQ(read_bucket_hash(bucket,i),h))
+	    {
+	    obj proc, key = REG2;
+	    
+		proc = gvec_read( REG0, HASHTABLE_EQ_PROC );
+		
+		/* save a continuation to resume... */
+
+		INDEX_REG = RIBYTES_TO_FXWORDS(i);
+		BUCKET_REG = bucket;
+		SAVER( GENERIC_SCAN_LABEL(1) );
+		
+		/* call the equality tester */
+		
+		REG0 = read_bucket_key(bucket,i);
+		REG1 = key;
+		APPLYF( 2, proc );
+	    }
+	}
+	bucket = gvec_read( bucket, BUCKET_OVERFLOW );
+    }
+    
+    /* we have failure! */
+    JUMP(3+EXTRA_ARGS,GENERIC_SCAN_LABEL(3));
+}
+
+/*
+       regs on entry  --->	+----------------+
+    	(after RESTORER)	|     table      |  REG0
+				+----------------+
+    				|     hash       |  REG1
+				+----------------+
+				|      key       |  REG2
+				+----------------+
+				[   Extra Thing  ]
+				+----------------+
+    				|     bucket     |  BUCKET_REG
+				+----------------+
+    				|     index      |  INDEX_REG
+				+----------------+
+
+    stack during loop  --->	+----------------+
+    				|     table      |  REG0
+				+----------------+
+    				|     hash       |  REG1
+				+----------------+
+				|      key       |  REG2
+				+----------------+
+				[   Extra Thing  ]
+				+----------------+
+*/
+
+GENERIC_SCAN(1)
+{
+UINT_32 i;
+obj bucket, h;
+
+    if (EQ(REG0,FALSE_OBJ))
+    {
+	RESTORER();
+        bucket = BUCKET_REG;
+	i = FXWORDS_TO_RIBYTES(INDEX_REG) + SLOT(1);
+	h = REG1;
+
+	do {
+	    for (; i<SLOT(2+BUCKET_CAPACITY); i+=SLOT(1))
+	    {
+		if (EQ(read_bucket_hash(bucket,i),h))
+		{
+		obj proc, key = REG2;
+		
+		    proc = gvec_read( REG0, HASHTABLE_EQ_PROC );
+		
+		    /* save a continuation to resume... */
+
+		    INDEX_REG = RIBYTES_TO_FXWORDS(i);
+		    BUCKET_REG = bucket;
+		    SAVER( GENERIC_SCAN_LABEL(1) );
+
+		    /* call the equality tester */
+		    
+		    REG0 = read_bucket_key(bucket,i);
+		    REG1 = key;
+		    APPLYF( 2, proc );
+		}
+	    }
+	    i = SLOT(2);
+	    bucket = gvec_read( bucket, BUCKET_OVERFLOW );
+	} while (!EQ(bucket,FALSE_OBJ));
+	
+	/* we have failure! */
+	JUMP(3+EXTRA_ARGS,GENERIC_SCAN_LABEL(3));
+    }
+    else
+    {
+	RESTORER();
+        /* we have a match! */
+	JUMP(5+EXTRA_ARGS,GENERIC_SCAN_LABEL(2));
+    }
+}
+
+#undef SAVER
+#undef RESTORER
+#undef BUCKET_REG
+#undef INDEX_REG

@@ -1,0 +1,45 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}char-ready?{/RefName}
+  {RefPurpose}Check whether it is safe to read a character{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/char-ready?/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+{/ParamDef}{ParamDef role="returns"}
+{Parameter}bool{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}input-port{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<input-port>/.
+Default is the current input port{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}bool{/Term}
+    {ListItem}{para}
+#t or #f{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function returns #t if a subsequent call to read-char on
+the port is guaranteed not to block.  Otherwise it returns #f.{/para}
+{/RefSect1}
+{/RefEntry}

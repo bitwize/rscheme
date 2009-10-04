@@ -1,0 +1,200 @@
+
+<biblioentry id="bib.kakkad-phd">
+
+  <biblioset relation='phd'>
+    <bibliosource>
+        <link><uri>ftp://ftp.cs.utexas.edu/pub/garbage/kakkad-dissertation.ps.gz</uri></link>
+    </bibliosource>
+    <title>Address Translation and Storage Management for Persistent Object Stores</title>
+    <address>
+        <otheraddr>The University of Texas at Austin</otheraddr>
+        <city>Austin</city><state>Texas</state><country>USA</country>
+    </address>
+    <date>December 1997</date>
+    <authorgroup>
+      <author>Sheetal V. Kakkad</author>
+    </authorgroup>
+
+<abstract>
+
+<para>
+A common problem in software engineering is efficiently saving the
+state of application data structures to non-volatile storage between
+program executions. If this is accomplished using normal file systems,
+the programmer is forced to explicitly save the data to files as a
+stream of uninterpreted bytes, thereby losing both pointer semantics
+and object identity.  A better approach is to use <glossterm>persistent object
+storage</glossterm>, a natural extension to virtual memory that allows heap data
+to be saved automatically to disk while maintaining the topology of
+data structures without any explicit programmer intervention.
+</para>
+
+<para>
+If persistent object stores are to replace the functionality of normal
+file systems, they must be able to address large volumes of data
+efficiently on standard hardware. High-performance address translation
+techniques are necessary and important for supporting large address
+spaces on stock hardware. We present <glossterm>pointer swizzling at page fault
+time</glossterm> (PS@PFT), a coarse-grained address translation scheme suitable
+for this purpose, and demonstrate it by building a persistent storage
+system for C++ called the Texas Persistent Store. We also discuss
+alternative approaches for portably incorporating fine-grained address
+translation in Texas for situations where coarse-grained swizzling
+alone is insufficient. As part of the performance results, we present
+a detailed analysis of various components of a coarse-grained address
+translation technique, including a comparison with overall I/O costs.
+</para>
+
+<para>
+Pointer swizzling requires run-time knowledge of in-memory object
+layouts to locate pointers in objects. We have developed and
+implemented <glossterm>Run-Time Type Description</glossterm> (RTTD)
+for this purpose; our implementation strategy is portable because it
+is based on a novel use of compiler-generated debugging information
+for extracting the necessary type description. RTTD is also useful for
+other applications such as data structure browsing, and advanced
+profiling and tracing.  </para>
+
+<para>
+Another part of this research is a study of the interaction between
+systems similar to PS@PFT and operating systems, particularly
+regarding virtual memory management issues. We suggest areas where
+operating system implementations can be made more open to improve
+their performance and extensibility. Finally, we briefly discuss
+storage management issues, specifically <glossterm>log-structured
+storage</glossterm>, <glossterm>disk prefetching</glossterm>, and
+<glossterm>compressed in-memory storage</glossterm>, and provide
+directions for future research in this area.  </para>
+
+</abstract>
+
+  </biblioset>
+</biblioentry>
+
+<biblioentry id="bib.swiz">
+
+  <biblioset relation='journal'>
+    <title>International Workshop on Object Orientation in Operating Systems</title>
+    <date>September 1992</date>
+    <address>
+        <city>Paris</city>
+        <country>France</country>
+    </address>
+  </biblioset>
+
+  <biblioset relation='article'>
+    <bibliosource>
+        <link><uri>references/swizz.ps.gz</uri></link>
+    </bibliosource>
+
+    <artpagenums>364-377</artpagenums>
+    <title>Pointer Swizzling at Page Fault Time: Efficiently and Compatibly Supporting Huge Address Spaces on Standard Hardware</title>
+
+    <authorgroup>
+      <author>Paul R. Wilson</author>
+      <author>Sheetal V. Kakkad</author>
+    </authorgroup>
+
+   <abstract>
+
+<para>
+Pointer swizzling at page fault time is a novel address translation
+mechanism that exploits conventional address translation hardware. It
+can support huge address spaces efficiently without long hardware
+addresses; such large address spaces are attractive for persistent
+object stores, distributed shared memories, and shared address space
+operating systems. This swizzling scheme can be used to provide data
+compatibility across machines with different word sizes, and even to
+provide binary code compatibility across machines with different
+hardware address sizes.
+</para>
+
+<para>
+Pointers are translated ("swizzled") from a long format to a shorter
+hardware-supported format at page fault time. No extra hardware is
+required, and no continual software overhead is incurred by presence
+checks or indirection of pointers. This pagewise technique exploits
+temporal and spatial locality in much the same way as a normal virtual
+memory; this gives it many desirable performance characteristics,
+especially given the trend toward larger main memories. It is easy to
+implement using common compilers and operating systems.
+</para>
+
+</abstract>
+</biblioset>
+
+</biblioentry>
+
+
+<biblioentry id="bib.texas">
+
+  <biblioset relation='journal'>
+    <title>Persistent Object Systems: Proceedings of the Fifth International Workshop on Persistent Object Systems</title>
+    <date>September 1992</date>
+    <address>
+        <city>San Miniato</city>
+        <country>Italy</country>
+    </address>
+  </biblioset>
+
+  <biblioset relation='article'>
+    <artpagenums>11-33</artpagenums>
+
+    <bibliosource>
+        <link><uri>references/texaspstore.ps.gz</uri></link>
+    </bibliosource>
+
+    <authorgroup>
+      <author>Vivek Singhal</author>
+      <author>Sheetal Kakkad</author>
+      <author>Paul Wilson</author>
+    </authorgroup>
+
+    <title>Texas: An Efficient, Portable Persistent Store</title>
+
+<abstract>
+<para>
+Texas is a persistent storage system for C++, providing high
+performance while emphasizing simplicity, modularity and
+portability. A key component of the design is the use of pointer
+swizzling at page fault time, which exploits existing virtual memory
+features to implement large address spaces efficiently on stock
+hardware, with little or no change to existing compilers. Long
+pointers are used to implement an enormous address space, but are
+transparently converted to the hardware-supported pointer format when
+pages are loaded into virtual memory.
+</para>
+
+<para>
+Runtime type descriptors and slightly modified heap allocation
+routines support pagewise pointer swizzling by allowing objects and
+their pointer fields to be identified within pages. If compiler
+support for runtime type identification is not available, a simple
+preprocessor can be used to generate type descriptors.
+</para>
+
+<para>
+This address translation is largely independent of issues of data
+caching, sharing, and checkpointing; it employs operating systems'
+existing virtual memories for caching, and a simple and flexible
+logging system.
+</para>
+
+<para>
+Pagewise virtual memory protections are also used to detect writes for
+logging purposes, without requiring any changes to compiled code. This
+may degrade checkpointing performance for small transactions with poor
+locality of writes, but page diffing and sub-page logging promise to
+keep performance competitive with finer-grained checkpointing schemes.
+</para>
+
+<para>
+Texas presents a simple programming interface; an application creates
+persistent object by simply allocating them on the persistent heap. In
+addition, the implementation is relatively small, and is easy to
+incorporate into existing applications.
+</para>
+</abstract>
+</biblioset>
+</biblioentry>
+

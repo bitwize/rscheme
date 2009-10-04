@@ -1,0 +1,52 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}value-sequence{/RefName}
+  {RefPurpose}Returns a sequence of table values{/RefPurpose}
+  {RefClass role="Type"}generic{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/value-sequence/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/table/{/ParamDef}{ParamDef role="returns"}
+{Parameter}sequence{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}table{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<table>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}sequence{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<list>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function extracts the set of values from a {ClassName/<table>/ in the
+form of a sequence.  The length of the returned sequence is exactly
+the size of the table as reported by {Phrase Role="var"}table-size{/Phrase}.{/para}
+{para}
+In the current implementation, the returned sequence is a list.  However,
+future versions may return a vector instead.{/para}
+{para}
+The order of returned value in the sequence is not specified, {Emphasis}except{/Emphasis}
+to say that it is the same order as the values returned by
+{Phrase Role="var"}key-sequence{/Phrase}.{/para}
+{/RefSect1}
+{/RefEntry}

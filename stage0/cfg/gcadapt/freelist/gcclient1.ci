@@ -1,0 +1,124 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/cfg/gcadapt/freelist/gcclient1.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.3
+ * File mod date:    1997-11-29 23:10:52
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ *------------------------------------------------------------------------*/
+
+#ifndef _CI_GCCLIENT1
+#define _CI_GCCLIENT1
+
+#include <rscheme/linktype.h>
+#include <rscheme/smemory.h>
+#include <rscheme/vinsns.h>
+#include <rscheme/regs.h>
+
+extern struct module_descr **stable_root_module_ptr;
+extern unsigned stable_root_num;
+extern unsigned quasistable_root_num;
+
+
+CI_DECL gc_obj_addr cast_and_deref_ptr( pos_ptr_addr slot )
+{
+    return OBJ_ISA_PTR(*slot) ? PTR_TO_GCPTR(*slot) : NULL;
+}
+
+CI_DECL void stable_root_reset( void ) 
+{
+    stable_root_module_ptr = master_table;
+    if (stable_root_module_ptr)
+ 	stable_root_num = (*stable_root_module_ptr)->num_roots;
+}
+
+CI_DECL gc_obj_addr stable_root_next( void ) 
+{
+obj item, *rv;
+
+    if (!stable_root_module_ptr)
+	return NULL;
+
+    while (*stable_root_module_ptr)
+    {
+	rv = (*stable_root_module_ptr)->root_vector;
+	while (stable_root_num > 0)
+	{
+	    item = rv[--stable_root_num];
+	    if (OBJ_ISA_PTR(item))
+		return PTR_TO_GCPTR(item);
+	}
+	stable_root_module_ptr++;
+	if (*stable_root_module_ptr)
+	    stable_root_num = (*stable_root_module_ptr)->num_roots;
+    }
+    return NULL;
+}
+
+/* we consider the registers to be the "quasistable" roots,
+   because some of them stay pretty constant, although
+   others of them are always changing
+*/
+
+CI_DECL void quasistable_root_reset( void ) 
+{
+    quasistable_root_num = 0;
+}
+
+CI_DECL gc_obj_addr quasistable_root_next( void )
+{
+obj item;
+
+    while (quasistable_root_num < NUM_REGS)
+    {
+	item = any_reg_ref(quasistable_root_num++);
+	if (OBJ_ISA_PTR(item))
+	    return PTR_TO_GCPTR(item);
+    }
+    return NULL; 
+}
+
+CI_DECL void unstable_root_reset( void )
+{
+#ifdef STACK_CACHE
+void cache_iterator_reset( void );
+
+    cache_iterator_reset();
+#endif
+}
+
+CI_DECL gc_obj_addr unstable_root_next( void )
+{
+#ifdef STACK_CACHE
+gc_obj_addr cache_iterator_next( void );
+
+    return cache_iterator_next();
+#else
+    return NULL;
+#endif
+}
+
+CI_DECL gc_obj_addr lang_deref_weak_pointer_addr( lang_weak_ptr_addr wp )
+{
+    if (OBJ_ISA_PTR(*wp))
+	return PTR_TO_GCPTR(*wp);
+    else
+	return NULL;
+}
+
+CI_DECL void lang_clear_weak_pointer( lang_weak_ptr_addr wp )
+{
+    printf( "weak pointer at: %#x -- old %#x\n", (unsigned)wp,
+    	VAL(*wp) );
+    *wp = UNBOUND_OBJ;
+}
+
+#ifndef gcserver_h
+#include <rscheme/gcxverse.h>
+#endif
+
+#endif /* _CI_GCCLIENT1 */

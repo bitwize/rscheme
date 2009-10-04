@@ -1,0 +1,50 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}open-input-process{/RefName}
+  {RefPurpose}Open a port to the output from a shell pipeline.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/open-input-process/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/shell/{/ParamDef}{ParamDef role="returns"}
+{Parameter}port{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}shell{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}port{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<input-port>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Creates a subprocess for executing {Parameter}shell{/Parameter} via the OS's shell
+interpreter, and returns an input port which reads from the output
+of that subprocess.  The {Phrase Role="var"}close-input-port{/Phrase} method synchronizes 
+with the subprocess.{/para}
+{para}
+Note that this procedure is named for the kind of object you
+get back (an input port), and not for the behavior that shell
+process is expected to exhibit (ie, output).{/para}
+{/RefSect1}
+{/RefEntry}

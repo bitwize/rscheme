@@ -1,0 +1,73 @@
+{Chapter}
+{Title}PostgresQL Interface{/Title}
+{Para}
+{Para}
+This chapter describes the &rs; interface to the PostgresQL Data Base
+Management System (formerly known as Postgres95).  The interface
+(glue) functionality is contained in an &rs; package, {UserInput/pg95/,
+which provides a single module by the same name{footnote}{Para}As is common
+practice{/Footnote}.
+<!>
+{Sect1}
+{Title}Initialization{/Title}
+{Para}
+In order to make use of a PostresQL database, you must establish
+a {FirstTerm Role="defn"}connection{/FirstTerm} to it.  You may connect to databases on other
+hosts or on ports other than the default by specifying appropriate
+keywords to the {Phrase Role="var"}postgres-connect{/Phrase} function.
+<!>
+{Sect1}
+{Title}Commands{/Title}
+{Para}
+Commands are submitted to the database using the
+{Phrase Role="var"}pg95-exec-command{/Phrase}
+<!>
+{Sect1}
+{Title}Queries{/Title}
+{Para}
+This section describes how queries are made.
+{Sect1}
+{Title}Errors{/Title}
+{Para}
+All the glue functions that interface to the database check for
+error conditions.  An error condition that arises is manifest
+as the signalling of a {ClassName/<pg95-error>/, which is a kind of
+{ClassName/<error>/.
+{Para}
+Most functions will signal a {ClassName/<pg95-exec-error/, which indicates
+an error in the execution of a query or command.  The other case is
+a {ClassName/<pg95-connect-error>/, which denotes an error attempting to
+connect the the database.  (The reason for the distinction is that
+in the latter case, a connection exists and can be used to identify
+the error.  In the latter case, no valid connection exists.)
+<!>
+{Sect1}
+{Title}Object mappings{/Title}
+{Para}
+The {UserInput/pg95/ module has functions for interpreting tuples and
+rows of tables as objects in the &rs; object system.  This is
+done by making use of PostgresQL type introspection techniques
+and RScheme class introspection.
+{Para}
+The general rule is that as long as the the name of the class slots
+are the same as the names of the tuple fields, then the mapper can
+fill in the appropriate slots.  The slot with name {Phrase Role="var"}oid{/Phrase} can be
+used to refer to the PostgresQL object id.
+{Comment}give details, esp. as regards value mappings and special 
+cases{/Comment}
+<!>
+{Sect1}
+{Title}Functions Reference{/Title}
+&ref.postgres-connect;
+&ref.pg95-connect;
+&ref.pg95-exec-command;
+&ref.pg95-with-tuples;
+&ref.pg95-field-names;
+&ref.pg95-field-number;
+&ref.pg95-field-size;
+&ref.pg95-field-type;
+&ref.pg95-get-value;
+&ref.pg95-type;
+&ref.table-list;
+&ref.oid-instance;
+&ref.make-extractor;

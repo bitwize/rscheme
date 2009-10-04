@@ -1,0 +1,154 @@
+{Chapter}
+{Title}String Manipulation{/Title}
+{Para}
+{Para}
+&rs; has a wide variety of string manipulation functions, providing
+facilities that are useful to normal programmers and going well beyond
+what's available in {Citation}R4RS{/Citation}.
+{Para}
+Consider for example the following string:
+{/Para}
+{Figure}
+ {Title}Sample String{/Title}
+ {Graphic entityref="fig.str1"}{/Graphic}
+{/Figure}
+{Para}
+Note the numbering assigned to the characters in the string.  For purposes
+of array operations like {Phrase Role="var"}string-ref{/Phrase}, since arrays are 0-based in
+Scheme, the referenced character is the character that would make up
+a substring with an offset equal to the given index, and having length 1.
+<!>
+{Sect1} <!--  id="u.strops" -->
+{Title}String operations{/Title}
+<!--
+&strlen;
+&strref;
+&strset;
+&straref;
+&strtok;
+&strcoll;
+&strxlate;
+-->
+&ref.strsearch;
+&ref.strsplit;
+&ref.strjoin;
+<!>
+{Sect1} <!--  id="u.chset" -->
+{Title}Character sets and tables{/Title}
+{Para}
+Different parts of the system make frequent use of character class
+testing.  For example, the lexical analyzer defines some character
+classes that are used to tokenize scheme data and programs.  Also,
+the regular expression facility can use character sets to match
+characters.
+<!>
+{Sect1} <!--  id="u.regex" -->
+{Title}Regular Expressions{/Title}
+{Para}
+{Para}
+&rs; comes with a regular expression facility, accessible as the
+{UserInput/regex/ module.  This module provides
+a regular
+expression compiler;  regular expressions in a structured
+scheme-like syntax are compiled into functions which know
+how to search for their pattern.
+{Para}
+Compiling a regular expression is relatively expensive, so it
+is best to factor out the operation whenever convenient.
+{Para}
+The returned procedure takes one or two arguments.  It's first argument
+is the string to search for itself in.  The second (optional) argument
+is the offset at which to start looking, which defaults to 0.
+{Para}
+Regular expressions are composed of the following operators:
+{/Para}
+{Table}
+  {Title}Regular Expression Operators{/Title}
+  {TGroup COLS=2}
+  {THead}
+   {Row}{Entry}form{/Entry}{Entry}example{/Entry}{Entry}description{/Entry}
+  {/THead}
+  {TBody}
+{Row}{Entry}
+<char>{/Entry}{Entry}{UserInput/#\a/{/Entry}{Entry}match the specified character
+{/Entry}{/Row}
+{Row}{Entry}<string>{/Entry}{Entry}{UserInput/"foo"/{/Entry}{Entry}match the given sequence of characters
+{/Entry}{/Row}
+{Row}{Entry}<symbol>{/Entry}{Entry}{UserInput/space/{/Entry}{Entry}match a character in the named character class.
+        Valid character classes are:
+        {Literal/any digit alpha uppercase lowercase
+        hex-digit printable space/
+{/Entry}{/Row}
+{Row}{Entry}eos{/Entry}{Entry}{UserInput/eos/{/Entry}{Entry}match the end of the string
+{/Entry}{/Row}
+{Row}{Entry}(or P1 ...){/Entry}{Entry}{UserInput/(or #\a space)/{/Entry}{Entry}match any one of the given patterns (may be any pattern, not just characters)
+{/Entry}{/Row}
+{Row}{Entry}(seq P1 ...){/Entry}{Entry}{UserInput/(seq #\a #\b)/{/Entry}{Entry}match the sequence of patterns
+{/Entry}{/Row}
+{Row}{Entry}(+ P){/Entry}{Entry}{UserInput/(+ space)/{/Entry}{Entry}match one or more occurrences of P
+{/Entry}{/Row}
+{Row}{Entry}(* P){/Entry}{Entry}{UserInput/(* alpha)/{/Entry}{Entry}match zero or more occurrences of P
+{/Entry}{/Row}
+{Row}{Entry}(? P){/Entry}{Entry}{UserInput/(? #\x)/{/Entry}{Entry}match zero or one P's
+{/Entry}{/Row}
+{Row}{Entry}(range C1 C2){/Entry}{Entry}{UserInput/(range #\a #\z)/{/Entry}{Entry}match a character in the range C1..C2 (C1 and C2 must be literal characters)
+{/Entry}{/Row}
+{Row}{Entry}(not P){/Entry}{Entry}{UserInput/(not space)/{/Entry}{Entry}match a character not matched by P 
+(P must be a primitive pattern (&ie;, a
+character pattern, character class, or
+a {UserInput/or/ or {UserInput/not/ of primitive patterns))
+{/Entry}{/Row}
+{Row}{Entry}(save P){/Entry}{Entry}{UserInput/(save (+ (not #\,)))/{/Entry}{Entry}match P
+and return the matched substring as an additional value
+{/Entry}{/Row}
+{Row}{Entry}(let N P){/Entry}{Entry}{UserInput/(let id (+ alpha))/{/Entry}{Entry}match P
+and return the matched substring as an additional value, using
+N as the name of the field.
+{/Entry}{/Row}
+{Row}{Entry}(prefix P){/Entry}{Entry}{UserInput/(prefix #\a)/{/Entry}{Entry}match P if it is at the beginning of the string
+{/Entry}{/Row}
+{Row}{Entry}(suffix P){/Entry}{Entry}{UserInput/(suffix #\.)/{/Entry}{Entry}match P if it is at the end of the string
+{/Entry}{/Row}
+{Row}{Entry}(entire P){/Entry}{Entry}{UserInput/(entire "foo")/{/Entry}{Entry}match P if it is the entire string
+
+{/TBody}
+{/TGroup}
+{/Table}
+
+{Para}
+{Sect2} <!--  -->
+{Title}Functions{/Title}
+&ref.rx2proc;
+&ref.unfmt2pr;
+<!-- &regex2of;
+&mkchset;
+&mkchtbl;
+&regex;
+-->
+{Sect2} <!--  -->
+ {Title}Examples{/Title}
+{Para}
+The following examples illustrate the basic behavior
+of the regular expression module.
+{/Para}
+{Example}
+ {Title}Regular Expression Examples{/Title}
+{Para}
+ {UserInput Role="ToEval"/(define p (reg-expr->proc '(+ alpha)))/
+{Para}
+ {UserInput Role="ToEval"/(p "1 2 Buckle my shoe")/
+   {ComputerOutput Role="EvalsTo"/4/
+   {ComputerOutput Role="EvalsTo"/10/
+{Para}
+ {UserInput Role="ToEval"/(define p2 (reg-expr->proc '(let x (+ alpha))))/
+{Para}
+ {UserInput Role="ToEval"/(p2 "5 6 pick up sticks")/
+   {ComputerOutput Role="EvalsTo"/4/
+   {ComputerOutput Role="EvalsTo"/8/
+   {ComputerOutput Role="EvalsTo"/"pick"/
+{Para}
+ {UserInput Role="ToEval"/(p2 "5 6 pick up sticks" 8)/
+   {ComputerOutput Role="EvalsTo"/9/
+   {ComputerOutput Role="EvalsTo"/11/
+   {ComputerOutput Role="EvalsTo"/"up"/
+{/Example}

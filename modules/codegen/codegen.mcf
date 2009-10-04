@@ -1,0 +1,20 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    modules/codegen/codegen.mcf
+ |
+ |          Copyright (C)1995 Donovan Kolbly <donovan@tkg.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.8
+ | Date:    1999-01-08 13:28:58
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ `------------------------------------------------------------------------|#
+
+((codegen "$dist/codegen" "$install/resource/modules")
+ (open primops *scheme* iolib low-scheme objsys mathlib tables paths)
+ (open compiler corelib mlink)
+ (files genaml rearrnge parassmt loops)
+ (files lexaddr aml2tmpl)
+ (files "[dist]/install/resource/compiler/bytecode/bcgen.scm")
+ (files aml2bc support)
+ (export :local))

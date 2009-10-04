@@ -1,0 +1,51 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}date->weekday{/RefName}
+  {RefPurpose}The day of the week on which the date falls.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/date->weekday/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/date/{/ParamDef}{ParamDef role="returns"}
+{Parameter}weekday{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}date{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<date>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}weekday{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<symbol>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Returns a symbol representing the day of the week on which the
+given {Parameter}date{/Parameter} falls.  In particular, returns exactly on
+of: {UserInput}sunday{/UserInput}, 
+{UserInput}monday{/UserInput}, 
+{UserInput}tuesday{/UserInput}, 
+{UserInput}wednesday{/UserInput}, 
+{UserInput}thursday{/UserInput}, 
+{UserInput}friday{/UserInput}, 
+{UserInput}saturday{/UserInput}.{/para}
+{/RefSect1}
+{/RefEntry}

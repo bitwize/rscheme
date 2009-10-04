@@ -1,0 +1,25 @@
+
+		      RScheme 0.7  Snapshot 3.2
+
+			 License For Free Use
+			  January 3, 2002
+
+RScheme is free software.  It is not public domain -- I retain
+copyright to all source code -- but it is free, and you have license
+to use it as you desire.  This includes utilizing it as a complete
+system, adapting it to your purposes, building new applications using
+and incorporating it, etc.  This free license also includes the
+ability to redistribute RScheme unmodified, or to redistribute derived
+works.  These things and more you can do free of charge.
+
+Also, note that RScheme comes with ABSOLUTELY NO WARRANTY.  Because it
+is free, and made available for your use with no compensation due, I
+cannot warrant it to be suitable to any purpose, to be free of
+defects, or to comply with any standard, etc.
+
+Given that, I hope you can enjoy and utilize it.  Certainly I do both.
+
+
+-- Donovan Kolbly                       RScheme Development Group
+   					d.kolbly@rscheme.org
+					http://www.rscheme.org/~donovan/

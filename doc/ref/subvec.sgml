@@ -1,0 +1,56 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}subvector{/RefName}
+  {RefPurpose}Creates a subvector{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/subvector/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/vec/ {Parameter/start/{/ParamDef}{ParamDef role="returns"}
+{Parameter}result{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}vec{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<vector>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}start{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}end{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/.  Optional.  Default 
+value is the length of the vector.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}result{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<vector>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function is to vectors what {Phrase Role="var"}substring{/Phrase} is for strings.{/para}
+{/RefSect1}
+{/RefEntry}

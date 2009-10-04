@@ -1,0 +1,16 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    modules/objsys/objsys.mcf
+ |
+ |          Copyright (C)1995 Donovan Kolbly <donovan@tkg.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.4
+ | Date:    1997-03-09 16:57:02
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ `------------------------------------------------------------------------|#
+
+((objsys "$dist/objsys" "$install/resource/modules")
+ (open primops *scheme* low-scheme corelib)
+ (files object metaobj genericf nextmeth makeinst getnset methods)
+ (export :local))

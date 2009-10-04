@@ -1,0 +1,71 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}signal{/RefName}
+  {RefPurpose}Signal a condition{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/signal/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/condition/{/ParamDef}{ParamDef role="returns"}
+{Parameter}object{/Parameter} ...{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/signal/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/message/ {Parameter/arg/{/ParamDef}{ParamDef role="returns"}
+{Parameter}object{/Parameter} ...{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}condition{/Term}
+    {ListItem}{para}
+A condition object (an instance of {ClassName/<condition>/).{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}format-string{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}object{/Term}
+    {ListItem}{para}
+An object.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function submits a condition object to the exception
+handling system for delivery.  The appropriate exception handler
+is invoked to handle the condition.{/para}
+{para}
+In the interactive environment, the default condition handler
+supplied by the read-eval-print loop will catch any condition
+not otherwise caught and create a {Quote}break{/Quote} loop.{/para}
+{para}
+If the recovery protocol of the condition permits returning, and
+a handler returns, then the values it returns are returned from
+the call to {Phrase Role="var"}signal{/Phrase}.  See also {Phrase Role="var"}error{/Phrase} if no recovery
+is permitted.{/para}
+{para}
+The second form of the function is a convenient interface to
+creating instances of {ClassName/<simple-warning>/ with the given
+message and arguments.{/para}
+{/RefSect1}
+{/RefEntry}

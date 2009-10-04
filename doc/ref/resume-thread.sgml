@@ -1,0 +1,37 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}thread-resume{/RefName}
+  {RefPurpose}Resume a thread.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/thread-resume/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/thread/{/ParamDef}{ParamDef role="returns"}
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}thread{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<thread>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Decrements the suspend count of the thread.  If the suspend count becomes
+zero, the thread is eligible to execute (unless it was blocked on
+something, that is).{/para}
+{para}
+If the thread already has a zero suspend count, this procedure
+has no effect.{/para}
+{/RefSect1}
+{/RefEntry}

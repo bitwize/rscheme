@@ -1,0 +1,31 @@
+{Chapter}
+{Title}Procedures{/Title}
+{Para}
+{Para}
+Procedures are first-class in &rs;, and they are instances of
+the abstract class {ClassName/<function>/.
+{Para}
+{section id="u.multi"}Multiple values
+{Para}
+&rs; supports returning multiple values from a function in an
+integrated fashion (integrated meaning that intercalling between
+functions that return multiple values and those that don't
+is permitted; multiple return values is simply a generalization
+of &r4rs;'s single return value).
+{Para}
+Multiple values are returned using the {Phrase Role="var"}values{/Phrase} construct,
+and caught using the {Phrase Role="var"}bind{/Phrase} construct.
+{Para}
+An expression in any context other than the initializer
+position of a {Phrase Role="var"}bind{/Phrase} is said to be in {Quote/single-value-expecting position./
+If more than one value is returned into a single-value-expecting
+position, then the remaining values are discarded.
+If no values are returned into a single-value-expecting position,
+then &f; is used instead.
+{Para}
+({Quote/Context/ here is basically the {Emphasis/continuation/ of the
+expression -- that is, what form will execute after the expression
+executes.)
+{Para}
+&ref.values;
+&ref.bind;

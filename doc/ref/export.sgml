@@ -1,0 +1,15 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}export{/RefName}
+  {RefPurpose}Specify names of variables to be exported{/RefPurpose}
+  {RefClass role="Type"}mcf{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/export/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/name/{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{/RefSynopsisDiv}
+{/RefEntry}

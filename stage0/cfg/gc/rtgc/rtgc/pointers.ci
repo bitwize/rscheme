@@ -1,0 +1,27 @@
+#ifndef POINTERS_CI
+#define POINTERS_CI
+#include <rtgc/pointers.hh>
+
+#undef LINK_TYPE
+#ifdef INLINES
+#define LINK_TYPE inline 
+#else
+#define LINK_TYPE
+#endif
+
+#include <rtgc/gc.hh>
+#include <rtgc/states.h>
+
+LINK_TYPE UINT_32 follow_pointers(UINT_32 max_bytes_to_trace)
+{
+   // Save the argument to a global variable and call find_pointers.
+   // The saved argument is used by the gc_next_object routine for the
+   // generational version of the collector.
+   pointing_object = gc.incremental_tracing_state.object;
+   
+   return(find_pointers(max_bytes_to_trace,
+			gc.incremental_tracing_state.Done,
+			gc.incremental_tracing_state.ptr_to_client_object));
+}
+
+#endif // POINTERS_CI

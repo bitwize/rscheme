@@ -1,0 +1,40 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}send-message!{/RefName}
+  {RefPurpose}Send a message to a mailbox.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/send-message!/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/mbox/ {Parameter/item/{/ParamDef}{ParamDef role="returns"}
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}mbox{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<mailbox>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}item{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<object>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This procedure enqueues {Parameter}item{/Parameter} as a message in {Parameter}mbox{/Parameter}.
+Since mailboxes are unbounded queues, this procedure never
+blocks.  Messages are inserted in order.{/para}
+{/RefSect1}
+{/RefEntry}

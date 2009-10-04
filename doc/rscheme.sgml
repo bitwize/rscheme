@@ -1,0 +1,41 @@
+
+<!doctype book PUBLIC "-//Davenport//DTD DocBook V3.0//EN" [
+
+  <!-- for some reason, our `decl.sgml' breaks ISOlat1 -->
+  <!ENTITY % ISOlat1.module "IGNORE">
+
+  <!entity UserGuide.introduction SYSTEM "user_guide/introduction.sgml">
+  <!entity UserGuide.specialforms SYSTEM "user_guide/specialforms.sgml">
+
+  <!entity book.info SYSTEM "bookinfo.sgml">
+  <!entity book.body SYSTEM "bookbody.sgml">
+  <!entity obtain SYSTEM "obtain.sgml">
+
+  <!entity % ref.index SYSTEM "ref.index">
+  %ref.index;
+
+  <!entity % chaps.index SYSTEM "chaps.index">
+  %chaps.index;
+
+  <!entity % tech.index SYSTEM "tech.index">
+  %tech.index;
+
+  <!entity % figs.index SYSTEM "figs.index">
+  %figs.index;
+
+  <!entity list1 SYSTEM "figs/list1.eps" ndata eps>
+  <!entity list2 SYSTEM "figs/list2.eps" ndata eps>
+  <!entity list3 SYSTEM "figs/list3.eps" ndata eps>
+  <!entity rs "RScheme">
+  <!entity t "{Literal/#t/">
+  <!entity f "{Literal/#f/">
+  <!entity eg "{ForeignPhrase/e.g./">
+  <!entity ie "{ForeignPhrase/i.e./">
+  <!entity cntl.c "{KeyCombo}{KeyCap}^{/KeyCap}{KeyCap}C{/KeyCap}{/KeyCombo}">
+  <!entity cntl.d "{KeyCombo}{KeyCap}^{/KeyCap}{KeyCap}D{/KeyCap}{/KeyCombo}">
+]>
+
+{book}
+ &book.info;
+ &book.body;
+{/book}

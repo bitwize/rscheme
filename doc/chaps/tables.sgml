@@ -1,0 +1,36 @@
+{chapter id="tables"}
+{Title}Tables{/Title}
+{Para}
+&rs; provides an implementation of hash tables, both generic
+and specialized for certain kinds of keys.  The hash table facilities
+are provided by the {UserInput/tables/ module.
+{/Para}
+
+{InformalExample Role="Evals"}
+{Screen}
+{Prompt/top[0]=>/{UserInput/,(use tables)/
+{Prompt/top[1]=>/{UserInput/(define t (make-table))/
+value := t
+{Prompt/top[2]=>/{UserInput/t/
+value := #[<generic-table> @080f_605b]
+{/Screen}
+{/InformalExample}
+
+{Para}
+The {ClassName/<table>/ class is the abstract class of collections which
+map an explicit set of keys to values.  
+The only concrete subclasses of {ClassName/<table>/ are
+subclasses of the class {ClassName/<hash-table>/.
+{Para}
+Hash tables are created using the {Phrase Role="var"}make-table{/Phrase} function.
+{Sect1} <!--  id="u.tblops" -->
+{Title} Table operations{/Title}
+&ref.mktbl;
+&ref.tbllook;
+&ref.tblprobe;
+&ref.tblins;
+&ref.tblrmv;
+&ref.tblsize;
+&ref.keyseq;
+&ref.valseq;
+&ref.tblfor;

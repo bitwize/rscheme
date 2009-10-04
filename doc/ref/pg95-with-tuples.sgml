@@ -1,0 +1,61 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}pg95-with-tuples{/RefName}
+  {RefPurpose}Execute a query (like "select") against the database{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/pg95-with-tuples/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/cnxn/ {Parameter/command/ {Parameter/proc/{/ParamDef}{ParamDef role="returns"}
+{Parameter}result{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}cnxn{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<pg95-connection>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}command{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}proc{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<function>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}result{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<object>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function executes a query (as opposed to a command) 
+against the database.  The given {Parameter}proc{/Parameter} is called with three
+arguments, which are respectively, the query result object
+(an instance of {ClassName/<pg95-result>/), the number of tuples in
+the result, and the number of fields in each tuple (both {ClassName/<fixnum>/s).{/para}
+{para}
+When the function returns, the C result object is cleared (freed?).{/para}
+{/RefSect1}
+{/RefEntry}

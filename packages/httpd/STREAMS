@@ -1,0 +1,60 @@
+
+
+DATA STREAMS AND COMPOSITION FUNCTIONS
+======================================
+
+(http-protocol req-handler)
+	
+	returns a procedure which conforms to the SERVICE-HANDLER
+	interface, supporting the hyper-text transfer protocol,
+	using the req-handler procedure (with interface OBJ-PROVIDER)
+	to supply the web objects.
+
+(vpath . obj-provider)
+	
+	a disjunction operator for stream composition.  The variable
+	number of arguments are OBJ-PROVIDER's, and the resulting
+	interface is that of OBJ-PROVIDER.  For each object the
+	resulting procedure is asked to provide, the argument providers
+	are called in order until one returns non-#f.  If all return
+	#f, #f is returned.
+
+(filter-pages filter obj-provider)
+
+	returns a procedure conforming to the OBJ-PROVIDER interface.
+	For each non-html object requested, simply passes the request
+	on to obj-provider.
+
+	For each html object requested, invokes the page filtering
+	function on the data from the obj-provider.  filter is a procedure
+	conforming to the WRITER-FILTER interface
+
+INTERFACES
+==========
+
+(SERVICE-HANDLER (in <input-port>) (out <output-port>) (host <string>))
+
+	in is an input-port receiving data from a service client,
+	and out is an output-port sending data to the service client.
+	host is the network address of the client.
+
+(OBJ-PROVIDER (method <symbol>) (path <list>))
+
+	method identifies the information being requested.  The
+	return value is a procedure providing a WRITER interface.
+
+	an obj-provider can decline to provide the named object
+	by returning #f
+
+	an obj-provider is called with a fluid binding for *query*
+	which is an association list containing other (out-of-path)
+	information about the query.
+
+(WRITER (port <output-port>))
+
+	port is an output port on which to write some data.
+
+(WRITER-FILTER writer)
+
+	writer is a procedure with the WRITER interface.  Returns
+	a procedure with the WRITER interface.

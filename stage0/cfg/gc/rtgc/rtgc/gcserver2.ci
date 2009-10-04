@@ -1,0 +1,59 @@
+#ifndef GCSERVER2_CI
+#define GCSERVER2_CI
+#include <rtgc/colorset.hh>
+
+#undef LINK_TYPE
+#ifdef FOREIGN
+#define LINK_TYPE extern "C" 
+#else
+#ifdef INLINES
+#define LINK_TYPE inline
+#else
+#define LINK_TYPE
+#endif //INLINES
+#endif // #ifdef FOREIGN
+
+/* When locating garbage collected pointers within an object, the language
+system must call gc_next_object passing a pointer to the embedded pointer.
+This is essentially a callback to the garbage collector.
+
+ PARAMETERS:
+
+ ptr_addr should be a pointer to the location which could hold a pointer
+ to the object to be traced.
+ ptr_to_object is a pointer to the top of the object to be traced.  This
+ should be the same pointer that was returned to the language
+ system by the function gc_new().  (or the NULL value)
+
+*/
+
+LINK_TYPE void gc_next_object(pos_ptr_addr ptr_addr,
+			      gc_obj_addr ptr_to_object)
+{
+   if(ptr_to_object != NULL) {
+      // Pass the address of the pointer being followed, and the value
+      // of that pointer.
+      color_set::gray_a_white(ptr_addr, ptr_to_object);
+   }
+}
+
+#ifdef DEBUG_LEVEL2
+LINK_TYPE void gc_next_object_from_black(pos_ptr_addr ptr_addr,
+					 gc_obj_addr ptr_to_object)
+{
+   if(ptr_to_object != NULL){
+      // pass the address of the pointer and the pointed object.
+      garbage_collector::shade_check_from_black(ptr_addr,ptr_to_object);
+   }
+}
+
+LINK_TYPE void gc_next_object_from_non_black(pos_ptr_addr ptr_addr,
+					     gc_obj_addr ptr_to_object)
+{
+   if(ptr_to_object != NULL){
+      // pass the address of the pointer and the pointed object.
+      garbage_collector::shade_check_from_non_black(ptr_addr,ptr_to_object);
+   }
+}
+#endif //DEBUG_LEVEL2
+#endif // GCSERVER2_CI

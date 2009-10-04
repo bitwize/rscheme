@@ -1,0 +1,49 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}append{/RefName}
+  {RefPurpose}Appends some lists{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/append/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/l/{/ParamDef}{ParamDef role="returns"}
+{Parameter}b{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}l{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<list>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}b{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<list>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Appends some lists (possibly zero of them) into one big list.
+The resulting list shares structure with the final given list.{/para}
+{Note}{para}
+This means the all lists except the last are copied, so the
+cost in time and space of {Phrase Role="var"}append{/Phrase} is proportional to the
+length of all the lists except the last, {Emphasis}even if the
+last list is empty{/Emphasis}{/para}
+{/Note}{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,52 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}date->week{/RefName}
+  {RefPurpose}Breaks a date into week number and day of week.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/date->week/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/date/{/ParamDef}{ParamDef role="returns"}
+{Parameter}week{/Parameter} {Parameter}day-of-week{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}date{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<date>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}week{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}day-of-week{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function factors a given {Parameter}date{/Parameter} into it's {Parameter}week{/Parameter}
+and {Parameter}day-of-week{/Parameter} components.  The second return value,
+{Parameter}day-of-week{/Parameter}, is in the range 0 to 6 (inclusive), indicating
+the weekdays Sunday through Saturday.{/para}
+{/RefSect1}
+{/RefEntry}

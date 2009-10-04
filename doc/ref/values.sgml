@@ -1,0 +1,21 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}values{/RefName}
+  {RefPurpose}Evaluate to multiple values{/RefPurpose}
+  {RefClass role="Type"}special{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/values/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/expr/{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Multiple values are returned, one for each {Parameter}expr{/Parameter}.
+If no expressions are given, then no values are returned.{/para}
+{/RefSect1}
+{/RefEntry}

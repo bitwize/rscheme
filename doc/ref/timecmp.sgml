@@ -1,0 +1,77 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}time<?{/RefName}
+  {RefPurpose}Time comparison.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/time<?/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/t1/ {Parameter/t2/{/ParamDef}{ParamDef role="returns"}
+{Parameter}cmp{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/time<=?/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/t1/ {Parameter/t2/{/ParamDef}{ParamDef role="returns"}
+{Parameter}cmp{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/time>?/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/t1/ {Parameter/t2/{/ParamDef}{ParamDef role="returns"}
+{Parameter}cmp{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/time>=?/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/t1/ {Parameter/t2/{/ParamDef}{ParamDef role="returns"}
+{Parameter}cmp{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/time=?/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/t1/ {Parameter/t2/{/ParamDef}{ParamDef role="returns"}
+{Parameter}cmp{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}t1{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<time>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}t2{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<time>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}cmp{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<boolean>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Compares two times.{/para}
+{/RefSect1}
+{/RefEntry}

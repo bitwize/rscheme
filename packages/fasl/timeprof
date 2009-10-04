@@ -1,0 +1,27 @@
+#!/u/TKG/bin/perl
+
+open( TP, "timepoint.out" ) || die( "timepoint.out: $!\n" );
+
+%totals = ();
+%count = ();
+
+while (<TP>) {
+    if (m/^---.*\(delta\s+(\d+) us\) \[(.*)\]/) {
+	$time = $1;
+	$fn = $2;
+	# print "$time us in $fn\n";
+	$totals{$fn} += $time;
+	$count{$fn}++;
+    }
+}
+
+foreach $fn (sort keys %totals) {
+    $time = $totals{$fn};
+    $num = $count{$fn};
+    write; #print $fn, " ($totals{$fn} us)\n";
+}
+
+format STDOUT =
+@####### us for @##### calls = @##### per   @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+$time, $num, $time/$num, $fn
+.

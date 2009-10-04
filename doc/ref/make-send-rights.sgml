@@ -1,0 +1,55 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}make-send-rights{/RefName}
+  {RefPurpose}Extract send rights from mailbox.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/make-send-rights/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/mailbox/{/ParamDef}{ParamDef role="returns"}
+{Parameter}mbox{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}mailbox{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<mailbox>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}mbox{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<mailbox-send-rights>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Extracts only send rights from the given mailbox, returning a
+(possibly shared) handle to the underlying mailbox containing only
+send rights.  Messages sent to {Parameter}mbox{/Parameter} go to the underlying
+{Parameter}mailbox{/Parameter}, but messages may not be received from {Parameter}mbox{/Parameter}.
+(Attempting to do so signals a {ClassName/<only-send-rights>/ condition.){/para}
+{para}
+{/para}
+{Note}{para}
+This is implemented using a proxy wrapper class for
+mailboxes.  The {Phrase Role="var"}send-message!{/Phrase} primitive knows how to indirect
+through the proxy wrapper.{/para}
+{/Note}{Note}{para}
+This is not currently implemented.{/para}
+{/Note}{/RefSect1}
+{/RefEntry}

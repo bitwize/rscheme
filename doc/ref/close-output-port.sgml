@@ -1,0 +1,36 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}close-output-port{/RefName}
+  {RefPurpose}Close an output port{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/close-output-port/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/port/{/ParamDef}{ParamDef role="returns"}
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}port{/Term}
+    {ListItem}{para}
+An instance of <output-port>{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Closes the output port {Parameter}port{/Parameter}.
+Signals an error if the output port has already closed.
+Certain implementations may also signal an error if
+something goes wrong, like buffered data could not be written
+to the media.{/para}
+{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,106 @@
+{Chapter}
+{Title}POSIX System Call Interface{/Title}
+{Para}
+{Para}
+All the material in this chapter is available from
+the {UserInput/syscalls/ module, which is an add-on package
+(since not all systems support this functionality).
+{Para}
+{Sect1}
+{Title}Time Functions{/Title}
+                                                            <!>
+&ref.epochsecondstime;
+&ref.intervalstring;
+&ref.timeinterval;
+&ref.iiplus;
+&ref.iiminus;
+&ref.negativeinterval;
+&ref.timetime;
+&ref.timecmp;
+&ref.clockthunk;
+&ref.timethunk;
+&ref.clock;
+&ref.time;
+&ref.daytime;
+&ref.timeagain;
+&ref.timecalendar;
+&ref.timestring;
+&ref.secondsinterval;
+&ref.timeepochseconds;
+&ref.intervalseconds;
+                                                            <!>
+{Sect1}
+{Title}File Descriptor Functions{/Title}
+                                                            <!>
+&ref.fdread;
+&ref.fdwrite;
+&ref.fdclose;
+&ref.fdopen;
+&ref.fdlseek;
+&ref.fddup;
+&ref.fddup2;
+&ref.fdstat;
+&ref.fdtruncate;
+                                                            <!>
+{Sect1}
+{Title}Filesystem Functions{/Title}
+                                                            <!>
+&ref.scandir;
+&ref.rename;
+&ref.link;
+&ref.symlink;
+&ref.unlink;
+&ref.rmdir;
+&ref.modelistbits;
+&ref.chmod;
+&ref.chown;
+&ref.filetruncate;
+&ref.fileaccess;
+                                                            <!>
+{Sect1}
+{Title}{Phrase Role="var"}stat{/Phrase} Functions{/Title}
+                                                            <!>
+&ref.stat;
+&ref.lstat;
+&ref.stattype;
+&ref.statmode;
+&ref.statowner;
+&ref.stateq;
+&ref.statidhash;
+&ref.statidvector;
+&ref.statmtime;
+&ref.stattimes;
+&ref.statsize;
+&ref.statdirectory;
+&ref.statfile;
+&ref.stataccess;
+&ref.makefdopenmode;
+&ref.accessmask;
+
+{Sect1}{Title}Network Functions{/Title}
+
+&ref.makefdset;
+&ref.fdselect;
+&ref.setsocketoption;
+&ref.getsocketoption;
+&ref.inetaddrstring;
+&ref.makeinetaddr;
+&ref.makeinetsocketaddr;
+&ref.inetsocketaddrparts;
+&ref.socketaddressfamilyinteger;
+&ref.sockettypeinteger;
+&ref.socketcreate;
+&ref.socketlisten;
+&ref.socketbindunix;
+&ref.socketbindinet;
+&ref.socketbindinetsockaddr;
+&ref.socketaccept;
+&ref.socketconnectinet;
+&ref.hostnameaddress;
+&ref.hostaddressname;
+&ref.recvfrom;
+&ref.sendto;
+
+{Sect1}{Title}Miscellaneous{/Title}
+
+&ref.errno;

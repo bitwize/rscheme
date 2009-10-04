@@ -1,0 +1,56 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}table-key-present?{/RefName}
+  {RefPurpose}Checks a table for the presence of a given key{/RefPurpose}
+  {RefClass role="Type"}generic{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/table-key-present?/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/table/ {Parameter/key/{/ParamDef}{ParamDef role="returns"}
+{Parameter}boolean{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}table{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<table>/ to be searched{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}key{/Term}
+    {ListItem}{para}
+The key for which to search.  Must be an instance
+of the key class appropriate for the given table.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}boolean{/Term}
+    {ListItem}{para}
+{UserInput}#t{/UserInput} if the key is present, {UserInput}#f{/UserInput} otherwise.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This generic function on tables is used to check
+for the presence
+of a given key in a table.  This function is similar
+to {Phrase Role="var"}table-lookup{/Phrase}, but it returns a boolean indicator
+rather than the value associated
+with the key.  Hence, it is of primary use for tables
+that may contain {UserInput}#f{/UserInput} as a value.{/para}
+{/RefSect1}
+{/RefEntry}

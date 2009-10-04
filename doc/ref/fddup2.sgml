@@ -1,0 +1,50 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}fd-dup2{/RefName}
+  {RefPurpose}Dups an fd to a particular fd.{/RefPurpose}
+  {RefClass role="Type"}primop{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/fd-dup2/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/fromfd/ {Parameter/tofd/{/ParamDef}{ParamDef role="returns"}
+{Parameter}rc{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}fromfd{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}tofd{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}rc{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Copies a file descriptor to a particular one.  [Check dup2() for
+additional semantics like closing {Parameter}tofd{/Parameter} or not, etc.]{/para}
+{/RefSect1}
+{/RefEntry}

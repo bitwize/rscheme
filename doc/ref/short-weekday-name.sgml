@@ -1,0 +1,55 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}short-weekday-name{/RefName}
+  {RefPurpose}Return the short (English) names for date quantities{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/short-weekday-name/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/weekday/{/ParamDef}{ParamDef role="returns"}
+{Parameter}name{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/short-month-name/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/month/{/ParamDef}{ParamDef role="returns"}
+{Parameter}name{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}month{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}name{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+{Phrase Role="var"}short-weekday-name{/Phrase} maps weekday symbols, 
+as returned by {Phrase Role="var"}date->weekday{/Phrase},
+to their short (3-character) English name.{/para}
+{para}
+{Phrase Role="var"}short-month-name{/Phrase} does the same for month numbers (1-12)
+and month names.{/para}
+{/RefSect1}
+{/RefEntry}

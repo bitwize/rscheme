@@ -1,0 +1,49 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/runtime/chektype.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.4
+ * File mod date:    1997-11-29 23:10:53
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ *------------------------------------------------------------------------*/
+
+#include <rscheme/smemory.h>  /* get GVEC_P and BVEC_P */
+
+#define TYPE_CHECKER(check_name,class_name,test) \
+    CI_DECL obj check_name( obj thing, int fplace_code ) \
+    { \
+      if (!test(thing)) \
+        type_check_error( thing, class_name, fplace_code ); \
+      return thing; \
+    }
+
+TYPE_CHECKER(check_ptr,"<ptr>",OBJ_ISA_PTR)
+TYPE_CHECKER(check_immob,"<immob>",OBJ_ISA_IMMOB)
+TYPE_CHECKER(check_fixnum,"<fixnum>",OBJ_ISA_FIXNUM)
+TYPE_CHECKER(check_gvec,"<gvec>",GVEC_P)
+TYPE_CHECKER(check_bvec,"<bvec>",BVEC_P)
+TYPE_CHECKER(check_pair,"<pair>",PAIR_P)
+TYPE_CHECKER(check_symbol,"<symbol>",SYMBOL_P)
+TYPE_CHECKER(check_vector,"<vector>",VECTOR_P)
+TYPE_CHECKER(check_function,"<function>",FUNCTION_P)
+TYPE_CHECKER(check_class,"<<class>>",CLASS_P)
+TYPE_CHECKER(check_string,"<string>",STRING_P)
+TYPE_CHECKER(check_double_float,"<double_float>",LONGFLOAT_P)
+TYPE_CHECKER(check_long_int,"<long_int>",LONG_INT_P)
+TYPE_CHECKER(check_ascii_char,"<ascii_char>",OBJ_ISA_ASCII_CHAR)
+TYPE_CHECKER(check_unicode_char,"<unicode_char>",OBJ_ISA_UNICODE_CHAR)
+TYPE_CHECKER(check_boolean,"<boolean>",OBJ_ISA_BOOLEAN)
+
+CI_DECL obj check_instance( obj thing, obj req_class, int fplace_code )
+{
+  if (!instance_p(thing,req_class))
+    type_check_error( thing, 
+		      symbol_text( class_name(req_class) ), 
+		      fplace_code );
+  return thing;
+}
+

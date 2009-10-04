@@ -1,0 +1,52 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}string->hostaddr{/RefName}
+  {RefPurpose}Resolve a host name or dotted IP address.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/string->hostaddr/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/spec/{/ParamDef}{ParamDef role="returns"}
+{Parameter}host{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}spec{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}host{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<inet-addr>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This procedure converts a string into a {ClassName/<inet-addr>/.
+If the first character of the string is a digit, then
+the string is interpreted as a dotted IP address
+(e.g., {UserInput}204.71.200.72{/UserInput}).  Otherwise, it is interpreted
+as a host name and resolved using {Phrase Role="var"}gethostbyname{/Phrase}.{/para}
+{para}
+If the host name cannot be found, or it has no address, or
+if the resolver library encounters some other error, a
+{ClassName/<resolver-error>/
+condition is signalled.{/para}
+{/RefSect1}
+{/RefEntry}

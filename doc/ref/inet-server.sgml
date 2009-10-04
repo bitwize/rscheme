@@ -1,0 +1,54 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}inet-server{/RefName}
+  {RefPurpose}Create an internet server.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/inet-server/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/port/{/ParamDef}{ParamDef role="returns"}
+{Parameter}fd{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}port{/Term}
+    {ListItem}{para}
+An IP port as a {ClassName/<fixnum>/, or a socket address
+as a {ClassName/<inet-socket-addr>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}fd{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This procedure establishes a socket on the given {Parameter}port{/Parameter} 
+to listen for IP connections.  If the {Parameter/port/ is a number, then
+connections to any IP address on the local machine will be accepted.
+Otherwise, only connections to the IP address and port specified in the
+{ClassName/<inet-socket-addr>/ will be accepted.
+{/para}
+{para}The listen queue is set to 3.{/para}
+{note}
+{para}If threads are being used, the {XRef linkend="f.open-server-socket"}
+function is preferred.
+{/para}{/note}
+{/RefSect1}
+{/RefEntry}

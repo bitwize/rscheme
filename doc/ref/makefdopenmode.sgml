@@ -1,0 +1,57 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}make-fd-open-mode{/RefName}
+  {RefPurpose}Create an open mode for {Phrase Role="var"}fd-open{/Phrase}.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/make-fd-open-mode/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/mainmode/{/ParamDef}{ParamDef role="returns"}
+{Parameter}mode{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}mainmode{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<symbol>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}option{/Term}
+    {ListItem}{para}
+Instances of {ClassName/<symbol>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}mode{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Construct a unix "open" mode for use by {Phrase Role="var"}fd-open{/Phrase}.  {Parameter}mainmode{/Parameter}
+is one of 
+{UserInput}read{/UserInput}, 
+{UserInput}write{/UserInput}, and 
+{UserInput}read-write{/UserInput}.  The options are taken from
+{UserInput}append{/UserInput}, 
+{UserInput}create{/UserInput}, 
+{UserInput}exclusive{/UserInput}, and 
+{UserInput}truncate{/UserInput}.{/para}
+{/RefSect1}
+{/RefEntry}

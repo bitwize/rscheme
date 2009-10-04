@@ -1,0 +1,33 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/cfg/gc/freelist/gcxverse.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.3
+ * File mod date:    1997-11-29 23:10:52
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ *------------------------------------------------------------------------*/
+
+#ifndef _CI_GCXVERSE
+#define _CI_GCXVERSE
+
+#include "gcstruct.h"
+
+CI_DECL void gc_next_object( pos_ptr_addr p, gc_obj_addr item )
+{
+MEMHeader *h;
+void MEMGCNextObject( gc_obj_addr item );
+
+    h = &((MEMHeader *)item)[-1];
+    if (!h->black_flag)
+	MEMGCNextObject( item );
+    else
+    {
+	assert( h->black_flag == 1 );
+    }
+}
+
+#endif /* _CI_GCXVERSE */

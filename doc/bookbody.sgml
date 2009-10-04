@@ -1,0 +1,39 @@
+   {toc}{/toc}
+
+{part}
+{title}User Guide{/title}
+
+&chap.intro;
+
+&chap.programs;
+&chap.data;
+&chap.control;
+&chap.lists;
+&chap.objsys;
+&chap.io;
+&chap.string;
+&chap.vectors;
+&chap.tables;
+&chap.paths;
+&chap.excepts;
+&chap.modules;
+&chap.cli;
+&chap.ccode; 
+&chap.threads;
+&chap.inet;
+&chap.debug;
+&chap.calendar;
+&chap.rstore;
+&chap.pg95;
+&chap.http;
+&chap.posix;
+&chap.unix;
+
+{/part}
+
+{part}
+  {title}Technical Guide{/title}
+&tech.content;
+{/part}
+
+&obtain;

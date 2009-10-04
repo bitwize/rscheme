@@ -1,0 +1,55 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}vector-slice{/RefName}
+  {RefPurpose}Creates a subvector of a given length{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}vec{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<vector>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}offset{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}length{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/.  Optional.  
+The default is to go to the end of vec.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}result{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<vector>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function constructs a new vector whose
+contents are the contents of the given vector starting
+at the given offset and for the given length.  Hence,
+the returned vector's length will be exactly length.{/para}
+{para}
+If the length is not supplied, then {Phrase Role="var"}vector-slice{/Phrase} is
+equivalent to {Phrase Role="var"}subvector{/Phrase}.{/para}
+{/RefSect1}
+{/RefEntry}

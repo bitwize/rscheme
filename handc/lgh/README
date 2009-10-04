@@ -1,0 +1,27 @@
+LGH/RScheme interface
+=====================
+
+This is a *very* sketchy (proof-of-concept level) implementation
+of an LGH interface for RScheme.
+
+`make' and then `make learn0'
+
+No promises, but it worked for me.
+
+===================================================
+cloud:lgh> make
+gcc -g -O -O2 -DNDEBUG -DINLINES -DGC_MACROS -Wall -Wno-unused -I. -I- -I../install/include   -c lghmain.c -o lghmain.o
+ld -r lghmain.o  -o lgh.o
+ar ru ../install/lib/librs.a lgh.o
+rs lgh.scm -exit
+RScheme (v0.7-0.3b*, 96.07.14)
+Copyright (C) 1995 Donovan Kolbly <d.kolbly@rosette.com>
+RScheme comes with ABSOLUTELY NO WARRANTY.
+type ",warranty" for details; type ",help" for some help
+warning: TLV eval already bound to #[<closure> (0 make-user-initial)]
+cloud:lgh> make learn0
+gcc -I. -I- -I../install/include learn0.c ../install/lib/librs.a -lm -ldl -o learn0
+cloud:lgh> learn0
+Hello, RScheme-LGH
+cloud:lgh> 
+===================================================

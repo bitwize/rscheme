@@ -1,0 +1,35 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}make-mailbox{/RefName}
+  {RefPurpose}Create an empty mailbox.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/make-mailbox/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+{/ParamDef}{ParamDef role="returns"}
+{Parameter}mbox{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}mbox{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<mailbox>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Creates and returns a new, empty mailbox.  Mailboxes are the basic
+building block for high-level synchronization in RScheme threads.
+They are unbounded, synchronized FIFO queues which can pass
+arbitrary Scheme objects from sender to receiver.{/para}
+{/RefSect1}
+{/RefEntry}

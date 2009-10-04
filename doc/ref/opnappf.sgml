@@ -1,0 +1,46 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}open-output-append-file{/RefName}
+  {RefPurpose}Creates an output port for appending to a file{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/open-output-append-file/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/path/{/ParamDef}{ParamDef role="returns"}
+{Parameter}output-port{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}path{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/ denoting the path of the
+file to be appended.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}output-port{/Term}
+    {ListItem}{para}
+A general instance of {ClassName/<output-port>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function creates an output port which is similar to
+that created by {Phrase Role="var"}open-output-file{/Phrase}, except the data written to
+the port is {Emphasis}appended{/Emphasis} to the file.{/para}
+{/RefSect1}
+{/RefEntry}

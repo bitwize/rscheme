@@ -1,0 +1,33 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}semaphore-signal{/RefName}
+  {RefPurpose}Increment semaphore count.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/semaphore-signal/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/sem/{/ParamDef}{ParamDef role="returns"}
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}sem{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<semaphore>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Increments the semaphore counter, unblocking exactly one thread if any
+threads are blocked on a {Phrase Role="var"}semaphore-wait{/Phrase}.{/para}
+{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,31 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}bind{/RefName}
+  {RefPurpose}Bind multiple values{/RefPurpose}
+  {RefClass role="Type"}special{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/bind/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/var/ {Parameter/expr/ {Parameter/body/{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+The {Parameter}expr{/Parameter}'s are evaluated and the returned values are used to
+initialize the {Parameter}var{/Parameter}s, the first return value initializing the
+first {Parameter}var{/Parameter}, the second return value initializing the second, etc.
+If more values are returned by the {Parameter}expr{/Parameter} than there are {Parameter}var{/Parameter}s,
+then the remaining values are ignored.  If fewer values are returned
+than are variables given, then the remaining variables are initialized
+with {UserInput}#f{/UserInput}.{/para}
+{para}
+If a {UserInput}#rest{/UserInput} variable is given, then instead of ignoring any
+excess return values, they are accumulated into a list which is used
+to initialize the rest variable.  The list will be empty if no excess
+return values are present.{/para}
+{/RefSect1}
+{/RefEntry}

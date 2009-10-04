@@ -1,0 +1,44 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}string->file{/RefName}
+  {RefPurpose}Creates a pathname object naming a file{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/string->file/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/string/{/ParamDef}{ParamDef role="returns"}
+{Parameter}filename{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}string{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}filename{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<file-name>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function parses the given string in canonical filename
+notation (unix style) into a structured {ClassName/<file-name>/ instance.{/para}
+{/RefSect1}
+{/RefEntry}

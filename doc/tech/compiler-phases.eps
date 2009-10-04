@@ -1,0 +1,907 @@
+%!PS-Adobe-2.0 EPSF-1.2
+%%Title: compiler-phases.vrt
+%%Creator: Altsys Virtuoso 1.0
+%%CreationDate: Tue Sep 30 21:36:07 CDT 1997
+%%BoundingBox: 116 622 571 691
+%%FHPathName: /u/docs/compiler-phases.vrt
+%%DocumentProcSets: Altsys_header 4 0
+%%DocumentSuppliedProcSets: Altsys_header 4 0
+%%ColorUsage: Color
+%%DocumentFonts: Symbol
+%%+Times-Italic
+%%+Courier-Bold
+%%+Times-Roman
+%%DocumentNeededFonts: Symbol
+%%+Times-Italic
+%%+Courier-Bold
+%%+Times-Roman
+%%EndComments
+%%BeginProcSet: Altsys_header 4 0
+/AltsysDict 233 dict def
+AltsysDict begin
+/bdf{bind def}bind def
+/xdf{exch def}bdf
+/defed{where{pop true}{false}ifelse}bdf
+/ndf{1 index where{pop pop pop}{dup xcheck{bind}if def}ifelse}bdf
+/d{setdash}bdf
+/h{closepath}bdf
+/H{}bdf
+/J{setlinecap}bdf
+/j{setlinejoin}bdf
+/M{setmiterlimit}bdf
+/n{newpath}bdf
+/N{newpath}bdf
+/q{gsave}bdf
+/Q{grestore}bdf
+/w{setlinewidth}bdf
+/sepdef{
+dup where not
+{
+AltsysSepDict
+}
+if
+3 1 roll exch put
+}bdf
+/st{settransfer}bdf
+/colorimage defed /_rci xdf
+/md defed{
+md type /dicttype eq {
+/colorimage where {
+md eq {
+/_rci false def
+}if
+}if
+/settransfer where {
+md eq {
+/st systemdict /settransfer get def
+}if
+}if
+}if 
+}if
+/setstrokeadjust defed
+{
+true setstrokeadjust
+/C{curveto}bdf
+/L{lineto}bdf
+/m{moveto}bdf
+}
+{
+/dr{transform .25 sub round .25 add 
+exch .25 sub round .25 add exch itransform}bdf
+/C{dr curveto}bdf
+/L{dr lineto}bdf
+/m{dr moveto}bdf
+/setstrokeadjust{pop}bdf
+}ifelse
+/rectstroke defed /xt xdf
+xt {/yt save def} if
+/privrectpath {
+4 -2 roll m
+dtransform round exch round exch idtransform
+2 copy 0 lt exch 0 lt xor
+{dup 0 exch rlineto exch 0 rlineto neg 0 exch rlineto}
+{exch dup 0 rlineto exch 0 exch rlineto neg 0 rlineto}
+ifelse
+closepath
+}bdf
+/rectclip{newpath privrectpath clip newpath}def
+/rectfill{gsave newpath privrectpath fill grestore}def
+/rectstroke{gsave newpath privrectpath stroke grestore}def
+xt {yt restore} if
+/packedarray{array astore readonly}ndf
+/`
+{false setoverprint
+/-save0- save def
+pop pop pop pop pop
+concat
+userdict begin
+/showpage {} def
+0 setgray 0 setlinecap 1 setlinewidth
+0 setlinejoin 10 setmiterlimit [] 0 setdash newpath
+false setstrokeadjust
+} bdf
+/currentpacking defed{true setpacking}if
+/min{2 copy gt{exch}if pop}bdf
+/max{2 copy lt{exch}if pop}bdf
+/xformfont { currentfont exch makefont setfont } bdf
+/fhnumcolors 1 
+statusdict begin
+/processcolors defed 
+{
+pop processcolors
+}
+{
+/deviceinfo defed {
+deviceinfo /Colors known {
+pop deviceinfo /Colors get
+} if
+} if
+} ifelse
+end 
+def
+/printerRes 
+gsave
+matrix defaultmatrix setmatrix
+72 72 dtransform
+abs exch abs
+max
+grestore
+def
+/graycalcs
+[
+{Angle Frequency}
+{GrayAngle GrayFrequency}
+{0 Width Height matrix defaultmatrix idtransform 
+dup mul exch dup mul add sqrt 72 exch div}
+{0 GrayWidth GrayHeight matrix defaultmatrix idtransform 
+dup mul exch dup mul add sqrt 72 exch div}
+] def
+/calcgraysteps {
+/currenthalftone defed
+{currenthalftone /dicttype eq}{false}ifelse
+{
+currenthalftone begin
+HalftoneType 4 le
+{graycalcs HalftoneType 1 sub get exec}
+{
+HalftoneType 5 eq
+{
+Default begin
+{graycalcs HalftoneType 1 sub get exec}
+end
+}
+{0 60}
+ifelse
+}
+ifelse
+end
+}
+{
+currentscreen pop exch
+}
+ifelse
+printerRes 300 max exch div exch
+2 copy
+sin mul round dup mul
+3 1 roll
+cos mul round dup mul
+add 1 add
+dup maxsteps gt {pop maxsteps} if
+} bdf
+/nextrelease defed {
+/languagelevel defed not {
+/framebuffer defed {
+0 40 string framebuffer 9 1 roll 8 {pop} repeat
+dup 516 eq exch 520 eq or
+{
+/fhnumcolors 3 def
+/currentscreen {60 0 {pop pop 1}}bdf
+/calcgraysteps {maxsteps} bdf
+}if
+}if
+}if
+}if
+/goodsep {
+spots exch get 4 get dup sepname eq exch (_vc_Registration) eq or
+}bdf
+/bottom -0 def
+/delta -0 def
+/frac -0 def
+/height -0 def
+/left -0 def
+/numsteps -0 def
+/numsteps1 -0 def
+/radius -0 def
+/right -0 def
+/top -0 def
+/width -0 def
+/xt -0 def
+/yt -0 def
+/df currentflat def
+/tempstr 1 string def
+/clipflatness currentflat def
+/inverted?
+0 currenttransfer exec .5 ge def
+/tc1 [0 0 0 1] def
+/tc2 [0 0 0 1] def
+/storerect{/top xdf /right xdf /bottom xdf /left xdf 
+/width right left sub def /height top bottom sub def}bdf
+/concatprocs{
+systemdict /packedarray known 
+{dup type /packedarraytype eq 2 index type /packedarraytype eq or}{false}ifelse
+{
+/proc2 exch cvlit def/proc1 exch cvlit def
+proc1 aload pop proc2 aload pop
+proc1 length proc2 length add packedarray cvx
+}
+{
+/proc2 exch cvlit def/proc1 exch cvlit def
+/newproc proc1 length proc2 length add array def
+newproc 0 proc1 putinterval newproc proc1 length proc2 putinterval
+newproc cvx
+}ifelse
+}bdf
+/i{dup 0 eq
+{pop df dup}
+{dup} ifelse 
+/clipflatness xdf setflat
+}bdf
+version cvr 38.0 le
+{/setrgbcolor{
+currenttransfer exec 3 1 roll
+currenttransfer exec 3 1 roll
+currenttransfer exec 3 1 roll
+setrgbcolor}bdf}if
+/vms {/vmsv save def} bdf
+/vmr {vmsv restore} bdf
+/vmrs{vmsv restore /vmsv save def}bdf
+/eomode{ 
+{/filler /eofill load def /clipper /eoclip load def}
+{/filler /fill load def /clipper /clip load def}
+ifelse
+}bdf
+/normtaper{}bdf
+/logtaper{9 mul 1 add log}bdf
+/lfxform {
+/yt xdf /xt xdf
+xt yt translate
+rotate
+storerect
+left xt sub bottom yt sub translate
+right left sub 0.00001 max top bottom sub 0.00001 max scale
+}bdf
+/CD{/NF exch def{exch dup/FID ne 1 index/UniqueID ne and{exch NF 3 1 roll put}
+{pop pop}ifelse}forall NF}bdf
+/MN{1 index length/Len exch def
+dup length Len add string dup 
+Len 4 -1 roll putinterval dup 0 4 -1 roll putinterval}bdf
+/RC{4 -1 roll /ourvec xdf 256 string cvs(|______)anchorsearch
+{1 index MN cvn/NewN exch def cvn
+findfont dup maxlength dict CD dup/FontName NewN put dup
+/Encoding ourvec put NewN exch definefont pop}{pop}ifelse}bdf
+/RF{dup FontDirectory exch known{pop 3 -1 roll pop}{RC}ifelse}bdf
+/FF{dup 256 string cvs(|______)exch MN cvn dup FontDirectory exch known
+{exch pop findfont 3 -1 roll pop}
+{pop dup findfont dup maxlength dict CD dup dup
+/Encoding exch /Encoding get 256 array copy 7 -1 roll 
+{3 -1 roll dup 4 -2 roll put}forall put definefont}
+ifelse}bdf
+/fps{
+currentflat 
+exch 
+dup 0 le{pop 1}if
+{
+dup setflat 3 index stopped
+{1.3 mul dup 3 index gt{pop setflat pop pop stop}if}
+{exit}
+ifelse
+}loop 
+pop setflat pop pop
+}bdf
+/fp{100 currentflat fps}bdf
+/clipper{clip}bdf
+/W{/clipper load 100 clipflatness fps}bdf
+end%. AltsysDict
+%%EndProcSet
+%%EndProlog
+%%BeginSetup
+AltsysDict begin
+%%IncludeFont: Symbol
+0 dict dup begin
+end
+/f0 /Symbol FF def
+%%IncludeFont: Times-Italic
+0 dict dup begin
+end
+/f1 /Times-Italic FF def
+%%IncludeFont: Courier-Bold
+0 dict dup begin
+end
+/f2 /Courier-Bold FF def
+%%IncludeFont: Times-Roman
+0 dict dup begin
+end
+/f3 /Times-Roman FF def
+end %. AltsysDict
+%%EndSetup
+AltsysDict begin
+/onlyk{false}ndf
+/ccmyk{dup 5 -1 roll sub 0 max exch}ndf
+/cmyk2gray{
+4 -1 roll 0.3 mul 4 -1 roll 0.59 mul 4 -1 roll 0.11 mul
+add add add 1 min neg 1 add
+}bdf
+/setcmykcolor{1 exch sub ccmyk ccmyk ccmyk pop setrgbcolor}ndf
+/setcmykcoloroverprint{4{dup -1 eq{pop 0}if 4 1 roll}repeat setcmykcolor}ndf
+/findcmykcustomcolor{5 packedarray}ndf
+/setcustomcolor{exch aload pop pop 4{4 index mul 4 1 roll}repeat setcmykcolor pop}ndf
+/setseparationgray{setgray}ndf
+/setoverprint{pop}ndf
+/currentoverprint false ndf
+/cmykbufs2gray{
+0 1 2 index length 1 sub
+{
+4 index 1 index get0.3 mul
+4 index 2 index get0.59 mul
+4 index 3 index get0.11 mul
+4 index 4 index get
+add add add cvi 255 min
+255 exch sub
+2 index 3 1 roll put
+}for
+4 1 roll pop pop pop
+}bdf
+/colorimage{
+pop pop
+[
+5 -1 roll/exec cvx 
+6 -1 roll/exec cvx 
+7 -1 roll/exec cvx 
+8 -1 roll/exec cvx
+/cmykbufs2gray cvx
+]cvx 
+image
+}
+%. version 47.1 on Linotronic of Postscript defines colorimage incorrectly (rgb model only)
+version cvr 47.1 le 
+statusdict /product get (Lino) anchorsearch{pop pop true}{pop false}ifelse
+and{userdict begin bdf end}{ndf}ifelse
+fhnumcolors 1 ne {/yt save def} if
+/customcolorimage{
+aload pop
+(_vc_Registration) eq 
+{
+pop pop pop pop separationimage
+}
+{
+/ik xdf /iy xdf /im xdf /ic xdf
+ic im iy ik cmyk2gray /xt xdf
+currenttransfer
+{dup 1.0 exch sub xt mul add}concatprocs
+st
+image
+}
+ifelse
+}ndf
+fhnumcolors 1 ne {yt restore} if
+fhnumcolors 3 ne {/yt save def} if
+/customcolorimage{
+aload pop 
+(_vc_Registration) eq 
+{
+pop pop pop pop separationimage
+}
+{
+/ik xdf /iy xdf /im xdf /ic xdf
+1.0 dup ic ik add min sub
+1.0 dup im ik add min sub
+1.0 dup iy ik add min sub
+/ic xdf /iy xdf /im xdf
+currentcolortransfer
+4 1 roll
+{dup 1.0 exch sub ic mul add}concatprocs 4 1 roll
+{dup 1.0 exch sub iy mul add}concatprocs 4 1 roll
+{dup 1.0 exch sub im mul add}concatprocs 4 1 roll
+setcolortransfer
+{/dummy xdf dummy}concatprocs{dummy}{dummy}true 3 colorimage
+}
+ifelse
+}ndf
+fhnumcolors 3 ne {yt restore} if
+fhnumcolors 4 ne {/yt save def} if
+/customcolorimage{
+aload pop
+(_vc_Registration) eq 
+{
+pop pop pop pop separationimage
+}
+{
+/ik xdf /iy xdf /im xdf /ic xdf
+currentcolortransfer
+{1.0 exch sub ik mul ik sub 1 add}concatprocs 4 1 roll
+{1.0 exch sub iy mul iy sub 1 add}concatprocs 4 1 roll
+{1.0 exch sub im mul im sub 1 add}concatprocs 4 1 roll
+{1.0 exch sub ic mul ic sub 1 add}concatprocs 4 1 roll
+setcolortransfer
+{/dummy xdf dummy}concatprocs{dummy}{dummy}{dummy}
+true 4 colorimage
+}
+ifelse
+}ndf
+fhnumcolors 4 ne {yt restore} if
+/separationimage{image}ndf
+/newcmykcustomcolor{6 packedarray}ndf
+/inkoverprint false ndf
+/setinkoverprint{pop}ndf
+/setspotcolor {
+spots exch get
+dup 4 get (_vc_Registration) eq
+{pop 1 exch sub setseparationgray}
+{0 5 getinterval exch setcustomcolor}
+ifelse
+}ndf
+/currentcolortransfer{currenttransfer dup dup dup}ndf
+/setcolortransfer{st pop pop pop}ndf
+/fas{}ndf
+/sas{}ndf
+/fhsetspreadsize{pop}ndf
+/filler{fill}bdf
+/F{gsave {filler}fp grestore}bdf
+/f{closepath F}bdf
+/S{gsave {stroke}fp grestore}bdf
+/s{closepath S}bdf
+/lfs{
+gsave
+W n
+lfxform
+pop pop pop
+/xt xdf
+/lfbuf1 xdf
+1 256 8 [1 0 0 -256 0 256]
+{lfbuf1}
+[spots xt get aload pop pop]
+customcolorimage
+grestore
+}ndf
+/lfp{
+gsave
+W n
+lfxform
+9 {pop} repeat
+_rci
+{
+/lfbuf4 xdf
+/lfbuf3 xdf
+/lfbuf2 xdf
+/lfbuf1 xdf
+pop
+1 256 8 [1 0 0 -256 0 256]
+{lfbuf1}{lfbuf2}{lfbuf3}{lfbuf4}
+true 4 colorimage
+}
+{
+4 {pop} repeat
+/lfbuf1 xdf
+1 256 8 [1 0 0 -256 0 256]
+{lfbuf1}
+image
+}
+ifelse
+grestore
+}ndf
+/bcs [0 0] def
+/_rfs {
+/tint2 xdf
+/tint1 xdf
+bcs exch 1 exch put
+/radius xdf
+/yt xdf
+/xt xdf
+tint1 tint2 sub abs
+calcgraysteps mul abs round
+dup 2 lt {pop 2} if
+1 sub /numsteps1 xdf
+currentflat mark
+currentflat clipflatness
+{
+{
+dup setflat
+W 
+0 1 numsteps1
+{
+numsteps1 div /frac xdf
+bcs 0
+tint2 tint1 sub frac mul tint1 add
+put bcs vc
+1 index setflat
+{
+newpath mark xt yt radius 1 frac sub mul 0 360
+{arc fill}stopped
+{cleartomark exch 1.3 mul dup setflat exch 2 copy gt{stop}if}
+{cleartomark exit}ifelse
+}loop
+}for
+}
+gsave stopped grestore
+{exch pop 2 index exch 1.3 mul dup 100 gt{cleartomark setflat stop}if}
+{exit}ifelse
+}loop
+cleartomark setflat
+}bdf
+/bc4 [0 0 0 0] def
+/_rfp {
+/k2 xdf /y2 xdf /m2 xdf /c2 xdf
+/k1 xdf /y1 xdf /m1 xdf /c1 xdf
+/radius xdf
+/yt xdf
+/xt xdf
+c1 c2 sub abs
+m1 m2 sub abs
+y1 y2 sub abs
+k1 k2 sub abs
+max max max
+calcgraysteps mul abs round
+dup 2 lt {pop 2} if
+1 sub /numsteps1 xdf
+currentflat mark
+currentflat clipflatness
+{
+{
+dup setflat
+W 
+0 1 numsteps1
+{
+numsteps1 div /frac xdf
+bc4 0 c2 c1 sub frac mul c1 add put
+bc4 1 m2 m1 sub frac mul m1 add put
+bc4 2 y2 y1 sub frac mul y1 add put
+bc4 3 k2 k1 sub frac mul k1 add put
+bc4 vc
+1 index setflat
+{
+newpath mark xt yt radius 1 frac sub mul 0 360
+{arc fill}stopped
+{cleartomark exch 1.3 mul dup setflat exch 2 copy gt{stop}if}
+{cleartomark exit}ifelse
+}loop
+}for
+}
+gsave stopped grestore
+{exch pop 2 index exch 1.3 mul dup 100 gt{cleartomark setflat stop}if}
+{exit}ifelse
+}loop
+cleartomark setflat
+}bdf
+/rfs{_rfs}ndf
+/rfp{_rfp}ndf
+/cvc [0 0 0 1] def
+/vc{
+AltsysDict /cvc 2 index put
+aload length 4 eq
+{setcmykcolor}
+{setspotcolor}
+ifelse
+}bdf
+/origmtx matrix currentmatrix def
+/ImMatrix matrix currentmatrix def
+0 setseparationgray
+/imgr {0 0 612 792 } def
+/bleed 0 def
+/clpr {0 0 612 792 } def
+/xs 1 def
+/ys 1 def
+/botx 0 def
+/overlap 0 def
+/wdist 18 def
+0 2 mul fhsetspreadsize
+0 0 ne {/df 0 def /clipflatness 0 def} if
+/maxsteps 256 def
+/currentpacking defed{false setpacking}if 
+/spots[
+1 0 0 0 (Process Cyan) false newcmykcustomcolor
+0 1 0 0 (Process Magenta) false newcmykcustomcolor
+0 0 1 0 (Process Yellow) false newcmykcustomcolor
+0 0 0 1 (Process Black) false newcmykcustomcolor
+]def
+/textopf false def
+/curtextmtx{}def
+/otw .25 def
+/msf{dup/curtextmtx xdf makefont setfont}bdf
+/makesetfont/msf load def
+/curtextheight{.707104 .707104 curtextmtx dtransform
+dup mul exch dup mul add sqrt}bdf
+/ta{1 index
+{tempstr 0 2 index put tempstr 2 index 
+gsave exec grestore
+tempstr stringwidth rmoveto
+5 index eq{6 index 6 index rmoveto}if
+3 index 3 index rmoveto
+}forall 7{pop}repeat}bdf
+/sts{/textopf currentoverprint def vc setoverprint
+/ts{awidthshow}def exec textopf setoverprint}bdf
+/stol{/xt currentlinewidth def 
+setlinewidth vc newpath
+/ts{{false charpath stroke}ta}def exec 
+xt setlinewidth}bdf
+/strk{/textopf currentoverprint def vc setoverprint
+/ts{{false charpath stroke}ta}def exec 
+textopf setoverprint
+}bdf
+clpr storerect left bottom width height rectclip
+[] 0 d
+3.863708 M
+1 w
+0 j
+0 J
+false setoverprint
+0 i
+false eomode
+[0 0 0 1]vc
+vms
+168.822 666.1436 m
+116.0651 666.1436 L
+116.0651 639.4133 L
+168.822 639.4133 L
+168.822 666.1436 L
+n
+q
+%%IncludeFont: Times-Italic
+{
+f1 [12 0 0 12 0 0] makesetfont
+126.003494 656.603577 m
+0 0 32 0 0 (Sour) ts
+-0.443848 0 rmoveto }
+true
+[0 0 0 1]sts
+{
+f1 [12 0 0 12 0 0] makesetfont
+0 0 32 0 0 (ce) ts
+}
+true
+[0 0 0 1]sts
+{
+f1 [12 0 0 12 0 0] makesetfont
+131.11557 644.603577 m
+0 0 32 0 0 (code) ts
+}
+true
+[0 0 0 1]sts
+Q
+160.3809 651.3716 m
+180.0768 651.3716 L
+3.899994 M
+false setoverprint
+S
+n
+true eomode
+179.6602 651.3716 m
+179.6602 653.8716 L
+185.9101 651.3716 L
+179.6602 648.8716 L
+179.6602 651.3716 L
+f
+n
+307.5488 663.8812 m
+240.02 663.8812 L
+240.02 632.9305 L
+307.5488 632.9305 L
+307.5488 663.8812 L
+n
+q
+%%IncludeFont: Times-Italic
+{
+f1 [12 0 0 12 0 0] makesetfont
+260.788361 654.341248 m
+0 0 32 0 0 (icode) ts
+}
+true
+[0 0 0 1]sts
+Q
+187.1111 660.5161 m
+249.0125 660.5161 L
+249.0125 642.2271 L
+187.1111 642.2271 L
+187.1111 660.5161 L
+3.863708 M
+false setoverprint
+s
+n
+249.0125 659.6607 m
+187.9666 659.6607 L
+187.9666 642.2271 L
+249.0125 642.2271 L
+249.0125 659.6607 L
+n
+q
+%%IncludeFont: Courier-Bold
+{
+f2 [12 0 0 12 0 0] makesetfont
+193.28952 649.364685 m
+0 0 32 0 0 (compile) ts
+}
+true
+[0 0 0 1]sts
+Q
+297.7008 659.9572 m
+359.6022 659.9572 L
+359.6022 641.6681 L
+297.7008 641.6681 L
+297.7008 659.9572 L
+false setoverprint
+s
+n
+359.6022 659.1017 m
+298.5563 659.1017 L
+298.5563 641.6681 L
+359.6022 641.6681 L
+359.6022 659.1017 L
+n
+q
+%%IncludeFont: Courier-Bold
+{
+f2 [12 0 0 12 0 0] makesetfont
+303.879257 648.805725 m
+0 0 32 0 0 (gen-aml) ts
+}
+true
+[0 0 0 1]sts
+Q
+429.4619 689.7558 m
+491.3633 689.7558 L
+491.3633 662.6264 L
+429.4619 662.6264 L
+429.4619 689.7558 L
+false setoverprint
+s
+n
+491.3633 688.9004 m
+430.3174 688.9004 L
+430.3174 662.6264 L
+491.3633 662.6264 L
+491.3633 688.9004 L
+n
+q
+%%IncludeFont: Times-Roman
+{
+f3 [12 0 0 12 0 0] makesetfont
+444.01033 679.504333 m
+0 0 32 0 0 (C code) ts
+}
+true
+[0 0 0 1]sts
+{
+f3 [12 0 0 12 0 0] makesetfont
+438.184326 667.504333 m
+0 0 32 0 0 (generator) ts
+}
+true
+[0 0 0 1]sts
+Q
+428.1385 650.2119 m
+490.0399 650.2119 L
+490.0399 622.5312 L
+428.1385 622.5312 L
+428.1385 650.2119 L
+false setoverprint
+s
+n
+490.0399 649.3565 m
+428.994 649.3565 L
+428.994 622.5312 L
+490.0399 622.5312 L
+490.0399 649.3565 L
+n
+q
+%%IncludeFont: Times-Roman
+{
+f3 [12 0 0 12 0 0] makesetfont
+436.85498 639.960449 m
+0 0 32 0 0 (Bytecode) ts
+}
+true
+[0 0 0 1]sts
+{
+f3 [12 0 0 12 0 0] makesetfont
+436.860977 627.960449 m
+0 0 32 0 0 (generator) ts
+}
+true
+[0 0 0 1]sts
+Q
+570.4777 680.4594 m
+511.1427 680.4594 L
+511.1427 664.7366 L
+570.4777 664.7366 L
+570.4777 680.4594 L
+n
+q
+%%IncludeFont: Times-Italic
+{
+f1 [12 0 0 12 0 0] makesetfont
+517.152161 670.919373 m
+0 0 32 0 0 (bytecodes) ts
+}
+true
+[0 0 0 1]sts
+Q
+562.0366 639.5087 m
+507.7776 639.5087 L
+507.7776 623.2346 L
+562.0366 623.2346 L
+562.0366 639.5087 L
+n
+q
+%%IncludeFont: Times-Italic
+{
+f1 [12 0 0 12 0 0] makesetfont
+518.077103 629.968689 m
+0 0 32 0 0 (C code) ts
+}
+true
+[0 0 0 1]sts
+Q
+249.0125 649.9647 m
+291.218 649.9647 L
+3.899994 M
+false setoverprint
+S
+n
+290.8013 649.9647 m
+290.8013 652.4647 L
+297.0512 649.9647 L
+290.8013 647.4647 L
+290.8013 649.9647 L
+f
+n
+402.3591 664.7291 m
+362.2638 664.7291 L
+362.2638 641.1167 L
+402.3591 641.1167 L
+402.3591 664.7291 L
+n
+q
+%%IncludeFont: Times-Italic
+{
+f1 [12 0 0 12 0 0] makesetfont
+373.311447 655.189148 m
+0 0 32 0 0 (aml) ts
+}
+true
+[0 0 0 1]sts
+Q
+359.6022 650.8126 m
+401.8077 650.8126 L
+3.863708 M
+false setoverprint
+S
+n
+vmrs
+401.8077 650.8126 m
+423.4619 662.6264 L
+3.899994 M
+S
+n
+true eomode
+423.0975 662.4244 m
+421.8855 664.6109 L
+428.5638 665.4544 L
+424.3095 660.2379 L
+423.0975 662.4244 L
+f
+n
+401.8077 650.8126 m
+423.4619 638.9988 L
+S
+n
+423.0975 639.2008 m
+424.3095 641.3874 L
+428.5638 636.1708 L
+421.8855 637.0143 L
+423.0975 639.2008 L
+f
+n
+491.3633 673.8812 m
+508.4928 673.8812 L
+S
+n
+508.0761 673.8812 m
+508.0761 676.3812 L
+514.3261 673.8812 L
+508.0761 671.3812 L
+508.0761 673.8812 L
+f
+n
+490.0399 633.786 m
+507.1694 633.786 L
+S
+n
+506.7528 633.786 m
+506.7528 636.286 L
+513.0027 633.786 L
+506.7528 631.286 L
+506.7528 633.786 L
+f
+n
+vmr
+end
+%%Trailer

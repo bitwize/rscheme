@@ -1,0 +1,2 @@
+
+#define HAS_NATIVE_TIMEBASE   0

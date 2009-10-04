@@ -1,0 +1,45 @@
+{Chapter}
+{Title}Vectors{/Title}
+{Para}
+{Para}
+The {ClassName/<vector>/ class corresponds to the vector type, and is
+essentially an array which can contain arbitrary scheme objects.  The
+size of a vector is fixed when the vector is created.
+{Para}
+The functions {Phrase Role="var"}make-vector{/Phrase} and {Phrase Role="var"}vector{/Phrase} are used
+to create vectors, and
+the elements are accessed using {Phrase Role="var"}vector-ref{/Phrase} and {Phrase Role="var"}vector-set!{/Phrase}.
+{Para}
+In addition to the required scheme operations, &rs; defines many
+functions which allow vectors to be used where lists might otherwise
+be used.  
+{Para}
+Since vectors are arrays, with constant-time
+element access, they have different performance characteristics
+than lists.  For example, finding the length of a vector is
+a constant-time operation, compared to a list for which it 
+takes time proportional to the length of the list.  On the other
+hand, adding an element to the front of a list is a constant time
+operation, wheras it is a linear-time operation for vectors.
+{Para}
+Vectors read like lists, except with a {UserInput/#/ at the beginning.
+For example,
+{/Para}
+{ProgramListing}
+#(1 2 3)
+#()
+{/ProgramListing}
+<!>
+{Sect1} <!--  id="u.vecops" -->
+{Title}Vector operations{/Title}
+<!-- &mkvec;
+&vector;
+&veclen;
+&vecref;
+&vecset;
+-->
+&ref.vecapp;
+&ref.subvec;
+<!-- &vecslice; -->
+&ref.vecmap;
+&ref.vecfor;

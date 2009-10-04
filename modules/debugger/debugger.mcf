@@ -1,0 +1,23 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    modules/debugger/debugger.mcf
+ |
+ |          Copyright (C)1995 Donovan Kolbly <donovan@tkg.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.5
+ | Date:    2003-05-30 21:27:24
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ `------------------------------------------------------------------------|#
+
+((debugger "$dist/debugger" "$install/resource/modules")
+ (open  primops *scheme* iolib low-scheme objsys mathlib tables high-scheme)
+ (open compiler codegen editinp paths mlink start)
+ (open corelib sort repl regex hacks)
+ (files breakpt)
+ (files slice contns frames debug adapter)
+ (export breakpoint-on 
+         delete-breakpoint
+         debug
+         post-mortem))
+ 

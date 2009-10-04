@@ -1,0 +1,53 @@
+#! /bin/sh
+
+comp="$1"
+bin="$2"
+img="$3"
+bcg="$4"
+cfg="$5"
+
+img_abs=`cd $img ; /bin/pwd`
+bcg_abs=`cd $bcg ; /bin/pwd`
+
+case `$RS --version` in
+  0.6*) inflag="" ;;
+  *) inflag="--in usual-inlines" ;;
+esac
+
+$RS $inflag -e "$sis" $cfg $comp/mki.scm -c $img/rsc.img
+
+# get absolute path to RS
+#  (Pb: "which" itself is not 100% standard -- it appears to be a BSDism)
+
+case "$RS" in
+   /*)  ;;
+   */*) RS=`pwd`/$RS ;;
+   *)   RS=`which $RS` ;;
+esac
+
+#
+#  create the executable program that knows to invoke the image we just built
+#
+
+cat > $bin/rsc <<EOF
+#!/bin/sh
+
+if test "\$1" = "-abt"
+then abt=-abt
+     shift
+else abt=""
+fi
+
+case "\$1" in
+  -precore) cb=start ; shift ;;
+  -corelib) cb=+precore ; shift ;;
+  -lowscm) cb=+core ; shift ;;
+  *) cb=+low ;;
+esac
+
+exec $RS -q \$abt -image $img_abs/rsc.img \\
+     -BC $bcg_abs/resource/compiler/bytecode/bcgen.scm \\
+     -config-basis \$cb "\$@"
+EOF
+
+chmod +x $bin/rsc

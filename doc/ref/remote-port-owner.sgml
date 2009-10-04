@@ -1,0 +1,65 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}remote-port-owner{/RefName}
+  {RefPurpose}Use ident protocol to find the remote owner of a socket.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/remote-port-owner/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/fd/{/ParamDef}{ParamDef role="returns"}
+{Parameter}type{/Parameter} {Parameter}info{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}fd{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/, the file descriptor for the
+local socket.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}type {/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/
+  {/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}info {/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This procedure contacts the ident server on the machine
+which is the peer of the given socket.
+If a recognizable ident response is returned, the response
+type and additional info are returned as two values.{/para}
+{para}
+{/para}
+{InformalExample}{Para}
+{UserInput Role="ToEval"}(define svc (make-service (inet-server 5050))){/UserInput}
+{Para}{UserInput Role="ToEval"}(remote-port-owner (get-next-client svc)){/UserInput}
+{ComputerOutput Role="EvalsTo"}"USERID"{/ComputerOutput}
+{ComputerOutput Role="EvalsTo"}"UNIX : dkolbly"{/ComputerOutput}
+{/InformalExample}
+{para}
+If the peer host is not running an ident server, this procedure
+signals an error (an <os-error>, "Connection refused").{/para}
+{/RefSect1}
+{/RefEntry}

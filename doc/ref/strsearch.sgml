@@ -1,0 +1,57 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}string-search{/RefName}
+  {RefPurpose}Search a string{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/string-search/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/string/ {Parameter/item/{/ParamDef}{ParamDef role="returns"}
+{Parameter}index{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}string{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}item{/Term}
+    {ListItem}{para}
+An item for which to search, a {ClassName/<char>/ or {ClassName/<string>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}offset{/Term}
+    {ListItem}{para}
+The offset in {Parameter}string{/Parameter} at which to start searching.  Defaults to 0.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}index{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/ if found, otherwise {UserInput}#f{/UserInput}{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function searches the given {Parameter}string{/Parameter} for an
+occurrence of the {Parameter}item{/Parameter}, which may be a string or
+a character.{/para}
+{/RefSect1}
+{/RefEntry}

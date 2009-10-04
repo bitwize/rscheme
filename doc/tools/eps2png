@@ -1,0 +1,20 @@
+#! /bin/bash
+
+src=$1
+dest=$2
+
+bbox=$(awk '/^%%BoundingBox: / { print $2, $3, ($4 - $2)*3, ($5 - $3)*3 }' ${src})
+set - $bbox
+x=$1
+y=$2
+w=$3
+h=$4
+
+
+(echo "${x} neg ${y} neg translate"
+ cat ${src}
+ echo
+ echo "showpage"
+) | gs -q -g${w}x${h} -r216 -dBATCH -dNOPAUSE -sDEVICE=pnm -sOutputFile=- - \
+  | pnmscale 0.333333 \
+  | pnmtopng > ${dest}

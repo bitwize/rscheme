@@ -1,0 +1,51 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}stat-eq?{/RefName}
+  {RefPurpose}Check if two buffers refer to same object.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/stat-eq?/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/a/ {Parameter/b/{/ParamDef}{ParamDef role="returns"}
+{Parameter}same{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}a{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<stat-buf>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}b{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<stat-buf>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}same{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<boolean>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Checks to see if two stat buffers refer to the same filesystem
+object (ie, they are on the same device and have the same inode.
+Hence, this should probably be called {Phrase Role="var"}stat-eqv?{/Phrase} instead){/para}
+{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,14 @@
+
+(define-macro (define-lss-glue args . body)
+  `(define-safe-glue ,args
+     type-handler: (<lss> (direct-instance? <lss>)
+			  ("LSS *~a"
+			   "OBJ_TO_C_PTR( LSS *, gvec_ref( ~a, SLOT(0) ))"))
+     type-handler: (<bvec> (primitive "BVEC_P" <bvec>)
+			   ("void *~a"
+			    "PTR_TO_DATAPTR(~a)"))
+     properties: ((other-h-files "<rscheme/pkgs/lss/lss.h>"
+				 "<rscheme/pkgs/lss/lsserrno.h>"
+				 "<errno.h>")
+		  (other-libs "lss" @other_libs@))
+     ,@body))

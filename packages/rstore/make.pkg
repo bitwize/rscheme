@@ -1,0 +1,12 @@
+configure:	configure.in
+	autoconf
+
+install:: configure
+	./configure --with-rs=$(INSTALL_DIR)/bin/rs
+	make all
+
+clean::
+	if test -f Makefile ; then make clean ; fi
+
+distclean:: clean
+	rm -f Makefile configure config.cache

@@ -1,0 +1,18 @@
+{Chapter}
+{Title}Calendar{/Title}
+{Para}
+{Para}
+This package (module {UserInput/calendar/) provides basic date manipulation 
+functions.
+{Para}
+&ref.date-string;
+&ref.string-date;
+&ref.ymd-date;
+&ref.date-ymd;
+&ref.date;
+&ref.date1;
+&ref.date-time;
+&ref.date-weekday;
+&ref.date-week;
+&ref.week-date;
+&ref.short-weekday-name;

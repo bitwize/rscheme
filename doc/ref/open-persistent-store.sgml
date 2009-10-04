@@ -1,0 +1,49 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}open-persistent-store{/RefName}
+  {RefPurpose}Opens an existing store{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/open-persistent-store/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/path/{/ParamDef}{ParamDef role="returns"}
+{Parameter}pstore{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}path{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/ denoting the 
+path to the backing store file.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}pstore{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<persistent-store>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function opens a backing store file and prepares it
+for access.  The file is opened for writing, and is locked
+in exclusive mode.{/para}
+{para}
+If another process (or this process) already has the file open
+in exclusive mode, then an error is signalled.{/para}
+{/RefSect1}
+{/RefEntry}

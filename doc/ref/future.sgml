@@ -1,0 +1,45 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}future{/RefName}
+  {RefPurpose}Evaluate an expression in background.{/RefPurpose}
+  {RefClass role="Type"}special{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/future/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/expr/{/ParamDef}{ParamDef role="returns"}
+{Parameter}future{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}expr{/Term}
+    {ListItem}{para}
+An expression{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}future{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<future>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This special form starts the evaluation of an expression whose
+value will be needed in the future.  Use {Phrase Role="var"}force{/Phrase} to
+synchronize with the future value.{/para}
+{/RefSect1}
+{/RefEntry}

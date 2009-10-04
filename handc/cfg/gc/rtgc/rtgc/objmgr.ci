@@ -1,0 +1,88 @@
+#ifndef OBJMGR_CI
+#define OBJMGR_CI
+
+#include <assert.h>
+#include <rtgc/objmgr.hh>
+
+#undef LINK_TYPE
+#ifdef INLINES
+#define LINK_TYPE inline 
+#else
+#define LINK_TYPE
+#endif
+
+//***************************************************************************
+// object_manager::find_start_of_object
+//
+// This routine takes a pointer, and returns a pointer to the start of the
+// object pointed to by that pointer.
+
+LINK_TYPE gc_object_base *object_manager::find_start_of_object(const void* ptr)
+{
+#ifndef NO_DERIVED_POINTERS // There are derived pointers possible
+    char *temp;
+    // first mask away the lower bits of the pointer address.  For an object
+    // of less than one page in size, or the first page of an object of more
+    // than one page in size, this will give us the start of the object.
+
+    temp = (char *)(((unsigned int)ptr) &
+		    ((unsigned int)object_start_mask));
+
+    // Next, subtract the page offset in characters for the object.  For
+    // objects that are smaller than one page in size, this value will be
+    // zero.  For objects greather than one page in size, but ptr is not 
+    // pointing into the first page, this will be the number of pages back
+    // we have to go times the number of characters on the page.
+
+    temp = temp - page_offset;
+    return((gc_object_base *)temp);
+
+#else  // There are no derived pointers possible in the system
+
+#ifndef NDEBUG // if we are debugging, then do the following:
+    // Here we are just asserting that the pointer *really* isn't derived.
+    char *temp;
+    temp = (char *)(((unsigned int)ptr) & 
+		    ((unsigned int)object_start_mask));
+    temp = temp - page_offset;
+    assert(temp == (((char *)ptr)-sizeof(gc_object_base)));
+#endif //NDEBUG
+
+    // Since there are no derived pointers, we can just subtract off the
+    // objects header.
+    return((gc_object_base *)(((char *)ptr)-sizeof(gc_object_base)));
+#endif
+}
+
+
+//***************************************************************************
+// object_manager::derive_start_of_object
+//
+// This routine takes a pointer, and returns a pointer to the start of the
+// object pointed to by that pointer.  The derivation is made reguardless
+// of whether or not the client system is using interior pointers.  This 
+// function should probably only be used for debugging, as the above function
+// (find_start_of_object) is more efficient if we know that there will
+// never be any derived pointers.
+
+LINK_TYPE gc_object_base *object_manager::derive_start_of_object(const void* ptr)
+{
+    char *temp;
+    // first mask away the lower bits of the pointer address.  For an object
+    // of less than one page in size, or the first page of an object of more
+    // than one page in size, this will give us the start of the object.
+
+    temp = (char *)(((unsigned int)ptr) & ((unsigned int)object_start_mask));
+
+    // Next, subtract the page offset in characters for the object.  For
+    // objects that are smaller than one page in size, this value will be
+    // zero.  For objects greather than one page in size, but ptr is not 
+    // pointing into the first page, this will be the number of pages back
+    // we have to go times the number of characters on the page.
+
+    temp = temp - page_offset;
+    return((gc_object_base *)temp);
+}
+
+
+#endif

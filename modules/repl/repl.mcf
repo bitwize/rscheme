@@ -1,0 +1,26 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    modules/repl/repl.mcf
+ |
+ |          Copyright (C)1995 Donovan Kolbly <donovan@tkg.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.11
+ | Date:    2005-01-20 19:58:21
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ | Purpose: REPL module control file
+ `------------------------------------------------------------------------|#
+
+
+
+((repl "$dist/repl" "$install/resource/modules")
+ (open  primops *scheme* iolib low-scheme objsys mathlib tables high-scheme)
+ (open compiler codegen editinp paths mlink start sort)
+ (open corelib)
+ (files definers objforms parsslot slotindx objsyntx make)	
+ (files load cmdloop cmdprocs backtrac)
+ (files defmodule)
+ (files loadmodule)
+ (files replcli rewrites rewriters userinit ccbt)
+ (export :local)
+ (fluid *cmd-loop* *command-procs*))

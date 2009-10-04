@@ -1,0 +1,47 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}make-service{/RefName}
+  {RefPurpose}Create a service.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/make-service/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/fd/{/ParamDef}{ParamDef role="returns"}
+{Parameter}service{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}fd{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}service{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<service>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This procedure arranges to listen for connections
+on {Parameter}fd{/Parameter}, which was presumably created
+using something like {Phrase Role="var"}inet-server{/Phrase}.
+Use {Phrase Role="var"}get-next-client{/Phrase} to dequeue connecting
+clients.{/para}
+{/RefSect1}
+{/RefEntry}

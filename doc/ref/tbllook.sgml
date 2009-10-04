@@ -1,0 +1,87 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}table-lookup{/RefName}
+  {RefPurpose}Searches a table for the given key{/RefPurpose}
+  {RefClass role="Type"}generic{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/table-lookup/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/table/ {Parameter/key/{/ParamDef}{ParamDef role="returns"}
+{Parameter}value{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}table{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<table>/ to be searched{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}key{/Term}
+    {ListItem}{para}
+The key for which to search.  Must be an instance
+of the key class appropriate for the given table.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}value{/Term}
+    {ListItem}{para}
+The value associated with given key, or {UserInput}#f{/UserInput} if the
+key is not present in the table{Footnote}{para}
+Note that therefore,
+if {UserInput}#f{/UserInput} is the value associated with a given key, you
+can't tell by the return value of {Phrase Role="var"}table-lookup{/Phrase} whether
+or not the value is present.  {Phrase Role="var"}table-lookup{/Phrase} should
+probably be changed to return no values in that case instead,
+although that becomes {UserInput}#f{/UserInput} in a value-expecting context anyway.
+In any case, the {Phrase Role="var"}table-key-present?{/Phrase} solves the problem
+at the cost of an extra lookup{/para}
+{/Footnote}.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This generic function on tables is used to search for the presence
+of a given key in a table.{/para}
+{para}
+The given key must be compatible with the table, or an error is
+signalled.{/para}
+{para}
+The following method searches a generic hash table (ie, with arbitrary
+test and hash functions) for the given key.{/para}
+{para}
+The given key is first handed to the table's hash function to compute
+a hash code.  If the hash function does not return a {ClassName/<fixnum>/, then
+an error is signalled.{/para}
+{para}
+The hash code is then sought in the table; if found, then the test
+function is called with two arguments, the first being the key in the
+table that has the same hash code, and the second being the key
+given to {Phrase Role="var"}table-lookup{/Phrase}.  If that function returns non-{UserInput}#f{/UserInput}, then
+the two keys are considered equal and a {Quote}table hit{/Quote} has occurred.{/para}
+{RefSect2}
+  {Title}Methods{/Title}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/table-lookup/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/generic-table/ {Parameter/key/{/ParamDef}{ParamDef role="returns"}
+{Parameter}value{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{/RefSect2}
+{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,131 @@
+
+#
+default:: librstore.a
+
+RSCHEME_DIR=@rs_prefix@
+
+
+INSTALL=@rs_prefix@
+INSTALL_BIN=$(INSTALL)/bin
+INSTALL_LIB=$(INSTALL)/lib
+INSTALL_INCLUDE=$(INSTALL)/include/rscheme/pkgs/rstore
+
+CC=@CC@
+
+#  [used by preamble.mak]
+INSTALL_DIR=$(RSCHEME_DIR)
+
+XCFLAGS= -I.
+
+include $(RSCHEME_DIR)/resource/buildenv/preamble.mak
+
+#
+#  `rstore.o' object
+#
+
+CFILES=areas.c htable.c in_symbols.c indirect.c mmglue.c \
+	trnscell.c util.c writer.c xlation.c scan.c pagemgr.c \
+	printhex.c
+OFILES=$(CFILES:.c=.o) \
+	lru_model/store.o lru_model/load.o \
+	old_model/ostore.o old_model/oload.o
+PRODUCT=librstore.a
+
+AR=ar rcu
+RANLIB=ranlib
+
+$(PRODUCT): $(OFILES)
+	$(AR) $(PRODUCT) $(OFILES)
+	$(RANLIB) $(PRODUCT)
+
+lru_model/store.o: page_storer.ci lru_model/store.c
+	cd lru_model ; $(MAKE) store.o
+
+lru_model/load.o: page_loader.ci lru_model/load.c
+	cd lru_model ; $(MAKE) load.o
+
+old_model/ostore.o: page_storer.ci old_model/ostore.c
+	cd old_model ; $(MAKE) ostore.o
+
+old_model/oload.o: page_loader.ci old_model/oload.c
+	cd old_model ; $(MAKE) oload.o
+
+depend::
+	$(CC) -MM $(CFLAGS) $(CFILES)
+
+# installation
+
+INSTALL_PROG=cp -pf
+
+INSTALLED_FILES=$(INSTALL_LIB) \
+		$(INSTALL_INCLUDE) \
+		$(INSTALL_LIB)/$(PRODUCT) \
+		$(INSTALL_INCLUDE)/rstore.h
+
+install: $(INSTALLED_FILES)
+
+$(INSTALL_INCLUDE)/rstore.h: rscheme/pkgs/rstore/rstore.h
+	$(INSTALL_PROG) rscheme/pkgs/rstore/rstore.h \
+	                $(INSTALL_INCLUDE)/rstore.h
+
+$(INSTALL_LIB)/$(PRODUCT): $(PRODUCT)
+	$(INSTALL_PROG) $(PRODUCT) $(INSTALL_LIB)/$(PRODUCT)
+
+$(INSTALL_LIB):
+	mkdir -p $(INSTALL_LIB)
+
+$(INSTALL_INCLUDE):
+	mkdir -p $(INSTALL_INCLUDE)
+
+#
+
+#
+#  --- the RScheme side of things ---
+#
+
+SCM_C_FILES=pstore.c indir.c
+SCM_FILES=module.scm glue.scm ../lss/glue.scm pstore.scm copyin.scm \
+	  indir.scm commit.scm
+
+M_PROD=rs_db_rstore.o
+B=rs_db_rstore
+M_MAKE=$B.mak
+M_OUT=$(M_MAKE) $(SCM_C_FILES) $B_l.c $B_r.h $B_p.h $B.h $B.mif $B.mx $B.doc
+M_TEMP=$(M_OUT:.c=.o)
+
+$(M_OUT): $(SCM_FILES)
+	$(RSCHEME_DIR)/bin/rsc -p --makefile=$(M_MAKE) module.scm
+
+$(M_PROD): $(M_OUT)
+# need to be able to do this w/o having installed base code
+	$(MAKE) -f $(M_MAKE) INSTALL_DIR=$(INSTALL)
+
+scheme:: $(M_MAKE)
+make-scheme:: $(M_PROD)
+
+install-scheme::
+	$(MAKE) -f $(M_MAKE) INSTALL_DIR=$(INSTALL) install
+
+all:: $(PRODUCT) install scheme make-scheme install-scheme
+
+#
+#  cleanup
+#
+
+clean::
+	rm -f $(OFILES) $(PRODUCT) pstore.c
+	cd lru_model ; $(MAKE) clean
+	cd old_model ; $(MAKE) clean
+	rm -f $(M_OUT) $(M_PROD) $(M_TEMP)
+
+# These are files which are created by autoconf and configure
+
+EXTRA_FILES= Makefile autom4te.cache config.h config.log config.status \
+  configure  includes.lst pstore1.c
+
+distclean:: clean
+	rm -f $(EXTRA_FILES)
+	cd lru_model ; $(MAKE) distclean
+	cd old_model ; $(MAKE) distclean
+
+

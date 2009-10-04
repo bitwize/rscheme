@@ -1,0 +1,57 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}table-remove!{/RefName}
+  {RefPurpose}Removes a given key from a table{/RefPurpose}
+  {RefClass role="Type"}generic{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/table-remove!/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/table/ {Parameter/key/{/ParamDef}{ParamDef role="returns"}
+{Parameter}value{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}table{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<table>/ to be modified.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}key{/Term}
+    {ListItem}{para}
+The key to remove{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}value{/Term}
+    {ListItem}{para}
+The value that was associated with {Parameter}key{/Parameter}, or {UserInput}#f{/UserInput} if the
+key was not present in the table.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This generic function on tables is used to remove entries
+from a table.{/para}
+{para}
+The given key must be compatible with the table, or an error is
+signalled.{/para}
+{para}
+If the given key is not present in the table, then {UserInput}#f{/UserInput} is returned.
+No error is signalled in this case.{/para}
+{/RefSect1}
+{/RefEntry}

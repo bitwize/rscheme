@@ -1,0 +1,30 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    modules/compiler/compiler.mcf
+ |
+ |          Copyright (C)1995 Donovan Kolbly <donovan@tkg.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.13
+ | Date:    1999-01-13 07:36:25
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ | Purpose: compiler module
+ `------------------------------------------------------------------------|#
+
+
+
+((compiler "$dist/compiler" "$install/resource/modules")
+ (open primops *scheme* iolib low-scheme objsys mathlib tables corelib)
+ (open mlink)
+
+ (files defwrm)
+ (dir "../../bytcodes" (files primtype))
+
+ (files native classes bdgs icode mainc cmplproc body sforms envts)
+ (files formals errors primtype coerce macros typechek aliases)
+ (files quasiqu consts wellknwn usagechk kwdlist)
+ (files with)
+ (files bindchek inline)
+ (files srfi0)
+ (export :local)
+ (fluid *place* *procedure-name* *source-point*))

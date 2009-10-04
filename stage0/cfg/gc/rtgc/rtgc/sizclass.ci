@@ -1,0 +1,58 @@
+#ifndef SIZCLASS_CI
+#define SIZCLASS_CI
+
+#include <rtgc/sizclass.h>
+
+#undef LINK_TYPE
+#ifdef INLINES
+#define LINK_TYPE inline
+#else
+#define LINK_TYPE
+#endif
+
+/* The following code is part of the malloc routine written by      */
+/* Sheetal Kakkad.  We are planning on making it part of a library  */
+/* of system code that is available for general use.                */
+
+/*
+ Static variables
+*/
+
+static int table_0[BASE*BASE] = {0,0,1,2,2,3,3,3,3,4,4,4,4,4,4,4,4,
+			         5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
+			         6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+			         6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
+			         7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+			         7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+			         7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+			         7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+			         8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+			         8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+			         8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+			         8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+			         8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+			         8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+			         8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
+			         8,8,8,8,8,8,8,8,8,8,8,8,8,8,8};
+
+
+/*
+  get_size_class
+
+  Find the size class of the given size. The size class of `n' is
+  basically given by calculating ceil (log2 (n)). However, since
+  calling log and ceil is expensive, we do table lookups in
+  conjunction with bit shifts to calculate the values.
+*/
+
+LINK_TYPE int get_size_class (size_t n)
+{
+    /* If the size is less than the base size, the size class can be */
+    /* read off directly by indexing into the first table.           */
+    if (n < BASE*BASE)
+      return table_0 [ n ];
+    else 
+      return get_size_class_non_base_case(n);
+}
+
+#endif

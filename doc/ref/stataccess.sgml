@@ -1,0 +1,61 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}stat-access?{/RefName}
+  {RefPurpose}Determine if an entity can access the stat'ed object in a given mode.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/stat-access?/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/sb/ {Parameter/entity/ {Parameter/mode/{/ParamDef}{ParamDef role="returns"}
+{Parameter}result{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}sb{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<stat-buf>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}entity{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<symbol>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}mode{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<symbol>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}result{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<boolean>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Where entity may be one of 
+{UserInput}owner{/UserInput}, 
+{UserInput}group{/UserInput}, or 
+{UserInput}world{/UserInput}, and mode is one of 
+{UserInput}read{/UserInput}, 
+{UserInput}write{/UserInput}, 
+{UserInput}execute{/UserInput}.{/para}
+{/RefSect1}
+{/RefEntry}

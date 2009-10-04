@@ -1,0 +1,76 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}postgres-connect{/RefName}
+  {RefPurpose}Connect to Postgres95 server{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/postgres-connect/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/database/ {Parameter/host/ {Parameter/port/ {Parameter/opts/ {Parameter/tty/{/ParamDef}{ParamDef role="returns"}
+{Parameter}cnxn{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}database{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}host{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}port{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}opts{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}tty{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}cnxn{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<pg95-connection>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function creates a connection to the PG95 database
+with the name {Parameter}database{/Parameter}.
+If the connection cannot be established (ie, because of network,
+installation, or authentication problems), an error is signalled.{/para}
+{InformalExample}{Para}
+{UserInput Role="ToEval"}(postgres-connect "foo"){/UserInput}
+{Phrase Role="NoPrintForm"}a <pg95-connection>{/Phrase}
+{Para}{UserInput Role="ToEval"}(postgres-connect "bar" host: "dbsrv.bar.com"){/UserInput}
+{Phrase Role="NoPrintForm"}a <pg95-connection>{/Phrase}
+{/InformalExample}
+{/RefSect1}
+{/RefEntry}

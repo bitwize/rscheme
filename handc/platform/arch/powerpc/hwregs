@@ -1,0 +1,4 @@
+-DRS6000_REGS -ffixed-26 -ffixed-25 -ffixed-24 \
+-ffixed-23 -ffixed-22 -ffixed-21 -ffixed-20 \
+-ffixed-19 -ffixed-18 -ffixed-17 -ffixed-16 \
+-ffixed-15 -ffixed-14 -ffixed-13

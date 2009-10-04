@@ -1,0 +1,235 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/runtime/interim.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.17
+ * File mod date:    2005-02-16 17:10:18
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ *------------------------------------------------------------------------*/
+
+#ifndef _CI_INTERIM
+#define _CI_INTERIM
+
+#include <rscheme/scheme.h>
+#include <rscheme/smemory.h>
+#include <rscheme/allocns.h>
+
+#define PTR_ISA(a_thing,a_class) OBJ_ISA_PTR_OF_CLASS(a_thing,a_class)
+
+#define CLASS_CATEGORY_SLOT  SLOT(4)
+
+CI_DECL rs_bool NULL_P( obj thing )
+{
+    return EQ(thing,NIL_OBJ) ? YES : NO;
+}
+
+/***************** top-level environments & vars *****************/
+
+CI_DECL rs_bool TLV_P( obj thing )
+{
+    return PTR_ISA(thing,tlv_class);
+}
+
+void signal_tlv_unbound( obj tlv );
+
+CI_DECL obj tlv_value( obj tlv )
+{
+obj v;
+
+    assert( TLV_P(tlv) );
+    v = gvec_read( tlv, SLOT(1) );
+    if (EQ(v,UNBOUND_OBJ))
+    {
+      signal_tlv_unbound( tlv );
+    }
+    return v;
+}
+
+CI_DECL void tlv_set_value( obj tlv, obj value )
+{
+    assert( TLV_P(tlv) );
+    gvec_write( tlv, SLOT(1), value );
+}
+
+/***************** pairs *****************/
+
+CI_DECL rs_bool PAIR_P( obj thing )
+{
+    return PTR_ISA( thing, pair_class );
+}
+
+CI_DECL obj cons( obj car, obj cdr )
+{
+    return make2( pair_class, car, cdr );
+}
+
+CI_DECL obj pair_car( obj pair )
+{
+    assert( PAIR_P(pair) );
+    return gvec_read( pair, SLOT(0) );
+}
+
+CI_DECL obj pair_cdr( obj pair )
+{
+    assert( PAIR_P(pair) );
+    return gvec_read( pair, SLOT(1) );
+}
+
+/************************** common type predicates ***********************/
+
+CI_DECL rs_bool CLASS_P( obj thing )
+{
+  /* can't use PTR_IN_CATEGORY_P(), because it uses in_category_p, 
+   * which has an assert(CLASS_P()), which results in an infinite loop.
+   * also have to expand by hand the other stuff
+   */
+  return (OBJ_ISA_PTR(thing) 
+	  && EQ(gvec_ref(CLASSOF_PTR(thing),CLASS_CATEGORY_SLOT),
+		CLASS_CATEGORY))
+    ? YES
+    : NO;
+}
+
+CI_DECL rs_bool LONGFLOAT_P( obj thing )
+{
+    return PTR_ISA(thing,double_float_class);
+}
+
+CI_DECL rs_bool STRING_P( obj thing )
+{
+    return PTR_ISA(thing,string_class);
+}
+
+CI_DECL char *string_text( obj str )
+{
+    assert( STRING_P(str) );
+    return (char *)PTR_TO_DATAPTR(str);
+}
+
+CI_DECL UINT_32 string_length( obj str )
+{
+    assert( STRING_P(str) );
+    return SIZEOF_PTR(str) - 1;
+}
+
+/* helper function for object_class to handle non-PTR's */
+
+obj immob_class( obj thing );
+
+CI_DECL obj object_class( obj thing )
+{
+  if (OBJ_ISA_PTR(thing))
+    return CLASSOF_PTR( thing );
+  else
+    return immob_class( thing );
+}
+
+
+/* helper function for indirect subclasses */
+
+rs_bool indirect_subclass_p( obj class1, obj class2 );
+
+CI_DECL rs_bool subclass_p( obj class_1, obj class_2 )
+{
+  if (EQ(class_1,class_2))
+    return YES;
+  else
+    return indirect_subclass_p( class_1, class_2 );
+}
+
+CI_DECL obj class_supers( obj a_class )
+{
+  assert( CLASS_P(a_class) );
+  return gvec_read( a_class, SLOT(3) );
+}
+
+CI_DECL obj class_category( obj a_class )
+{
+  assert( CLASS_P(a_class) );
+  return gvec_ref( a_class, CLASS_CATEGORY_SLOT );
+}
+
+CI_DECL rs_bool instance_p( obj thing, obj a_class )
+{
+    return subclass_p( object_class(thing), a_class );
+}
+
+CIH_DECL rs_bool in_category_p( obj a_class, obj a_category )
+{
+  return EQ(class_category(a_class),a_category);
+}
+
+CIH_DECL rs_bool instance_cat_p( obj thing, obj a_category )
+{
+  return in_category_p(object_class(thing),a_category);
+}
+
+
+
+/***************** functions & closures *****************/
+
+CI_DECL obj make_closure( obj envt, obj tmpl )
+{
+    return make2( closure_class, tmpl, envt );
+}
+
+CI_DECL rs_bool FUNCTION_P( obj thing )
+{
+  return PTR_IN_CATEGORY_P( thing, FUNCTION_CATEGORY );
+}
+
+#ifdef INLINES
+#include <rscheme/chektype.ci>
+#endif
+
+CI_DECL INT_32 basic_raw_int( obj a )
+{
+  if (FIXNUM_P( a ))
+    {
+      return fx2int( a );
+    }
+  else
+    {
+      return basic_raw_int_conv( a );
+    }
+}
+
+CI_DECL IEEE_64 basic_raw_float( obj a )
+{
+  if (FIXNUM_P( a ))
+    {
+      return fx2int( a );
+    }
+  else if (LONGFLOAT_P( a ))
+    {
+      return extract_float( a );
+    }
+  else
+    {
+      return basic_raw_float_conv( a );
+    }
+}
+
+CIH_DECL obj uint_32_compact( UINT_32 a )
+{
+  if (a < 0x20000000) {
+    return int2fx( a );
+  } else {
+    return uint_32_big( a );
+  }
+}
+
+CIH_DECL UINT_32 basic_raw_uint( obj a )
+{
+  if (FIXNUM_P(a) && FX_GE(a,ZERO)) {
+    return fx2int( a );
+  } else {
+    return basic_raw_uint_conv( a );
+  }
+}
+
+#endif /* _CI_INTERIM */

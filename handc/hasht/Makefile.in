@@ -1,0 +1,25 @@
+#---------------------------------------------------------*-Makefile-*----#
+# File:    handc/hasht/Makefile.in
+#
+#          Copyright (C)1997 Donovan Kolbly <d.kolbly@rosette.com>
+#          as part of the RScheme project, licensed for free use
+#
+# Version: 1.3
+# Date:    1997-11-21 23:23:57
+# Build:   v0.7.3.4-b7u, 2007-05-30
+#-------------------------------------------------------------------------#
+
+CFILES=hashmain.c htsplit.c hashfn.c generic.c crchash.c tblcopy.c
+PRODUCT=hasht.o
+
+@POSTAMBLE@
+
+generic.ci: generic0.c generic.c1
+	rm -f generic.ci
+	umask 222 ; @CPP@ generic0.c | \
+	sed -e '/^$$/d' -e '/^# [0-9]/d' > generic.ci
+
+clean::
+	rm -f *.o
+
+generic.o: generic.c generic.ci

@@ -1,0 +1,52 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}length{/RefName}
+  {RefPurpose}Return the length of a list.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/length/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/l/{/ParamDef}{ParamDef role="returns"}
+{Parameter}n{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}l{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<list>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}n{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Computes the length of a well-structured list.  Signals
+an error if {Parameter}l{/Parameter} is an acyclic improper list.  Never
+returns if {Parameter}l{/Parameter} is cyclic.{Footnote}{para}
+For overall
+consistency, it would probably be better if {Phrase Role="var"}length{/Phrase}
+simply returned the amount of the proper part of an
+acyclic list.  That way, the Dylan definition for {Phrase Role="var"}map{/Phrase}
+would be known to iterate {UserInput}(min (length {Parameter}l{/Parameter}) ...){/UserInput}
+times.{/para}
+{/Footnote}{/para}
+{/RefSect1}
+{/RefEntry}

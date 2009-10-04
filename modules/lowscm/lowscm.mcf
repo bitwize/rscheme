@@ -1,0 +1,19 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    modules/lowscm/lowscm.mcf
+ |
+ |          Copyright (C)1995 Donovan Kolbly <donovan@tkg.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.6
+ | Date:    2003-02-22 16:54:42
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ `------------------------------------------------------------------------|#
+
+((low-scheme "$dist/lowscm" "$install/resource/modules")
+ (open primops corelib *scheme*)
+ (require-c-header "<ctype.h>")
+ (files equality lists vectors grokking append mapping finding chars)
+ (files vectops)
+ (files keywords callwval)
+ (export :local))

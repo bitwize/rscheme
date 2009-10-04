@@ -1,0 +1,2787 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/runtime/numtower.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.8
+ * File mod date:    2003-02-22 16:53:04
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ * Note:
+ *   This file was automatically generated using the procedures
+ *   in `genbasemath.scm', located elsewhere.
+ *------------------------------------------------------------------------*/
+
+#define CALC(t, tr1, tr2, func, func2) t x_c = tr1(x); t y_c = tr2(y); return func2(func(x_c, y_c))
+#define noconv
+
+obj basic_plus( obj x, obj y )
+{
+  if (FIXNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_plus( <fixnum>, <fixnum> )
+       *  using: int_plus( <raw-int>, <raw-int> )
+       */
+      CALC(INT_32, fx2int, fx2int, int_plus, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_plus( <fixnum>, <double-float> )
+       *  using: fl_plus( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, fx2int, extract_float, fl_plus, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_plus( <fixnum>, <long-int> )
+       *  using: long_plus( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, fx2int64, extract_int_64, long_plus, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_plus( <fixnum>, <bignum> )
+       *  using: bignum_plus( <bignum>, <bignum> )
+       */
+      CALC(obj, fx_to_bignum, noconv, bignum_plus, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_plus( <fixnum>, <rational> )
+       *  using: rational_plus( <rational>, <rational> )
+       */
+      CALC(obj, fx_to_rational, noconv, rational_plus, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_plus( <fixnum>, <complex> )
+       *  using: complex_plus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_plus, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_plus: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (LONGFLOAT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_plus( <double-float>, <fixnum> )
+       *  using: fl_plus( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, extract_float, fx2int, fl_plus, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_plus( <double-float>, <double-float> )
+       *  using: fl_plus( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, extract_float, extract_float, fl_plus, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_plus( <double-float>, <long-int> )
+       *  using: fl_plus( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, extract_float, longint_to_float, fl_plus, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_plus( <double-float>, <bignum> )
+       *  using: fl_plus( <double-float>, <double-float> )
+       */
+      CALC(IEEE_64, extract_float, bignum_to_raw_float, fl_plus, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_plus( <double-float>, <rational> )
+       *  using: fl_plus( <double-float>, <double-float> )
+       */
+      CALC(IEEE_64, extract_float, rational_to_raw_float, fl_plus, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_plus( <double-float>, <complex> )
+       *  using: complex_plus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_plus, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_plus: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (LONG_INT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_plus( <long-int>, <fixnum> )
+       *  using: long_plus( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, extract_int_64, fx2int64, long_plus, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_plus( <long-int>, <double-float> )
+       *  using: fl_plus( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, longint_to_float, extract_float, fl_plus, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_plus( <long-int>, <long-int> )
+       *  using: long_plus( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, extract_int_64, extract_int_64, long_plus, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_plus( <long-int>, <bignum> )
+       *  using: bignum_plus( <bignum>, <bignum> )
+       */
+      CALC(obj, longint_to_bignum, noconv, bignum_plus, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_plus( <long-int>, <rational> )
+       *  using: rational_plus( <rational>, <rational> )
+       */
+      CALC(obj, longint_to_rational, noconv, rational_plus, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_plus( <long-int>, <complex> )
+       *  using: complex_plus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_plus, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_plus: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (BIGNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_plus( <bignum>, <fixnum> )
+       *  using: bignum_plus( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv, fx_to_bignum, bignum_plus, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_plus( <bignum>, <double-float> )
+       *  using: fl_plus( <double_float>, <double_float> )
+       */
+      CALC(IEEE_64, bignum_to_raw_float, extract_float, fl_plus, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_plus( <bignum>, <long-int> )
+       *  using: bignum_plus( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv, longint_to_bignum, bignum_plus, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_plus( <bignum>, <bignum> )
+       *  using: bignum_plus( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv, noconv, bignum_plus, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_plus( <bignum>, <rational> )
+       *  using: rational_plus( <rational>, <rational> )
+       */
+      CALC(obj, bignum_to_rational, noconv, rational_plus, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_plus( <bignum>, <complex> )
+       *  using: complex_plus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_plus, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_plus: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (RATIONAL_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_plus( <rational>, <fixnum> )
+       *  using: rational_plus( <rational>, <rational> )
+       */
+      CALC(obj, noconv, fx_to_rational, rational_plus, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_plus( <rational>, <double-float> )
+       *  using: fl_plus( <double-float>, <double-float> )
+       */
+      CALC(IEEE_64, rational_to_raw_float, extract_float, fl_plus, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_plus( <rational>, <long-int> )
+       *  using: rational_plus( <rational>, <rational> )
+       */
+      CALC(obj, noconv, longint_to_rational, rational_plus, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_plus( <rational>, <bignum> )
+       *  using: rational_plus( <rational>, <rational> )
+       */
+      CALC(obj, noconv,  bignum_to_rational, rational_plus, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_plus( <rational>, <rational> )
+       *  using: rational_plus( <rational>, <rational> )
+       */
+      CALC(obj, noconv, noconv, rational_plus, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_plus( <rational>, <complex> )
+       *  using: complex_plus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_plus, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_plus: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (COMPLEX_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_plus( <complex>, <fixnum> )
+       *  using: complex_plus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_plus, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_plus( <complex>, <double-float> )
+       *  using: complex_plus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_plus, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_plus( <complex>, <long-int> )
+       *  using: complex_plus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_plus, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_plus( <complex>, <bignum> )
+       *  using: complex_plus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_plus, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_plus( <complex>, <rational> )
+       *  using: complex_plus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_plus, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_plus( <complex>, <complex> )
+       *  using: complex_plus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, extract_complex, complex_plus, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_plus: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else
+  {
+    scheme_error( "obj basic_plus: argument ~s not basic",
+                  1, x );
+    return ZERO;
+  }
+}
+obj basic_minus( obj x, obj y )
+{
+  if (FIXNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_minus( <fixnum>, <fixnum> )
+       *  using: int_minus( <raw-int>, <raw-int> )
+       */
+      CALC(INT_32, fx2int, fx2int, int_minus, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_minus( <fixnum>, <double-float> )
+       *  using: fl_minus( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, fx2int, extract_float, fl_minus, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_minus( <fixnum>, <long-int> )
+       *  using: long_minus( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, fx2int64, extract_int_64, long_minus, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_minus( <fixnum>, <bignum> )
+       *  using: bignum_minus( <bignum>, <bignum> )
+       */
+      CALC(obj, fx_to_bignum, noconv, bignum_minus, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_minus( <fixnum>, <rational> )
+       *  using: rational_minus( <rational>, <rational> )
+       */
+      CALC(obj, fx_to_rational, noconv, rational_minus, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_minus( <fixnum>, <complex> )
+       *  using: complex_minus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_minus, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_minus: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (LONGFLOAT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_minus( <double-float>, <fixnum> )
+       *  using: fl_minus( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, extract_float, fx2int, fl_minus, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_minus( <double-float>, <double-float> )
+       *  using: fl_minus( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, extract_float, extract_float, fl_minus, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_minus( <double-float>, <long-int> )
+       *  using: fl_minus( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, extract_float, longint_to_float, fl_minus, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_minus( <double-float>, <bignum> )
+       *  using: fl_minus( <double-float>, <double-float> )
+       */
+      CALC(IEEE_64, extract_float, bignum_to_raw_float, fl_minus, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_minus( <double-float>, <rational> )
+       *  using: fl_minus( <double-float>, <double-float> )
+       */
+      CALC(IEEE_64, extract_float, rational_to_raw_float, fl_minus, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_minus( <double-float>, <complex> )
+       *  using: complex_minus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_minus, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_minus: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (LONG_INT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_minus( <long-int>, <fixnum> )
+       *  using: long_minus( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, extract_int_64, fx2int64, long_minus, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_minus( <long-int>, <double-float> )
+       *  using: fl_minus( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, longint_to_float, extract_float, fl_minus, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_minus( <long-int>, <long-int> )
+       *  using: long_minus( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, extract_int_64, extract_int_64, long_minus, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_minus( <long-int>, <bignum> )
+       *  using: bignum_minus( <bignum>, <bignum> )
+       */
+      CALC(obj, longint_to_bignum, noconv, bignum_minus, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_minus( <long-int>, <rational> )
+       *  using: rational_minus( <rational>, <rational> )
+       */
+      CALC(obj, longint_to_rational, noconv, rational_minus, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_minus( <long-int>, <complex> )
+       *  using: complex_minus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_minus, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_minus: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (BIGNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_minus( <bignum>, <fixnum> )
+       *  using: bignum_minus( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv, fx_to_bignum, bignum_minus, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_minus( <bignum>, <double-float> )
+       *  using: fl_minus( <double-float>, <double-float> )
+       */
+      CALC(IEEE_64, bignum_to_raw_float, extract_float, fl_minus, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_minus( <bignum>, <long-int> )
+       *  using: bignum_minus( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv, longint_to_bignum, bignum_minus, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_minus( <bignum>, <bignum> )
+       *  using: bignum_minus( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv, noconv, bignum_minus, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_minus( <bignum>, <rational> )
+       *  using: rational_minus( <rational>, <rational> )
+       */
+      CALC(obj, bignum_to_rational, noconv, rational_minus, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_minus( <bignum>, <complex> )
+       *  using: complex_minus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_minus, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_minus: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (RATIONAL_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_minus( <rational>, <fixnum> )
+       *  using: rational_minus( <rational>, <rational> )
+       */
+      CALC(obj, noconv, fx_to_rational, rational_minus, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_minus( <rational>, <double-float> )
+       *  using: fl_minus( <double-float>, <double-float> )
+       */
+      CALC(IEEE_64, rational_to_raw_float, extract_float, fl_minus, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_minus( <rational>, <long-int> )
+       *  using: rational_minus( <rational>, <rational> )
+       */
+      CALC(obj, noconv, longint_to_rational, rational_minus, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_minus( <rational>, <bignum> )
+       *  using: rational_minus( <rational>, <rational> )
+       */
+      CALC(obj, noconv, bignum_to_rational, rational_minus, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_minus( <rational>, <rational> )
+       *  using: rational_minus( <rational>, <rational> )
+       */
+      CALC(obj, noconv, noconv, rational_minus, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_minus( <rational>, <complex> )
+       *  using: complex_minus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_minus, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_minus: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (COMPLEX_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_minus( <complex>, <fixnum> )
+       *  using: complex_minus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_minus, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_minus( <complex>, <double-float> )
+       *  using: complex_minus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_minus, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_minus( <complex>, <long-int> )
+       *  using: complex_minus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_minus, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_minus( <complex>, <bignum> )
+       *  using: complex_minus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_minus, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_minus( <complex>, <rational> )
+       *  using: complex_minus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_minus, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_minus( <complex>, <complex> )
+       *  using: complex_minus( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, extract_complex, complex_minus, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_minus: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else
+  {
+    scheme_error( "obj basic_minus: argument ~s not basic",
+                  1, x );
+    return ZERO;
+  }
+}
+obj basic_mul( obj x, obj y )
+{
+  if (FIXNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_mul( <fixnum>, <fixnum> )
+       *  using: int_mul( <raw-int>, <raw-int> )
+       */
+      CALC(INT_32, fx2int, fx2int, int_mul, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_mul( <fixnum>, <double-float> )
+       *  using: fl_mul( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, fx2int, extract_float, fl_mul, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_mul( <fixnum>, <long-int> )
+       *  using: long_mul( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, fx2int64, extract_int_64, long_mul, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_mul( <fixnum>, <bignum> )
+       *  using: bignum_mul( <bignum>, <bignum> )
+       */
+      CALC(obj, fx_to_bignum, noconv, bignum_mul, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_mul( <fixnum>, <rational> )
+       *  using: rational_mul( <rational>, <rational> )
+       */
+      CALC(obj, fx_to_rational, noconv, rational_mul, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_mul( <fixnum>, <complex> )
+       *  using: complex_mul( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_mul, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_mul: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (LONGFLOAT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_mul( <double-float>, <fixnum> )
+       *  using: fl_mul( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, extract_float, fx2int, fl_mul, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_mul( <double-float>, <double-float> )
+       *  using: fl_mul( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, extract_float, extract_float, fl_mul, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_mul( <double-float>, <long-int> )
+       *  using: fl_mul( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, extract_float, longint_to_float, fl_mul, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_mul( <double-float>, <bignum> )
+       *  using: fl_mul( <double-float>, <double-float> )
+       */
+      CALC(IEEE_64, extract_float, bignum_to_raw_float, fl_mul, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_mul( <double-float>, <rational> )
+       *  using: fl_mul( <double-float>, <double-float> )
+       */
+      CALC(IEEE_64, extract_float, rational_to_raw_float, fl_mul, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_mul( <double-float>, <complex> )
+       *  using: complex_mul( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_mul, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_mul: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (LONG_INT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_mul( <long-int>, <fixnum> )
+       *  using: long_mul( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, extract_int_64, fx2int64, long_mul, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_mul( <long-int>, <double-float> )
+       *  using: fl_mul( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, longint_to_float, extract_float, fl_mul, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_mul( <long-int>, <long-int> )
+       *  using: long_mul( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, extract_int_64, extract_int_64, long_mul, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_mul( <long-int>, <bignum> )
+       *  using: bignum_mul( <bignum>, <bignum> )
+       */
+      CALC(obj, longint_to_bignum, noconv, bignum_mul, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_mul( <long-int>, <rational> )
+       *  using: rational_mul( <rational>, <rational> )
+       */
+      CALC(obj, longint_to_rational, noconv, rational_mul, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_mul( <long-int>, <complex> )
+       *  using: complex_mul( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_mul, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_mul: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (BIGNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_mul( <bignum>, <fixnum> )
+       *  using: bignum_mul( <bignum>, <bignum> )
+       */
+      CALC(obj,noconv,  fx_to_bignum, bignum_mul, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_mul( <bignum>, <double-float> )
+       *  using: fl_mul( <double-float>, <double-float> )
+       */
+      CALC(IEEE_64, bignum_to_raw_float, extract_float, fl_mul, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_mul( <bignum>, <long-int> )
+       *  using: bignum_mul( <bignum>, <bignum> )
+       */
+      CALC(obj,noconv,  longint_to_bignum, bignum_mul, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_mul( <bignum>, <bignum> )
+       *  using: bignum_mul( <bignum>, <bignum> )
+       */
+      CALC(obj,noconv,  noconv, bignum_mul, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_mul( <bignum>, <rational> )
+       *  using: rational_mul( <rational>, <rational> )
+       */
+      CALC(obj, bignum_to_rational, noconv, rational_mul, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_mul( <bignum>, <complex> )
+       *  using: complex_mul( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_mul, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_mul: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (RATIONAL_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_mul( <rational>, <fixnum> )
+       *  using: rational_mul( <rational>, <rational> )
+       */
+      CALC(obj, noconv, fx_to_rational, rational_mul, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_mul( <rational>, <double-float> )
+       *  using: fl_mul( <double-float>, <double-float> )
+       */
+      CALC(IEEE_64, rational_to_raw_float, extract_float, fl_mul, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_mul( <rational>, <long-int> )
+       *  using: rational_mul( <rational>, <rational> )
+       */
+      CALC(obj,noconv,  longint_to_rational, rational_mul, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_mul( <rational>, <bignum> )
+       *  using: rational_mul( <rational>, <rational> )
+       */
+      CALC(obj,noconv,  bignum_to_rational, rational_mul, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_mul( <rational>, <rational> )
+       *  using: rational_mul( <rational>, <rational> )
+       */
+      CALC(obj, noconv, noconv, rational_mul, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_mul( <rational>, <complex> )
+       *  using: complex_mul( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_mul, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_mul: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (COMPLEX_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_mul( <complex>, <fixnum> )
+       *  using: complex_mul( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_mul, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_mul( <complex>, <double-float> )
+       *  using: complex_mul( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_mul, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_mul( <complex>, <long-int> )
+       *  using: complex_mul( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_mul, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_mul( <complex>, <bignum> )
+       *  using: complex_mul( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_mul, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_mul( <complex>, <rational> )
+       *  using: complex_mul( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_mul, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_mul( <complex>, <complex> )
+       *  using: complex_mul( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, extract_complex, complex_mul, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_mul: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else
+  {
+    scheme_error( "obj basic_mul: argument ~s not basic",
+                  1, x );
+    return ZERO;
+  }
+}
+
+obj basic_div( obj x, obj y )
+{
+  if (FIXNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <fixnum> )
+       *  using: rational_div( <rational>, <rational> )
+       */
+       CALC(obj, fx_to_rational, fx_to_rational, rational_div, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <double-float> )
+       *  using: fl_div( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, fx2int, extract_float, fl_div, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <long-int> )
+       *  using: long_div( <raw-int-64>, <raw-int-64> )
+       */
+       CALC(obj, fx_to_rational, longint_to_rational, rational_div, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <bignum> )
+       *  using: rational_div( <rational>, <rational> )
+       */
+      CALC(obj, fx_to_rational, bignum_to_rational, rational_div, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <rational> )
+       *  using: rational_div( <rational>, <rational> )
+       */
+      CALC(obj, fx_to_rational, noconv, rational_div, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <complex> )
+       *  using: complex_div( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_div, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_div: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (LONGFLOAT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <double-float>, <fixnum> )
+       *  using: fl_div( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, extract_float, fx2int, fl_div, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_div( <double-float>, <double-float> )
+       *  using: fl_div( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, extract_float, extract_float, fl_div, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <double-float>, <long-int> )
+       *  using: fl_div( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, extract_float, longint_to_float, fl_div, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <double-float>, <bignum> )
+       *  using: fl_div( <double-float>, <double-float> )
+       */
+      CALC(IEEE_64, extract_float, bignum_to_raw_float, fl_div, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_div( <double-float>, <rational> )
+       *  using: fl_div( <double-float>, <double-float> )
+       */
+      CALC(IEEE_64, extract_float, rational_to_raw_float, fl_div, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_div( <double-float>, <complex> )
+       *  using: complex_div( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_div, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_div: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (LONG_INT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <fixnum> )
+       *  using: rational_div( <rational>, <rational> )
+       */
+      CALC(obj, longint_to_rational, fx_to_rational, rational_div, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <double-float> )
+       *  using: fl_div( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, longint_to_float, extract_float, fl_div, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <long-int> )
+       *  using: rational_div( <rational>, <rational> )
+       */
+      CALC(obj, longint_to_rational, longint_to_rational, rational_div, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <bignum> )
+       *  using: rational_div( <rational>, <rational> )
+       */
+      CALC(obj, longint_to_rational, bignum_to_rational, rational_div, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <rational> )
+       *  using: rational_div( <rational>, <rational> )
+       */
+      CALC(obj, longint_to_rational, noconv, rational_div, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <complex> )
+       *  using: complex_div( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_div, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_div: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (BIGNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <fixnum> )
+       *  using: rational_div( <rational>, <rational> )
+       */
+      CALC(obj, bignum_to_rational, fx_to_rational, rational_div, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <double-float> )
+       *  using: fl_div( <double-float>, <double-float> )
+       */
+      CALC(IEEE_64, bignum_to_raw_float, extract_float, fl_div, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <long-int> )
+       *  using: rational_div( <rational>, <rational> )
+       */
+      CALC(obj, bignum_to_rational, longint_to_rational, rational_div, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <bignum> )
+       *  using: rational_div( <rational>, <rational> )
+       */
+      CALC(obj, bignum_to_rational,  bignum_to_rational, rational_div, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <rational> )
+       *  using: rational_div( <rational>, <rational> )
+       */
+      CALC(obj, bignum_to_rational, noconv, rational_div, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <complex> )
+       *  using: complex_div( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_div, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_div: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (RATIONAL_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <rational>, <fixnum> )
+       *  using: rational_div( <rational>, <rational> )
+       */
+      CALC(obj, noconv,  fx_to_rational, rational_div, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_div( <rational>, <double-float> )
+       *  using: fl_div( <double-float>, <double-float> )
+       */
+      CALC(IEEE_64, rational_to_raw_float, extract_float, fl_div, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <rational>, <long-int> )
+       *  using: rational_div( <rational>, <rational> )
+       */
+      CALC(obj, noconv, longint_to_rational, rational_div, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <rational>, <bignum> )
+       *  using: rational_div( <rational>, <rational> )
+       */
+      CALC(obj, noconv, bignum_to_rational, rational_div, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_div( <rational>, <rational> )
+       *  using: rational_div( <rational>, <rational> )
+       */
+      CALC(obj, noconv, noconv, rational_div, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_div( <rational>, <complex> )
+       *  using: complex_div( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_div, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_div: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (COMPLEX_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <complex>, <fixnum> )
+       *  using: complex_div( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_div, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_div( <complex>, <double-float> )
+       *  using: complex_div( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_div, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <complex>, <long-int> )
+       *  using: complex_div( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_div, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <complex>, <bignum> )
+       *  using: complex_div( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_div, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_div( <complex>, <rational> )
+       *  using: complex_div( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_div, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: obj basic_div( <complex>, <complex> )
+       *  using: complex_div( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, extract_complex, complex_div, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_div: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else
+  {
+    scheme_error( "obj basic_div: argument ~s not basic",
+                  1, x );
+    return ZERO;
+  }
+}
+int basic_cmp( obj x, obj y )
+{
+  if (FIXNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: int basic_cmp( <fixnum>, <fixnum> )
+       *  using: int_cmp( <raw-int>, <raw-int> )
+       */
+      CALC(INT_32, fx2int, fx2int, int_cmp, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: int basic_cmp( <fixnum>, <double-float> )
+       *  using: fl_cmp( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, fx2int, extract_float, fl_cmp, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: int basic_cmp( <fixnum>, <long-int> )
+       *  using: long_cmp( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, fx2int64, extract_int_64, long_cmp, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: int basic_cmp( <fixnum>, <bignum> )
+       *  using: bignum_cmp( <bignum>, <bignum> )
+       */
+      CALC(obj, fx_to_bignum, noconv, bignum_cmp, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: int basic_cmp( <fixnum>, <rational> )
+       *  using: rational_cmp( <rational>, <rational> )
+       */
+      CALC(obj, fx_to_rational, noconv, rational_cmp, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: int basic_cmp( <fixnum>, <complex> )
+       *  using: complex_cmp( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_cmp, noconv);
+    }
+    else
+    {
+      scheme_error( "int basic_cmp: argument ~s not basic",
+                    1, y );
+      return 0;
+    }
+  }
+  else if (LONGFLOAT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: int basic_cmp( <double-float>, <fixnum> )
+       *  using: fl_cmp( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, extract_float, fx2int, fl_cmp, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: int basic_cmp( <double-float>, <double-float> )
+       *  using: fl_cmp( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, extract_float, extract_float, fl_cmp, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: int basic_cmp( <double-float>, <long-int> )
+       *  using: fl_cmp( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, extract_float, longint_to_float, fl_cmp, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: int basic_cmp( <double-float>, <bignum> )
+       *  using: bignum_cmp( <bignum>, <bignum> )
+       */
+      CALC(IEEE_64, extract_float, bignum_to_raw_float, fl_cmp, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: int basic_cmp( <double-float>, <rational> )
+       *  using: rational_cmp( <rational>, <rational> )
+       */
+      CALC(IEEE_64, extract_float, rational_to_raw_float, fl_cmp, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: int basic_cmp( <double-float>, <complex> )
+       *  using: complex_cmp( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_cmp, noconv);
+    }
+    else
+    {
+      scheme_error( "int basic_cmp: argument ~s not basic",
+                    1, y );
+      return 0;
+    }
+  }
+  else if (LONG_INT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: int basic_cmp( <long-int>, <fixnum> )
+       *  using: long_cmp( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, extract_int_64, fx2int64, long_cmp, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: int basic_cmp( <long-int>, <double-float> )
+       *  using: fl_cmp( <raw-float>, <raw-float> )
+       */
+      CALC(IEEE_64, longint_to_float, extract_float, fl_cmp, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: int basic_cmp( <long-int>, <long-int> )
+       *  using: long_cmp( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, extract_int_64, extract_int_64, long_cmp, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: int basic_cmp( <long-int>, <bignum> )
+       *  using: bignum_cmp( <bignum>, <bignum> )
+       */
+      CALC(obj, longint_to_bignum, noconv, bignum_cmp, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: int basic_cmp( <long-int>, <rational> )
+       *  using: rational_cmp( <rational>, <rational> )
+       */
+      CALC(obj, longint_to_rational, noconv, rational_cmp, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: int basic_cmp( <long-int>, <complex> )
+       *  using: complex_cmp( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_cmp, noconv);
+    }
+    else
+    {
+      scheme_error( "int basic_cmp: argument ~s not basic",
+                    1, y );
+      return 0;
+    }
+  }
+  else if (BIGNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: int basic_cmp( <bignum>, <fixnum> )
+       *  using: bignum_cmp( <bignum>, <bignum> )
+       */
+      CALC(obj,noconv,  fx_to_bignum, bignum_cmp, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: int basic_cmp( <bignum>, <double-float> )
+       *  using: bignum_cmp( <bignum>, <bignum> )
+       */
+      CALC(obj,noconv,  noconv, bignum_cmp, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: int basic_cmp( <bignum>, <long-int> )
+       *  using: bignum_cmp( <bignum>, <bignum> )
+       */
+      CALC(obj,noconv,  longint_to_bignum, bignum_cmp, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: int basic_cmp( <bignum>, <bignum> )
+       *  using: bignum_cmp( <bignum>, <bignum> )
+       */
+      CALC(obj,noconv,  noconv, bignum_cmp, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: int basic_cmp( <bignum>, <rational> )
+       *  using: rational_cmp( <rational>, <rational> )
+       */
+      CALC(obj, bignum_to_rational, noconv, rational_cmp, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: int basic_cmp( <bignum>, <complex> )
+       *  using: complex_cmp( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_cmp, noconv);
+    }
+    else
+    {
+      scheme_error( "int basic_cmp: argument ~s not basic",
+                    1, y );
+      return 0;
+    }
+  }
+  else if (RATIONAL_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: int basic_cmp( <rational>, <fixnum> )
+       *  using: rational_cmp( <rational>, <rational> )
+       */
+      CALC(obj, noconv, fx_to_rational, rational_cmp, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: int basic_cmp( <rational>, <double-float> )
+       *  using: fl_cmp( <double-float>, <double-float> )
+       */
+      CALC(IEEE_64, rational_to_raw_float, extract_float, fl_cmp, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: int basic_cmp( <rational>, <long-int> )
+       *  using: rational_cmp( <rational>, <rational> )
+       */
+      CALC(obj,noconv,  longint_to_rational, rational_cmp, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: int basic_cmp( <rational>, <bignum> )
+       *  using: rational_cmp( <rational>, <rational> )
+       */
+      CALC(obj,noconv,  bignum_to_rational, rational_cmp, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: int basic_cmp( <rational>, <rational> )
+       *  using: rational_cmp( <rational>, <rational> )
+       */
+      CALC(obj,noconv,  noconv, rational_cmp, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: int basic_cmp( <rational>, <complex> )
+       *  using: complex_cmp( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, real_to_complex, extract_complex, complex_cmp, noconv);
+    }
+    else
+    {
+      scheme_error( "int basic_cmp: argument ~s not basic",
+                    1, y );
+      return 0;
+    }
+  }
+  else if (COMPLEX_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: int basic_cmp( <complex>, <fixnum> )
+       *  using: complex_cmp( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_cmp, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: int basic_cmp( <complex>, <double-float> )
+       *  using: complex_cmp( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_cmp, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: int basic_cmp( <complex>, <long-int> )
+       *  using: complex_cmp( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_cmp, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: int basic_cmp( <complex>, <bignum> )
+       *  using: complex_cmp( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_cmp, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: int basic_cmp( <complex>, <rational> )
+       *  using: complex_cmp( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, real_to_complex, complex_cmp, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      /*  trying to do: int basic_cmp( <complex>, <complex> )
+       *  using: complex_cmp( <raw-complex>, <raw-complex> )
+       */
+      CALC(cmplx, extract_complex, extract_complex, complex_cmp, noconv);
+    }
+    else
+    {
+      scheme_error( "int basic_cmp: argument ~s not basic",
+                    1, y );
+      return 0;
+    }
+  }
+  else
+  {
+    scheme_error( "int basic_cmp: argument ~s not basic",
+                  1, x );
+    return 0;
+  }
+}
+
+obj basic_quotient( obj x, obj y )
+{
+  if (FIXNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <fixnum>, <fixnum> )
+       *  using: int_quotient( <fixnum>, <fixnum> )
+       */
+       CALC(INT_32, fx2int, fx2int, int_quotient, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <fixnum>, <double-float> )
+       *  using: bignum_to_float(bignum_quotient( <bignum>, <bignum> ))
+       */
+      CALC(obj, fx_to_bignum, float_to_bignum, bignum_quotient, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <fixnum>, <long-int> )
+       *  using: long_quotient( <raw-int-64>, <raw-int-64> )
+       */
+       CALC(INT_64, fx2int64, extract_int_64, long_quotient, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <fixnum>, <bignum> )
+       *  using: bignum_div( <bignum>, <bignum> )
+       */
+      CALC(obj, fx_to_bignum, noconv, bignum_div, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <fixnum>, <rational> )
+       *  using: bignum_to_float(bignum_quotient( <bignum>, <bignum> )) ... inexact
+       */
+      CALC(obj, fx_to_bignum, rational_to_bignum, bignum_quotient, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      scheme_error( "obj basic_quotient: argument ~s is complex",
+                    1, y );
+      return ZERO;
+    }
+    else
+    {
+      scheme_error( "obj basic_quotient: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (LONGFLOAT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <double-float>, <fixnum> )
+       *  using: bignum_to_float(bignum_quotient( <bignum>, <bignum> )) ... inexact
+       */
+      CALC(obj, float_to_bignum, fx_to_bignum, bignum_quotient, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <double-float>, <double-float> )
+       *  using: bignum_to_float(bignum_quotient( <bignum>, <bignum> )) ... inexact
+       */
+      CALC(obj, float_to_bignum, float_to_bignum, bignum_quotient, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <double-float>, <long-int> )
+       *  using: bignum_to_float(bignum_quotient( <bignum>, <bignum> )) ... inexact
+       */
+      CALC(obj, float_to_bignum, longint_to_bignum, bignum_quotient, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <double-float>, <bignum> )
+       *  using: bignum_to_float(bignum_quotient( <bignum>, <bignum> )) ... inexact
+       */
+      CALC(obj, float_to_bignum, noconv, bignum_quotient, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <double-float>, <rational> )
+       *  using: bignum_to_float(bignum_quotient( <bignum>, <bignum> )) ... inexact
+       */
+      CALC(obj, float_to_bignum, rational_to_bignum, bignum_quotient, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      scheme_error( "obj basic_quotient: argument ~s is complex",
+                    1, y );
+      return ZERO;
+    }
+    else
+    {
+      scheme_error( "obj basic_quotient: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (LONG_INT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <long-int>, <fixnum> )
+       *  using: long_quotient( <long-int>, <long-int> )
+       */
+      CALC(INT_64, extract_int_64, fx2int64, long_quotient, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <long-int>, <double-float> )
+       *  using: bignum_to_float(bignum_quotient( <bignum>, <bignum> )
+       */
+      CALC(obj, longint_to_bignum, float_to_bignum, bignum_quotient, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <long-int>, <long-int> )
+       *  using: long_quotient( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, extract_int_64, extract_int_64, long_quotient, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <long-int>, <bignum> )
+       *  using: bignum_div( <bignum>, <bignum> )
+       */
+      CALC(obj, longint_to_bignum, noconv, bignum_quotient, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <long-int>, <rational> )
+       *  using: bignum_to_float(bignum_div( <bignum>, <bignum> ))
+       */
+      CALC(obj, longint_to_bignum, rational_to_bignum, bignum_div, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      scheme_error( "obj basic_quotient: argument ~s is complex",
+                    1, y );
+      return ZERO;
+    }
+    else
+    {
+      scheme_error( "obj basic_quotient: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (BIGNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <bignum>, <fixnum> )
+       *  using: bignum_div( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv, fx_to_bignum, bignum_div, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <bignum>, <double-float> )
+       *  using: bignum_to_float(bignum_quotient( <bignum>, <bignum> ))
+       */
+      CALC(obj, noconv, float_to_bignum, bignum_quotient, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <bignum>, <long-int> )
+       *  using: bignum_div( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv, longint_to_bignum, bignum_div, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <bignum>, <bignum> )
+       *  using: bignum_div( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv,  noconv, bignum_div, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <bignum>, <rational> )
+       *  using: bignum_to_float(bignum_quotient( <bignum>, <bignum> ))
+       */
+      CALC(obj, noconv, rational_to_bignum, bignum_quotient, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      scheme_error( "obj basic_quotient: argument ~s is complex",
+                    1, y );
+      return ZERO;
+    }
+    else
+    {
+      scheme_error( "obj basic_quotient: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (RATIONAL_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <rational>, <fixnum> )
+       *  using: bignum_to_float(bignum_quotient( <bignum>, <bignum> ))
+       */
+      CALC(obj, rational_to_bignum,  fx_to_bignum, bignum_quotient, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <rational>, <double-float> )
+       *  using: bignum_to_float(bignum_quotient( <bignum>, <bignum> ))
+       */
+      CALC(obj, rational_to_bignum, float_to_bignum, bignum_quotient, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <rational>, <long-int> )
+       *  using: bignum_to_float(bignum_quotient( <bignum>, <bignum> ))
+       */
+      CALC(obj, rational_to_bignum, longint_to_bignum, bignum_quotient, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <rational>, <bignum> )
+       *  using: bignum_to_float(bignum_quotient( <bignum>, <bignum> ))
+       */
+      CALC(obj, rational_to_bignum, noconv, bignum_quotient, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_quotient( <rational>, <rational> )
+       *  using: bignum_to_float(bignum_quotient( <bignum>, <bignum> ))
+       */
+      CALC(obj, rational_to_bignum, rational_to_bignum, bignum_quotient, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      scheme_error( "obj basic_quotient: argument ~s is complex",
+                    1, y );
+      return ZERO;
+    }
+    else
+    {
+      scheme_error( "obj basic_quotient: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (COMPLEX_P(x))
+    {
+      scheme_error( "obj basic_quotient: argument ~s is complex",
+                    1, y );
+      return ZERO;
+    }
+  else
+  {
+    scheme_error( "obj basic_quotient: argument ~s not basic",
+                  1, x );
+    return ZERO;
+  }
+}
+
+obj basic_remainder( obj x, obj y )
+{
+  if (FIXNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <fixnum> )
+       *  using: int_remainder( <fixnum>, <fixnum> )
+       */
+       CALC(INT_32, fx2int, fx2int, int_remainder, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <double-float> )
+       *  using: bignum_remainder( <bignum>, <bignum> )
+       */
+      CALC(obj, fx_to_bignum, float_to_bignum, bignum_remainder, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <long-int> )
+       *  using: long_div( <raw-int-64>, <raw-int-64> )
+       */
+       CALC(INT_64, fx2int64, extract_int_64, long_remainder, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <bignum> )
+       *  using: bignum_remainder( <bignum>, <bignum> )
+       */
+      CALC(obj, fx_to_bignum, noconv, bignum_remainder, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <rational> )
+       *  using: bignum_to_float(bignum_remainder( <bignum>, <bignum> )) ... inexact
+       */
+      CALC(obj, fx_to_bignum, rational_to_bignum, bignum_remainder, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      scheme_error( "obj basic_remainder: argument ~s is complex",
+                    1, y );
+      return ZERO;
+    }
+    else
+    {
+      scheme_error( "obj basic_remainder: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (LONGFLOAT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <double-float>, <fixnum> )
+       *  using: bignum_to_float(bignum_remainder( <bignum>, <bignum> )) ... inexact
+       */
+      CALC(obj, float_to_bignum, fx_to_bignum, bignum_remainder, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_div( <double-float>, <double-float> )
+       *  using: bignum_to_float(bignum_remainder( <bignum>, <bignum> )) ... inexact
+       */
+      CALC(obj, float_to_bignum, float_to_bignum, bignum_remainder, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <double-float>, <long-int> )
+       *  using: bignum_to_float(bignum_remainder( <bignum>, <bignum> )) ... inexact
+       */
+      CALC(obj, float_to_bignum, longint_to_bignum, bignum_remainder, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <double-float>, <bignum> )
+       *  using: bignum_to_float(bignum_remainder( <bignum>, <bignum> )) ... inexact
+       */
+      CALC(obj, float_to_bignum, noconv, bignum_remainder, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_div( <double-float>, <rational> )
+       *  using: bignum_to_float(bignum_remainder( <bignum>, <bignum> )) ... inexact
+       */
+      CALC(obj, float_to_bignum, rational_to_bignum, bignum_remainder, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      scheme_error( "obj basic_remainder: argument ~s is complex",
+                    1, y );
+      return ZERO;
+    }
+    else
+    {
+      scheme_error( "obj basic_remainder: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (LONG_INT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <fixnum> )
+       *  using: long_remainder( <long-int>, <long-int> )
+       */
+      CALC(INT_64, extract_int_64, fx2int64, long_remainder, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <double-float> )
+       *  using: bignum_to_float(bignum_remainder( <bignum>, <bignum> )
+       */
+      CALC(obj, longint_to_bignum, float_to_bignum, bignum_remainder, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <long-int> )
+       *  using: long_remainder( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, extract_int_64, extract_int_64, long_remainder, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <bignum> )
+       *  using: bignum_remainder( <bignum>, <bignum> )
+       */
+      CALC(obj, longint_to_bignum, noconv, bignum_remainder, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <rational> )
+       *  using: bignum_remainder( <bignum>, <bignum> )
+       */
+      CALC(obj, longint_to_bignum, noconv, bignum_remainder, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      scheme_error( "obj basic_remainder: argument ~s is complex",
+                    1, y );
+      return ZERO;
+    }
+    else
+    {
+      scheme_error( "obj basic_remainder: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (BIGNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <fixnum> )
+       *  using: bignum_remainder( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv, fx_to_bignum, bignum_remainder, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <double-float> )
+       *  using: bignum_to_float(bignum_remainder( <bignum>, <bignum> ))
+       */
+      CALC(obj, noconv, float_to_bignum, bignum_remainder, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <long-int> )
+       *  using: bignum_remainder( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv, longint_to_bignum, bignum_remainder, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <bignum> )
+       *  using: bignum_remainder( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv,  noconv, bignum_remainder, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <rational> )
+       *  using: bignum_remainder( <rational>, <rational> )
+       */
+      CALC(obj, noconv, rational_to_bignum, bignum_remainder, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      scheme_error( "obj basic_remainder: argument ~s is complex",
+                    1, y );
+      return ZERO;
+    }
+    else
+    {
+      scheme_error( "obj basic_remainder: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (RATIONAL_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <rational>, <fixnum> )
+       *  using: bignum_to_float(bignum_remainder( <bignum>, <bignum> ))
+       */
+      CALC(obj, rational_to_bignum,  fx_to_bignum, bignum_remainder, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_div( <rational>, <double-float> )
+       *  using: bignum_to_float(bignum_remainder( <bignum>, <bignum> ))
+       */
+      CALC(obj, rational_to_bignum, float_to_bignum, bignum_remainder, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <rational>, <long-int> )
+       *  using: bignum_to_float(bignum_remainder( <bignum>, <bignum> ))
+       */
+      CALC(obj, rational_to_bignum, longint_to_bignum, bignum_remainder, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <rational>, <bignum> )
+       *  using: bignum_to_float(bignum_remainder( <bignum>, <bignum> ))
+       */
+      CALC(obj, rational_to_bignum, noconv, bignum_remainder, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_div( <rational>, <rational> )
+       *  using: bignum_to_float(bignum_remainder( <bignum>, <bignum> ))
+       */
+      CALC(obj, rational_to_bignum, rational_to_bignum, bignum_remainder, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      scheme_error( "obj basic_remainder: argument ~s is complex",
+                    1, y );
+      return ZERO;
+    }
+    else
+    {
+      scheme_error( "obj basic_remainder: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (COMPLEX_P(x))
+    {
+      scheme_error( "obj basic_remainder: argument ~s is complex",
+                    1, y );
+      return ZERO;
+    }
+  else
+  {
+    scheme_error( "obj basic_remainder: argument ~s not basic",
+                  1, x );
+    return ZERO;
+  }
+}
+obj basic_modulo( obj x, obj y )
+{
+  if (FIXNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <fixnum> )
+       *  using: int_modulo( <fixnum>, <fixnum> )
+       */
+       CALC(INT_32, fx2int, fx2int, int_modulo, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <double-float> )
+       *  using: bignum_to_float(bignum_modulo( <bignum>, <bignum> ))
+       */
+      CALC(obj, fx_to_bignum, float_to_bignum, bignum_modulo, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <long-int> )
+       *  using: long_div( <raw-int-64>, <raw-int-64> )
+       */
+       CALC(INT_64, fx2int64, extract_int_64, long_modulo, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <bignum> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, fx_to_bignum, noconv, bignum_modulo, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <rational> )
+       *  using: bignum_to_float(bignum_modulo( <bignum>, <bignum> )) ... inexact
+       */
+      CALC(obj, fx_to_bignum, rational_to_bignum, bignum_modulo, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      scheme_error( "obj basic_modulo: argument ~s is complex",
+                    1, y );
+      return ZERO;
+    }
+    else
+    {
+      scheme_error( "obj basic_modulo: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (LONGFLOAT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <double-float>, <fixnum> )
+       *  using: bignum_to_float(bignum_modulo( <bignum>, <bignum> )) ... inexact
+       */
+      CALC(obj, float_to_bignum, fx_to_bignum, bignum_modulo, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_div( <double-float>, <double-float> )
+       *  using: bignum_to_float(bignum_modulo( <bignum>, <bignum> )) ... inexact
+       */
+      CALC(obj, float_to_bignum, float_to_bignum, bignum_modulo, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <double-float>, <long-int> )
+       *  using: bignum_to_float(bignum_modulo( <bignum>, <bignum> )) ... inexact
+       */
+      CALC(obj, float_to_bignum, longint_to_bignum, bignum_modulo, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <double-float>, <bignum> )
+       *  using: bignum_to_float(bignum_modulo( <bignum>, <bignum> )) ... inexact
+       */
+      CALC(obj, float_to_bignum, noconv, bignum_modulo, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_div( <double-float>, <rational> )
+       *  using: bignum_to_float(bignum_modulo( <bignum>, <bignum> )) ... inexact
+       */
+      CALC(obj, float_to_bignum, rational_to_bignum, bignum_modulo, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      scheme_error( "obj basic_modulo: argument ~s is complex",
+                    1, y );
+      return ZERO;
+    }
+    else
+    {
+      scheme_error( "obj basic_modulo: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (LONG_INT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <fixnum> )
+       *  using: long_modulo( <long-int>, <long-int> )
+       */
+      CALC(INT_64, extract_int_64, fx2int64, long_modulo, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <double-float> )
+       *  using: bignum_to_float(bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, longint_to_bignum, float_to_bignum, bignum_modulo, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <long-int> )
+       *  using: long_modulo( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, extract_int_64, extract_int_64, long_modulo, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <bignum> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, longint_to_bignum, noconv, bignum_modulo, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <rational> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, longint_to_bignum, noconv, bignum_modulo, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      scheme_error( "obj basic_modulo: argument ~s is complex",
+                    1, y );
+      return ZERO;
+    }
+    else
+    {
+      scheme_error( "obj basic_modulo: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (BIGNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <fixnum> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv, fx_to_bignum, bignum_modulo, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <double-float> )
+       *  using: bignum_to_float(bignum_modulo( <bignum>, <bignum> ))
+       */
+      CALC(obj, noconv, float_to_bignum, bignum_modulo, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <long-int> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv, longint_to_bignum, bignum_modulo, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <bignum> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv,  noconv, bignum_modulo, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <rational> )
+       *  using: bignum_modulo( <rational>, <rational> )
+       */
+      CALC(obj, noconv, rational_to_bignum, bignum_modulo, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      scheme_error( "obj basic_modulo: argument ~s is complex",
+                    1, y );
+      return ZERO;
+    }
+    else
+    {
+      scheme_error( "obj basic_modulo: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (RATIONAL_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <rational>, <fixnum> )
+       *  using: bignum_to_float(bignum_modulo( <bignum>, <bignum> ))
+       */
+      CALC(obj, rational_to_bignum,  fx_to_bignum, bignum_modulo, noconv);
+    }
+    else if (LONGFLOAT_P(y))
+    {
+      /*  trying to do: obj basic_div( <rational>, <double-float> )
+       *  using: bignum_to_float(bignum_modulo( <bignum>, <bignum> ))
+       */
+      CALC(obj, rational_to_bignum, float_to_bignum, bignum_modulo, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <rational>, <long-int> )
+       *  using: bignum_to_float(bignum_modulo( <bignum>, <bignum> ))
+       */
+      CALC(obj, rational_to_bignum, longint_to_bignum, bignum_modulo, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <rational>, <bignum> )
+       *  using: bignum_to_float(bignum_modulo( <bignum>, <bignum> ))
+       */
+      CALC(obj, rational_to_bignum, noconv, bignum_modulo, noconv);
+    }
+    else if (RATIONAL_P(y))
+    {
+      /*  trying to do: obj basic_div( <rational>, <rational> )
+       *  using: bignum_to_float(bignum_modulo( <bignum>, <bignum> ))
+       */
+      CALC(obj, rational_to_bignum, rational_to_bignum, bignum_modulo, noconv);
+    }
+    else if (COMPLEX_P(y))
+    {
+      scheme_error( "obj basic_modulo: argument ~s is complex",
+                    1, y );
+      return ZERO;
+    }
+    else
+    {
+      scheme_error( "obj basic_modulo: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (COMPLEX_P(x))
+    {
+      scheme_error( "obj basic_modulo: argument ~s is complex",
+                    1, y );
+      return ZERO;
+    }
+  else
+  {
+    scheme_error( "obj basic_modulo: argument ~s not basic",
+                  1, x );
+    return ZERO;
+  }
+}
+obj basic_bitwise_and( obj x, obj y )
+{
+  if (FIXNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      return FX_AND(x, y);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <long-int> )
+       *  using: long_div( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, fx2int64, extract_int_64, long_and, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <bignum> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, fx_to_bignum, noconv, bignum_and, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_and: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (LONG_INT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <fixnum> )
+       *  using: long_modulo( <long-int>, <long-int> )
+       */
+      CALC(INT_64, extract_int_64, fx2int64, long_and, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <long-int> )
+       *  using: long_modulo( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, extract_int_64, extract_int_64, long_and, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <bignum> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, longint_to_bignum, noconv, bignum_and, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_modulo: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (BIGNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <fixnum> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv, fx_to_bignum, bignum_and, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <long-int> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv, longint_to_bignum, bignum_and, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <bignum> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv,  noconv, bignum_and, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_and: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else
+  {
+    scheme_error( "obj basic_and: argument ~s not basic",
+                  1, x );
+    return ZERO;
+  }
+}
+obj basic_bitwise_or( obj x, obj y )
+{
+  if (FIXNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      return FX_OR(x, y);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <long-int> )
+       *  using: long_div( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, fx2int64, extract_int_64, long_or, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <bignum> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, fx_to_bignum, noconv, bignum_or, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_or: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (LONG_INT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <fixnum> )
+       *  using: long_modulo( <long-int>, <long-int> )
+       */
+      CALC(INT_64, extract_int_64, fx2int64, long_or, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <long-int> )
+       *  using: long_modulo( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, extract_int_64, extract_int_64, long_or, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <bignum> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, longint_to_bignum, noconv, bignum_or, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_or: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (BIGNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <fixnum> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv, fx_to_bignum, bignum_or, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <long-int> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv, longint_to_bignum, bignum_or, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <bignum> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv,  noconv, bignum_or, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_or: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else
+  {
+    scheme_error( "obj basic_or: argument ~s not basic",
+                  1, x );
+    return ZERO;
+  }
+}
+obj basic_bitwise_xor( obj x, obj y )
+{
+  if (FIXNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      return FX_XOR(x, y);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <long-int> )
+       *  using: long_div( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, fx2int64, extract_int_64, long_xor, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <fixnum>, <bignum> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, fx_to_bignum, noconv, bignum_xor, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_xor: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (LONG_INT_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <fixnum> )
+       *  using: long_modulo( <long-int>, <long-int> )
+       */
+      CALC(INT_64, extract_int_64, fx2int64, long_xor, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <long-int> )
+       *  using: long_modulo( <raw-int-64>, <raw-int-64> )
+       */
+      CALC(INT_64, extract_int_64, extract_int_64, long_xor, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <long-int>, <bignum> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, longint_to_bignum, noconv, bignum_xor, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_xor: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else if (BIGNUM_P(x))
+  {
+    if (FIXNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <fixnum> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv, fx_to_bignum, bignum_xor, noconv);
+    }
+    else if (LONG_INT_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <long-int> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv, longint_to_bignum, bignum_xor, noconv);
+    }
+    else if (BIGNUM_P(y))
+    {
+      /*  trying to do: obj basic_div( <bignum>, <bignum> )
+       *  using: bignum_modulo( <bignum>, <bignum> )
+       */
+      CALC(obj, noconv,  noconv, bignum_xor, noconv);
+    }
+    else
+    {
+      scheme_error( "obj basic_xor: argument ~s not basic",
+                    1, y );
+      return ZERO;
+    }
+  }
+  else
+  {
+    scheme_error( "obj basic_xor: argument ~s not basic",
+                  1, x );
+    return ZERO;
+  }
+}
+obj basic_bitwise_not( obj x )
+{
+  if (FIXNUM_P(x))
+  {
+    return FX_NOT(x);
+  }
+  else if (LONG_INT_P(x))
+  {
+    return long_not(extract_int_64(x));
+  }
+  else if (BIGNUM_P(x))
+  {
+    return bignum_not(x);
+  }
+  else
+  {
+    scheme_error( "obj basic_not: argument ~s not basic",
+                  1, x );
+    return ZERO;
+  }
+}
+obj basic_lshr( obj x, int y)
+{
+  if (FIXNUM_P(x))
+  {
+      return int_lshr(fx2int(x), y);
+  }
+  else if (LONG_INT_P(x))
+  {
+      return long_lshr(extract_int_64(x), y);
+  }
+  else if (BIGNUM_P(x))
+  {
+      return bignum_shr(x, y);
+  }
+  else
+  {
+    scheme_error( "obj basic_lshr: argument ~s not basic",
+                  1, x );
+    return ZERO;
+  }
+}
+obj basic_ashr( obj x, int y)
+{
+  if (FIXNUM_P(x))
+  {
+      return int_ashr(fx2int(x), y);
+  }
+  else if (LONG_INT_P(x))
+  {
+      return long_ashr(extract_int_64(x), y);
+  }
+  else if (BIGNUM_P(x))
+  {
+      return bignum_shr(x, y);
+  }
+  else
+  {
+    scheme_error( "obj basic_lshr: argument ~s not basic",
+                  1, x );
+    return ZERO;
+  }
+}
+obj basic_ashl( obj x, int y)
+{
+  if (FIXNUM_P(x))
+  {
+      return int_ashl(fx2int(x), y);
+  }
+  else if (LONG_INT_P(x))
+  {
+      return long_ashl(extract_int_64(x), y);
+  }
+  else if (BIGNUM_P(x))
+  {
+      return bignum_shl(x, y);
+  }
+  else
+  {
+    scheme_error( "obj basic_lshr: argument ~s not basic",
+                  1, x );
+    return ZERO;
+  }
+}
+obj basic_lshl( obj x, int y)
+{
+  if (FIXNUM_P(x))
+  {
+      return int_lshl(fx2int(x), y);
+  }
+  else if (LONG_INT_P(x))
+  {
+      return long_lshl(extract_int_64(x), y);
+  }
+  else if (BIGNUM_P(x))
+  {
+      return bignum_shl(x, y);
+  }
+  else
+  {
+    scheme_error( "obj basic_lshr: argument ~s not basic",
+                  1, x );
+    return ZERO;
+  }
+}
+#undef CALC
+#undef noconv

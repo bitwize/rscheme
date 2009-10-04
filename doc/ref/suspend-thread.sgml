@@ -1,0 +1,49 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}thread-suspend{/RefName}
+  {RefPurpose}Suspend a thread.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/thread-suspend/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/thread/{/ParamDef}{ParamDef role="returns"}
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}thread{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<thread>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Increments the suspend count of the given {Parameter}thread{/Parameter}.  This makes
+the thread ineligible for execution until a corresponding
+{Phrase Role="var"}thread-resume{/Phrase} is invoked.{/para}
+{para}
+If {Parameter}thread{/Parameter} is the current thread, this procedure does not return
+until the corresponding {Phrase Role="var"}thread-resume{/Phrase} is invoked.  {/para}
+{para}
+If {Parameter}thread{/Parameter} is another, currently running, thread 
+(&ie;, in a SMP
+context), this procedure blocks until the target thread has stopped
+running (which should be fairly soon). {Footnote}{para}
+However, if the
+target thread is blocked indefinitely in the OS kernel, e.g., on an
+NFS page fault and the server is down, then this procedure may block
+indefinitely waiting for the target to acknowledge the halt at a safe
+point.  Hence, we will need to provide a timeoutable version as
+well.{/para}
+{/Footnote}{/para}
+{/RefSect1}
+{/RefEntry}

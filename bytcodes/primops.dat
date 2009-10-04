@@ -1,0 +1,687 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    bytcodes/primops.dat
+ |
+ |          Copyright (C)1995 Donovan Kolbly <donovan@tkg.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.38
+ | Date:    2004-03-24 14:36:39
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ `------------------------------------------------------------------------|#
+
+
+;;********** predicates *********
+
+(define-primop fixnum? (<obj> => <raw-bool>)
+  "OBJ_ISA_FIXNUM")
+
+(define-primop immob? (<obj> => <raw-bool>)
+  "OBJ_ISA_IMMOB")
+
+(define-primop ptr? (<obj> => <raw-bool>)
+  "OBJ_ISA_PTR")
+
+(define-primop boolean? (<obj> => <raw-bool>)
+  "OBJ_ISA_BOOLEAN")
+
+(define-primop null? (<obj> => <raw-bool>)
+  "NULL_P")
+
+(define-primop pair? (<obj> => <raw-bool>)
+  "PAIR_P")
+
+(define-primop class? (<obj> => <raw-bool>)
+  "CLASS_P")
+	
+(define-primop ascii-char? (<obj> => <raw-bool>)
+  "OBJ_ISA_ASCII_CHAR")
+
+(define-primop unicode-char? (<obj> => <raw-bool>)
+  "OBJ_ISA_UNICODE_CHAR")
+
+(define-primop unique-obj? (<obj> => <raw-bool>)
+  "OBJ_ISA_UNIQUE_OBJ")
+
+(define-primop symbol? (<obj> => <raw-bool>)
+  "SYMBOL_P")
+
+(define-primop vector? (<obj> => <raw-bool>)
+  "VECTOR_P")
+
+(define-primop string? (<obj> => <raw-bool>)
+  "STRING_P")
+
+(define-primop double-float? (<obj> => <raw-bool>)
+  "LONGFLOAT_P")
+
+(define-primop eq? (<obj> <obj> => <raw-bool>)
+  "EQ")
+
+(define-primop not (<obj> => <raw-bool>)
+  "NOT")
+
+;;************* typesys operations ***************
+
+;;***** gvec *****
+
+(define-primop gvec? (<obj> => <raw-bool>)
+  "GVEC_P")
+
+(define-primop gvec-alloc (<<class>> <raw-int-bytes> <obj> => <gvec>)
+  "make_gvec")
+
+
+(define-primop gvec-length (<gvec> => <raw-int-bytes>)
+  "SIZEOF_PTR")
+
+(define-primop gvec-ref (<gvec> <raw-int-bytes> => <obj>)
+  "gvec_ref")
+
+(define-primop gvec-set! (<gvec> <raw-int-bytes> <obj>)
+  "gvec_set")
+
+;;***** bvec *****
+
+(define-primop bvec? (<obj> => <raw-bool>)
+  "BVEC_P")
+
+(define-primop bvec-alloc ((class <<class>>)
+			   (length <raw-int>) => <bvec>)
+  "make_bvec")
+
+;;***** misc *****
+
+(define-primop object-class (<obj> => <<class>>)
+  "object_class")
+
+(define-primop instance? (<obj> <<class>> => <raw-bool>)
+  "instance_p")
+
+(define-primop subclass? (<<class>> <<class>> => <raw-bool>)
+  "subclass_p")
+
+(define-primop integer->ascii-char (<raw-int> => <ascii-char>)
+  "MAKE_ASCII_CHAR")
+
+(define-primop integer->unicode-char (<raw-int> => <unicode-char>)
+  "MAKE_UNICODE_CHAR")
+
+(define-primop ascii-char->integer (<ascii-char> => <raw-int>)
+  "GET_IMMEDIATE_VALUE")
+
+(define-primop unicode-char->integer (<unicode-char> => <raw-int>)
+  "GET_IMMEDIATE_VALUE")
+
+(define-primop fixnum->immob (<fixnum> => <immob>)
+  "FX_TO_IMMOB")
+
+(define-primop immob->fixnum (<immob> => <fixnum>)
+  "IMMOB_TO_FX")
+
+(define-primop get-immob-value (<immob> => <raw-int>)
+  "GET_IMMEDIATE_VALUE")
+
+(define-primop make-immob ((secondary-tag <raw-int>)
+			   (immob-value <raw-int>) => <immob>)
+  "MAKE_IMMOB")
+
+;;****** convenience functions ******
+
+(define-primop set-car! ((pair <pair>) (item <obj>))
+  "pair_set_car")
+
+(define-primop set-cdr! ((pair <pair>) (item <obj>))
+  "pair_set_cdr")
+
+;;************* arithmetic functions **************
+;;
+;;  these primops operate at close to the machine level --
+;;  overflow checking, etc., is not performed
+
+(define-primop fixnum+ (<fixnum> <fixnum> => <fixnum>)
+  "FX_ADD")
+
+(define-primop fixnum- (<fixnum> <fixnum> => <fixnum>)
+  "FX_SUB")
+
+(define-primop add1 (<fixnum> => <fixnum>)
+  "ADD1")
+
+(define-primop sub1 (<fixnum> => <fixnum>)
+  "SUB1")
+
+(define-primop mul2 (<fixnum> => <fixnum>)
+  "MUL2")
+
+(define-primop div2 (<fixnum> => <fixnum>)
+  "DIV2")
+
+
+(define-primop fixnum* (<fixnum> <fixnum> => <fixnum>)
+  "FX_MUL")
+
+(define-primop fixnum-quotient (<fixnum> <fixnum> => <fixnum>)
+  "FX_DIV")
+
+
+(define-primop float+ (<raw-float> <raw-float> => <raw-float>)
+  "FLT_ADD")
+(define-primop float- (<raw-float> <raw-float> => <raw-float>)
+  "FLT_SUB")
+(define-primop float* (<raw-float> <raw-float> => <raw-float>)
+  "FLT_MUL")
+(define-primop float/ (<raw-float> <raw-float> => <raw-float>)
+  "FLT_DIV")
+(define-primop float-neg (<raw-float> => <raw-float>)
+  "FLT_NEG")
+
+;;************* arithmetic comparions *************
+
+(define-primop fixnum>? (<fixnum> <fixnum> => <raw-bool>)
+   "FX_GT")
+
+(define-primop fixnum>=? (<fixnum> <fixnum> => <raw-bool>)
+   "FX_GE")
+
+(define-primop fixnum<? (<fixnum> <fixnum> => <raw-bool>)
+   "FX_LT")
+
+(define-primop fixnum<=? (<fixnum> <fixnum> => <raw-bool>)
+   "FX_LE")
+
+
+(define-primop float>? (<raw-float> <raw-float> => <raw-bool>)
+   "FLT_GT")
+(define-primop float>=? (<raw-float> <raw-float> => <raw-bool>)
+   "FLT_GE")
+(define-primop float<? (<raw-float> <raw-float> => <raw-bool>)
+   "FLT_LT")
+(define-primop float<=? (<raw-float> <raw-float> => <raw-bool>)
+   "FLT_LE")
+(define-primop float=? (<raw-float> <raw-float> => <raw-bool>)
+   "FLT_EQ")
+
+;;************* pairs **************
+;;  -- pairs are now handled as `special' primops, defined
+;;  -- from corelib/primops.scm and generated from bcdefs.dat's
+;;  -- `special-primop' function
+;;  --
+;;  --   (define-primop cons (<obj> <obj> => <pair>)  "cons")
+;;  --   (define-primop car (<pair> => <obj>)  "pair_car")
+;;  --   (define-primop cdr (<pair> => <obj>)  "pair_cdr")
+
+;;************* representation conversions ***************
+
+(define-primop fixnum->raw-int (<fixnum> => <raw-int>)
+  "fx2int")
+
+(define-primop raw-int->fixnum (<raw-int> => <fixnum>)
+  "int2fx")
+
+(define-primop raw-bool->bool (<raw-bool> => <boolean>)
+  "rb_to_bo")
+
+(define-primop obj->raw-bool (<obj> => <raw-bool>)
+  "truish")
+
+(define-primop string->raw-str (<string> => <raw-string>)
+  "string_text")
+
+(define-primop raw-str->string (<raw-string> => <string>)
+  "make_string")
+
+(define-primop double-float->raw-float (<double-float> => <raw-float>)
+  "extract_float")
+
+(define-primop raw-float->double-float (<raw-float> => <double-float>)
+  "make_float")
+
+;;******* even lower level stuff *****
+;; (it's trivial to crash the system and escape whatever you
+;;  want using these)
+
+(define-primop obj-high-bits (<obj> => <fixnum>)
+  "OBJ_HIGH_HALF_FX")
+
+(define-primop obj-low-bits (<obj> => <fixnum>)
+  "OBJ_LOW_HALF_FX")
+
+(define-primop obj-bits-reform (<fixnum> <fixnum> => <obj>)
+  "OBJ_FROM_HI_LO")
+
+;;*** unit conversions ***
+
+(define-primop raw-int-bytes->fixnum-words (<raw-int-bytes> => <fixnum>)
+  "RIBYTES_TO_FXWORDS")
+
+(define-primop raw-int-bytes->raw-int-words (<raw-int-bytes> => <raw-int>)
+  "RAW_DIV4")
+
+;(define-primop raw-int-words->raw-int-bytes (<raw-int> => <raw-int-bytes>)
+;  "4*")
+
+(define-primop raw-int-words->raw-int-bytes (<raw-int> => <raw-int-bytes>)
+  "SLOT")
+
+(define-primop fixnum-words->raw-int-bytes (<fixnum> => <raw-int-bytes>)
+  "FXWORDS_TO_RIBYTES")
+
+;;
+;;   bit manipulation
+;;
+
+(define-primop bitwise-and (<obj> <obj> => <obj>)
+  "basic_bitwise_and")
+
+(define-primop bitwise-or (<obj> <obj> => <obj>)
+  "basic_bitwise_or")
+
+(define-primop bitwise-xor (<obj> <obj> => <obj>)
+  "basic_bitwise_xor")
+
+(define-primop bitwise-not (<obj> => <obj>)
+  "basic_bitwise_not")
+
+;;
+;; per ANSI C, these are only valid for non-negative arguments
+;; (in fact, on architectures where shifting by a negative
+;;  amt is equiv to shifting the other way, you can violate
+;;  the tagging scheme by shifting left by -2!)
+;;
+
+(define-primop logical-shift-right (<obj> <raw-int> => <obj>)
+  "basic_lshr")
+
+(define-primop arithmetic-shift-right (<obj> <raw-int> => <obj>)
+  "basic_ashr")
+
+(define-primop logical-shift-left (<obj> <raw-int> => <obj>)
+  "basic_lshl")
+
+(define-primop arithmetic-shift-left (<obj> <raw-int> => <obj>)
+  "basic_ashl")
+
+;;
+;;
+
+(define-primop int-remainder (<raw-int> <raw-int> => <raw-int>)
+  "REMDR")
+
+(define-primop int-modulo (<raw-int> <raw-int> => <raw-int>)
+  "MOD")
+
+;;
+;;  other access to runtime system functions
+;; 
+
+(define-primop string->symbol (<string> => <symbol>)
+  "intern")
+
+(define-primop symbol->string (<symbol> => <string>)
+  "symbol_str")
+
+(define-primop string=? (<string> <string> => <raw-bool>)
+  "string_eq")
+
+(define-primop string-ci=? (<string> <string> => <raw-bool>)
+  "string_ci_eq")
+
+(define-primop string-compare (<string> <string> => <raw-int>)
+  "string_cmp")
+
+(define-primop string-ci-compare (<string> <string> => <raw-int>)
+  "string_ci_cmp")
+
+(define-primop string-length% (<string> => <raw-int>)
+  "string_length")
+
+(define-primop rscheme-global-ref (<raw-int-bytes> => <obj>)
+  "rscheme_global_ref")
+
+(define-primop rscheme-global-set! (<raw-int-bytes> <obj> => <obj>)
+  "rscheme_global_set")
+
+#|
+;; it is potentially useful to put some OS functions 
+;; in here as primops.  Things like (random) are quite
+;; possibly going to get called in a tight loop -- you'd
+;; hate to destroy the loop by making (random) an out-of-line
+;; call
+
+(define-primop os-random (=> <fixnum>)
+  "os_random")
+|#
+
+;; 
+;;  access to hash table functions
+;;
+;;  note that we don't bother to have subclasses for <obj>)
+;;  that are for tables.  Hence, the compiler won't emit
+;;  such checks itself.  Well, we never promised primops
+;;  were type safe!
+
+(define-primop string-table-lookup (<obj> <fixnum> <string> => <obj>)
+  "stringtable_lookup")
+
+(define-primop string-table-insert! (<obj> <fixnum> <string> <obj> => <obj>)
+  "stringtable_insert")
+
+(define-primop string-table-remove! (<obj> <fixnum> <string> => <obj>)
+  "stringtable_remove")
+
+(define-primop string-table-probe? (<obj> <fixnum> <string> => <raw-bool>)
+  "stringtable_probe")
+
+
+(define-primop string-ci-table-lookup (<obj> <fixnum> <string> => <obj>)
+  "cistringtable_lookup")
+
+(define-primop string-ci-table-insert! (<obj> <fixnum> <string> <obj> => <obj>)
+  "cistringtable_insert")
+
+(define-primop string-ci-table-remove! (<obj> <fixnum> <string> => <obj>)
+  "cistringtable_remove")
+
+(define-primop string-ci-table-probe? (<obj> <fixnum> <string> => <raw-bool>)
+  "cistringtable_probe")
+
+
+
+(define-primop object-table-lookup (<obj> <fixnum> <obj> => <obj>)
+  "objecttable_lookup")
+
+(define-primop object-table-insert! (<obj> <fixnum> <obj> <obj> => <obj>)
+  "objecttable_insert")
+
+(define-primop object-table-remove! (<obj> <fixnum> <obj> => <obj>)
+  "objecttable_remove")
+
+(define-primop object-table-probe? (<obj> <fixnum> <obj> => <raw-bool>)
+  "objecttable_probe")
+
+
+;; a table-unsafe primitive:  table-install! will install
+;; a new entry.  If you install the same key twice, you
+;; will probably get very confused.
+
+(define-primop table-install! ((table <obj>)
+			       (hash-value <fixnum>)
+			       (key <obj>)
+			       (value <obj>))
+  "hashtable_install")
+
+;; these functions actually return a <list>)
+;; and, in fact, a <pair> unless the table is empty
+;; (this last fact, and the fact that <list> is not a primtype,
+;;  means I have to have them returning <obj>'s)
+
+(define-primop table-chains ((table <obj>) => <obj>)
+  "hashtable_chains")
+
+(define-primop table-keys->list ((table <obj>) => <obj>)
+  "hashtable_keys_to_list")
+
+(define-primop table-values->list ((table <obj>) => <obj>)
+  "hashtable_values_to_list")
+
+;;
+;;  builtin hash functions
+;;
+
+(define-primop bvec->hash ((thing <bvec>) 
+			   (offset <raw-int>) 
+			   (length <raw-int>) => <fixnum>)
+  "bvec_hash")
+
+(define-primop bvec-ci->hash ((thing <bvec>) 
+			      (offset <raw-int>) 
+			      (length <raw-int>) => <fixnum>)
+  "bvec_ci_hash")
+
+(define-primop string->hash (<string> => <fixnum>)
+  "hash_string")
+
+(define-primop string-ci->hash (<string> => <fixnum>)
+  "hash_string_ci")
+
+(define-primop integer->hash (<fixnum> => <fixnum>)
+  "rehash_fixnum")
+
+(define-primop symbol->hash (<symbol> => <fixnum>)
+  "symbol_hash")
+
+;; must be careful if we change representation of immobs...
+;; hash values should NOT change
+
+(define-primop immob->hash (<obj> => <fixnum>)
+  "obj_hash")
+
+(define-primop tuple->hash (<obj> <obj> => <fixnum>)
+  "obj_hash2")
+
+;; this is for internal use only
+
+(define-primop transient->hash (<obj> => <fixnum>)
+  "obj_hash")
+
+;;
+;; support for run-time type checking
+;;
+
+(define-primop assert-type ((result <raw-bool>))
+  "assert_type")
+
+;; and other stuff
+
+(define-primop get-dynamic-state-reg (=> <obj>)
+  "GET_DYNAMIC_STATE_REG")
+
+(define-primop set-dynamic-state-reg! ((new-dstat <obj>))
+  "SET_DYNAMIC_STATE_REG")
+
+(define-primop os-file-exists? ((os-path <raw-string>) => <raw-bool>)
+  "os_file_exists_p")
+
+;;
+;;  experimental primops that do type checking in C
+;;
+
+(define-primop vector-ref ((vector <obj>) (index <obj>) => <obj>)
+  "vector_ref")
+
+(define-primop vector-set! ((vector <obj>) (index <obj>) (item <obj>) => <obj>)
+  "vector_set")
+
+;;
+;; OS timer functions
+;;
+
+(define-primop os-set-timer (<raw-int>)
+  "os_set_timer")
+
+(define-primop os-get-time-remaining (=> <raw-int>)
+  "os_get_time_remaining")
+
+(define-primop os-halt-timer (=> <raw-int>)
+  "os_halt_timer")
+
+(define-primop os-sleep (<raw-int> => <raw-int>)
+  "os_sleep")
+
+;;
+;;  allocation area access
+;;
+
+(define-primop bvec-alloc-in-area ((area <obj>)
+				   (class <<class>>)
+				   (length <raw-int>)
+				   (fill <raw-int>) => <bvec>)
+  "make_bvec_in_area")
+
+(define-primop gvec-alloc-in-area ((area <obj>)
+				   (class <<class>>)
+				   (num-slots <raw-int-bytes>)
+				   (fill-value <obj>) => <gvec>)
+  "make_gvec_in_area")
+
+;;
+
+(define-primop clone ((item <obj>) => <obj>)
+   "clone")
+
+(define-primop clone2 ((item <obj>) (class <<class>>) => <obj>)
+   "clone2")
+
+(include "bvecs.dat")
+(include "longint.dat")
+(include "floatops.dat")
+
+(define-primop base+ ((a <obj>) (b <obj>) => <obj>)
+  "basic_plus")
+
+(define-primop base- ((a <obj>) (b <obj>) => <obj>)
+  "basic_minus")
+
+(define-primop base>? ((a <obj>) (b <obj>) => <raw-bool>)
+  "basic_gt_q")
+
+(define-primop base>=? ((a <obj>) (b <obj>) => <raw-bool>)
+  "basic_ge_q")
+
+(define-primop base<? ((a <obj>) (b <obj>) => <raw-bool>)
+  "basic_lt_q")
+
+(define-primop base<=? ((a <obj>) (b <obj>) => <raw-bool>)
+  "basic_le_q")
+
+(define-primop base=? ((a <obj>) (b <obj>) => <raw-bool>)
+  "basic_eq_q")
+
+;;
+
+(define-primop os-mkdir ((os-path <raw-string>))
+  "os_mkdir")
+
+(define-primop os-set-sigenable ((os-path <raw-bool>) => <raw-bool>)
+  "os_set_sigenable")
+
+;;
+;;  dequeues
+;;
+
+(define-primop make-dequeue (=> <obj>)
+  "make_dequeue")
+
+(define-primop dequeue-empty? ((deq <obj>) => <raw-bool>)
+  "dequeue_empty")
+
+(define-primop dequeue-count ((deq <obj>) => <fixnum>)
+  "dequeue_count")
+
+(define-primop dequeue-state ((deq <obj>) => <vector>)
+  "dequeue_state")
+
+(define-primop dequeue-push-front! ((deq <obj>) (item <obj>))
+  "dequeue_push_front")
+
+(define-primop dequeue-push-back! ((deq <obj>) (item <obj>))
+  "dequeue_push_back")
+
+(define-primop dequeue-pop-front! ((deq <obj>) => <obj>)
+  "dequeue_pop_front")
+
+(define-primop dequeue-pop-back! ((deq <obj>) => <obj>)
+  "dequeue_pop_back")
+
+(define-primop dequeue-ref ((deq <obj>) (k <fixnum>) => <obj>)
+  "dequeue_ref")
+
+(define-primop dequeue-set! ((deq <obj>) (k <fixnum>) (item <obj>) => <obj>)
+  "dequeue_set")
+
+(define-primop set-sigqueue-size! ((size <raw-int>))
+  "set_sigqueue_size")
+
+;;
+;;  more math
+;;
+
+(define-primop base* ((a <obj>) (b <obj>) => <obj>)
+  "basic_mul")
+
+(define-primop base/ ((a <obj>) (b <obj>) => <obj>)
+  "basic_div")
+
+(define-primop base-quotient ((a <obj>) (b <obj>) => <obj>)
+  "basic_quotient")
+
+(define-primop base-remainder ((a <obj>) (b <obj>) => <obj>)
+  "basic_remainder")
+
+(define-primop base-modulo ((a <obj>) (b <obj>) => <obj>)
+  "basic_modulo")
+
+;;
+
+(define-primop get-thread-state-reg (=> <obj>)
+  "GET_THREAD_STATE_REG")
+
+(define-primop set-thread-state-reg! ((new-dstat <obj>))
+  "SET_THREAD_STATE_REG")
+
+;;;
+
+(include "check.dat")
+
+;;;
+
+(define-primop %profile-start (<raw-string> <raw-bool> <raw-bool>)
+  "rsprof_start")
+
+(define-primop %profile-stop (=> <raw-bool>)
+  "rsprof_stop")
+
+(define-primop %profile-objects (<obj> <obj>)
+  "rsprof_collect_objects")
+
+(define-primop %profile-append-defn (<obj> <obj>)
+  "rsprof_app_defn_rec")
+
+;;;
+
+(define-primop subvector* (<vector> <fixnum> <fixnum> => <vector>)
+  "subvector")
+
+(define-primop errno-message (<raw-int> => <string>)
+  "os_errormsg")
+
+(define-primop procedure? (<obj> => <raw-bool>)
+  "FUNCTION_P")
+
+(define-primop get-bytecode-correlation (=> <vector>)
+  "get_bytecode_correlation")
+
+(define-primop make-exception-stack (=> <obj>)
+  "make_exception_stack")
+
+;; these do type AND range checking, so you can
+;; pass (e.g.) a <long-int> where a <raw-int> is
+;; expected, or a <rational> where a <raw-float> is needed
+
+(define-primop as-raw-int (<obj> => <raw-int>)
+  "basic_raw_int")
+
+(define-primop as-raw-float (<obj> => <raw-float>)
+  "basic_raw_float")
+
+;;
+
+(define-primop dequeue-memq ((deq <obj>) (item <obj>) => <obj>)
+  "dequeue_memq")
+
+(define-primop dequeue-delq! ((deq <obj>) (item <obj>) => <raw-int>)
+  "dequeue_delq")
+
+(define-primop base->string (<obj> <raw-int> => <string>)
+  "basic_num_to_string_obj")

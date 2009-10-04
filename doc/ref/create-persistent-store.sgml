@@ -1,0 +1,48 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}create-persistent-store{/RefName}
+  {RefPurpose}Creates a new persistent store{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/create-persistent-store/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/path/{/ParamDef}{ParamDef role="returns"}
+{Parameter}pstore{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}path{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/ denoting the 
+path to the backing store file.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}pstore{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<persistent-store>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function is much like {Phrase Role="var"}open-persistent-store{/Phrase},
+except that the file is created.  {/para}
+{para}
+If a file at {Parameter}path{/Parameter} already exists, its contents are
+overwritten with the new object store's log.{/para}
+{/RefSect1}
+{/RefEntry}

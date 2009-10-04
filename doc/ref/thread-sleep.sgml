@@ -1,0 +1,37 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}thread-sleep{/RefName}
+  {RefPurpose}Sleeps the current thread for {Parameter}sec{/Parameter} seconds.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/thread-sleep/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/sec/{/ParamDef}{ParamDef role="returns"}
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}ms{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<real>/ denoting the number of seconds to sleep{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+The current thread blocks for approximately {Parameter}sec{/Parameter}
+seconds, which may be a fractional quantity.  That is, the current
+thread is marked as sleeping and after {Parameter}sec{/Parameter}
+seconds have passed (real time), it is marked as runnable.  When
+exactly the thread runs after it gets marked runnable is subject to
+other dynamics, especially the number and priority of other threads
+that are runnable.
+{/para} {/RefSect1} {/RefEntry}

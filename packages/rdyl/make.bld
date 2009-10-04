@@ -1,0 +1,16 @@
+
+DERIVED_FILES=lex.c rdyltab.c rdyltab.h
+
+all: $(DERIVED_FILES)
+
+lex.c: lex.l
+	flex lex.l
+	mv lex.yy.c lex.c
+
+rdyltab.c rdyltab.h: rdyl.y
+	bison -vd rdyl.y
+	mv rdyl.tab.c rdyltab.c
+	mv rdyl.tab.h rdyltab.h
+
+clean::
+	rm -f $(DERIVED_FILES)

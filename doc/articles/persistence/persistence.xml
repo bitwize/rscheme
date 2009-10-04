@@ -1,0 +1,851 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE chapter 
+  PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN" 
+         "/u/donovan/lib/dtds/docbookx.dtd"
+[
+  <!ENTITY lt "&#38;#60;">
+  <!ENTITY gt "&#62;">
+  <!ENTITY amp "&#38;#38;">
+  <!ENTITY apos "&#39;">
+  <!ENTITY quot "&#34;">
+
+  <!ENTITY eg "<foreignphrase>e.g.</foreignphrase>">
+  <!ENTITY ie "<foreignphrase>i.e.</foreignphrase>">
+  <!ENTITY file.bibliography SYSTEM "bibliography.xml">
+  <!ENTITY file.refentries SYSTEM "ref.xml">
+  <!ENTITY file.ref-open SYSTEM "ref-open.xml">
+  <!ENTITY file.ref-create SYSTEM "ref-create.xml">
+  <!ENTITY file.gc SYSTEM "gc.xml">
+]>
+
+
+<chapter>
+  <toc/>
+  <title>The Persistent Object Store</title>
+  <info>
+    <biblioid class="other" otherclass="uuid">c397c8e6-9cd2-11d9-8d0f-0007e963fcae</biblioid>
+    <biblioid class="other" otherclass="rscheme.org">2005/persistence</biblioid>
+    <abstract>
+     <para>A fairly technical and in-depth look at how RScheme's persistent
+object store operates, and how it can be used.  Includes discussions
+of performance, persistent garbage collection, interaction with
+system backup cycles, etc.</para>
+    </abstract>
+    <author><personname>Donovan Kolbly</personname><link><email>donovan@rscheme.org</email></link></author>
+  </info>
+
+<sect1><title>Introduction</title>
+<para>
+RScheme's persistent object store module, located in
+<package>rs.db.rstore</package>, is a system that allows
+objects in persistent storage (&ie;, on disk) to be mapped
+into memory for direct manipulation by an application
+program.  The approach
+is based on the
+concept of pointer swizzling at page-fault time as described in Paul
+Wilson's <citetitle pubwork="article">Pointer
+Swizzling at Page-Fault Time</citetitle>.  
+</para>
+  </sect1>
+
+<sect1>
+<title>Pointer Swizzling at Page-Fault Time</title>
+<para>
+Pointer swizzling at page-fault time incrementally reserves
+additional virtual memory pages as objects from the store are loaded
+into memory.  The incremental nature allows the system to
+access databases which are larger than the virtual memory of the machine
+(although not all at once.  The working set of objects used by the application
+has to fit within virtual memory).
+</para>
+
+<para>
+Furthermore, pointers are translated when a page is loaded, and from
+then on are represented as normal memory pointers.  Hence, the
+application can traverse the loaded objects with <emphasis>no
+additional runtime performance penalty</emphasis> after the access
+that loads the object into memory.  
+</para>
+</sect1>
+
+
+<sect1>
+<title>Pivots</title>
+<para>
+Pointers to "well-known" objects in transient land.
+</para>
+
+<sect2><title>Builtin Pivots</title>
+<para>
+Symbols (dynamic builtin pivots), most standard class objects.
+</para>
+</sect2>
+
+<sect2><title>Application Pivots</title>
+<para>
+Application class objects.  What happens if you miss one...
+classes...
+procedures (make-table)...
+</para>
+</sect2>
+
+</sect1>
+
+<sect1>
+<title>The Page Lifecycle: How Objects Get Loaded</title>
+<para>
+VM pages that are part of the pstore subsystem are either
+<literal>unused</literal>,
+<literal>reserved</literal>,
+<literal>loaded</literal>, or
+<literal>dirty</literal>.
+</para>
+
+<para>
+When a new pstore is opened, a virtual memory page is
+is reserved to provide a mapping for the root object.  With
+that mapping in hand, the persistent address for the root
+object can be returned to the application as a virtual
+memory address.
+For example, suppose that the persistent address of the
+root object is {page 201, offset 3} (* These page numbers and
+offsets are illustrative and not typical of what you would
+actually find.  In practice, persistent page numbers start
+at 33554432 (#x2000000) and transient pages are often mapped
+up near #x40000000 on Linux.  Offsets are also typically larger
+and more widely spaced (according to the memory requirements of the
+objects in question))
+
+</para>
+
+<figure>
+  <title>Pages In Memory</title>
+  <mediaobject>
+    <imageobject>
+        <imagedata fileref="pagesinmem"/>
+    </imageobject>
+    <textobject>
+      <phrase>[Six virtual memory pages, 2 loaded, 2 reserved, 2 unused]</phrase>
+    </textobject>
+  </mediaobject>
+</figure>
+
+<para>
+Read faulting causes
+reserved-&gt;loaded of the targeted page and unused-&gt;reserved of
+newly referenced pages, write faulting causes
+loaded-&gt;dirty, and commit
+causes dirty-&gt;loaded.
+</para>
+</sect1>
+
+<sect1>
+<title>Reachability Based Persistence: What Happens During Commit</title>
+<para>
+High level walk through, with pointers to details.
+[Dirty pages are scanned, pointers swizzled, objects are copied.]
+</para>
+<itemizedlist>
+      <listitem>
+        <formalpara>
+          <title>Dirty page scan</title>
+          <para>For each dirty page in memory, an attempt is made
+to write it to the underlying LSS.  To do so, the page is scanned
+to convert transient pointers into persistent pointers.  If no
+pointers outside the store are found, then the page is serialized
+and written to the apropriate LSS record.
+</para>
+        </formalpara>
+      </listitem>
+      <listitem>
+        <formalpara>
+          <title>Write Record 0</title>
+          <para>Once all the pages have been successfully written
+to the LSS, the root record (record 0) is written to the LSS.
+</para>
+        </formalpara>
+      </listitem>
+      <listitem>
+        <formalpara>
+          <title>LSS Commit</title>
+          <para>The LSS subsystem is committed to disk.
+</para>
+        </formalpara>
+      </listitem>
+      <listitem>
+        <formalpara>
+          <title>Reset transient state</title>
+          <para>After the LSS commits, various bits of transient state
+(such as the intergenerational pointer list) are reset.
+</para>
+        </formalpara>
+      </listitem>
+      <listitem>
+        <formalpara>
+          <title>Online GC work</title>
+          <para>If enabled, the online persistent garbage collection is given
+a chance to do some work.
+</para>
+        </formalpara>
+      </listitem>
+    </itemizedlist>
+
+
+<sect2><title>Dirty Page Scan</title>
+<para>
+Pages are scanned in two phases.  The first phase translates
+transient pointers into persistent pointers (specifically, the pstore's
+page
+table entries associated with referenced pages are looked up).
+In the process, it becomes obvious whether there are any references
+to objects that are not in the store.  If all references are to pages
+in the store, then the second phase commences, which is to open
+the underlying LSS record for write and serialize the data into it.
+</para>
+
+<para>
+The second phase can reuse most of the translation work done by the
+first phase because during the first phase the translations are stored
+in a temporary buffer.
+</para>
+
+<para>
+During the second phase, any object marked as having 
+intergenerational pointers is unmarked.  This works
+because if the second phase is executing, all references
+on the page must be to persistent objects (or pivots,
+which are kept live by the presence in the pstore object's
+pivot table).
+</para>
+    </sect2>
+
+<sect2><title>Thread System Interaction</title>
+<para>
+In general, the system does not lock out other threads during commit
+processing.  A thread switch may happen during commit processing
+while the pstore is handling a dirty page that was found to have
+non-pstore pointers.  If during that time
+another thread runs and it writes into the
+store, then when the pstore thread wakes back up it will traverse
+that page as well (if the page had been written out, then it would
+now be marked as dirty and would be rescanned).  Hence, all other
+thread activity against the pstore will be incorporated into the
+commit point until the moment (which is determined atomically) that
+all dirty pages can be written out without finding any external
+pointers.
+</para>
+
+<para>
+In general, since the pstore thread is copying objects into the pstore
+during the dirty page scan, it can be difficult for other threads
+to get a consistent view.  At any thread switch point, an object
+being stored into the pstore by another ("mutator") thread may lose
+object identity with the one in the pstore.
+</para>
+
+<para>
+For example, suppose there are two threads, A and B.  A calls
+pstore-commit.  Meanwhile, B is writing into the store like so:
+</para>
+
+<programlisting>(define (b-thread-activity)
+  (let ((x (list 1 2 3)))
+    (store-in-pstore-index 'my-list x)<co id="co.bt.0"/>
+    (assert (eq? x (get-from-pstore-index 'my-list)))<co id="co.bt.1"/>
+    <co id="co.bt.2"/>(set-car! x 5)))</programlisting>
+
+<para>
+The assertion <coref label="co.bt.1"/> may or may not succeed.  If
+a thread switch occurred at <coref label="co.bt.0"/> and the page
+containing the pointer to the list <literal>(1 2 3)</literal>
+was written out (thereby copying the list into the store), then
+<coref label="co.bt.1"/> will fail because retrieving the index
+pointer will return the new, copied-into-the-store pointer which
+will be different from the transient heap pointer that is
+the value of the <variable>x</variable>
+binding.
+</para>
+
+<para>
+Even if the assertion <coref label="co.bt.1"/> succeeds, by the
+time the program reaches <coref label="co.bt.2"/>, another thread
+switch may have occurred, in which case updating the car of the
+list <variable>x</variable> may be moot if the list has already
+been copied to the store.
+</para>
+
+<para>
+If multiple threads are writing to the store in the presence
+of an asynchronous commit (which is a wierd situation anyway: what
+is the meaning of a consistent state when things are being updated
+asynchronously?), then the program must ensure that side effects
+are happening only to persisted objects.  The above fragment
+could be rewritten to as follows:
+</para>
+
+<programlisting>(define (copy->ps x)
+  (copy-into-pstore 
+    (default-allocation-area *pstore*)
+    x))
+
+(define (b-thread-activity)
+  (let ((x (copy->ps (list 1 2 3))))
+    (store-in-pstore-index 'my-list x)
+    (set-car! x 5)))</programlisting>
+
+<para>
+By ensuring that the list is persistent before using it,
+the program can be sure that it isn't accessing the transient
+copy.
+[Although note: <procedure>copy-into-pstore</procedure>
+is not recursive.  Only the first pair gets eagerly persisted
+in this example.]
+</para>
+
+</sect2>
+
+</sect1>
+
+
+<sect1>
+<title>Closing a PStore</title>
+<para>[Where does this section belong?]</para>
+
+</sect1>
+
+<sect1>
+<title>Performance Issues</title>
+<para>
+There are many performance issues to consider...
+</para>
+
+<para>
+Although no additional runtime penalty is incurred when accessing (reading)
+an object that has been mapped into memory, there are fault penalties
+associated with (1) writing to an object on a page that is clean,
+(2) reading an object on a non-loaded page that has a lot of pointers,
+...
+</para>
+
+</sect1>
+
+<sect1>
+<title>Interaction with Transient Heap</title>
+<para>
+PStore looks like the "oldest generation".  Inter-generational pointers
+are tracked until a commit, then flushed.
+</para>
+
+</sect1>
+
+<sect1>
+<title>System Backups</title>
+<para>
+Compared to most system files, the underlying log-structured store has a
+peculiar behavior.  From the filesystem's point of view, the LSS consists
+of a small number of big files, one of which (the "tip" volume) is
+frequently appended to.
+If properly arranged, this can mesh nicely with the system's underlying
+backup facility.  Otherwise, it can thrash the backup system.
+</para>
+<para>
+(The idea is to manage multiple volumes just right: compact the youngest
+volume just before the backup goes to minimize the footprint
+of the youngest volume in backups.  Alternatively, do so <emphasis>after</emphasis> to
+maximize the data capture without having touched the next-oldest generation.
+This concept generalizes to multiple generations.)
+</para>
+</sect1>
+
+<?rs:webnode gc?>
+&file.gc;
+
+<?rs:webnode ref?>
+<sect1>
+<title>Programmatic Interface</title>
+<para>
+So many functions, you'd go crazy!
+</para>
+
+&file.refentries;
+
+</sect1>
+<?rs:webnode lss?>
+<sect1><title>The Log Structured Store</title>
+
+<para>
+The log structured store (LSS) exports an abstraction of a
+record-oriented repository.  Records can be variable sized and indexed
+by record number (remember VSAM anyone?).  The LSS also supports
+compression of the record payload.
+</para>
+
+<para>
+In this description of the LSS, we will often talk about the
+<emphasis>application level</emphasis>.  That refers to the
+abstraction exported by the LSS module, and in this context the
+<emphasis>application</emphasis> is usually the pstore.  However,
+because LSS is defined as it's own module,
+<package>rs.db.lss</package>, user programs can be built
+directly on top of the LSS.
+</para>
+
+<sect2><title>File Format</title>
+
+<para>
+An LSS volume consists of a sequence of tagged LSS Records (not to be
+confused with the record abstraction exported by LSS).  On disk, each
+record starts with a record header.  The header corresponds to the
+structure <structname>LSSRecordHeader</structname> in
+<filename>lssv3.h</filename> and is comprised of four words (native
+byte order?) and describes the contents of the record.  
+See <xref linkend="fig.lssrecord"/>.
+</para>
+
+<para>
+The magic indicates what type of LSS Record is present, and is one of
+<literal>DSEG</literal>, <literal>DATA</literal>,
+<literal>GAP</literal>, <literal>VOLF</literal>,
+<literal>ZIPA</literal>, <literal>COMM</literal>,
+<literal>*EOF</literal>, <literal>INDX</literal>,
+<literal>MIDX</literal>, or <literal>\LSS</literal>.
+<xref linkend="sect.lssrectypes"/>
+[Link to subsequent sect2 on details]
+</para>
+
+<para>
+The recnum is used in different ways depending on the record
+type.  For DATA records, it is the record number that is
+exposed to the client application (&ie;, the pstore).
+
+</para>
+
+<figure id="fig.lssrecord">
+  <title>LSS Record Format</title>
+  <mediaobject>
+    <imageobject><imagedata fileref="lssrecord"/></imageobject>
+    <textobject><phrase>[General LSS Record Layout]</phrase></textobject>
+  </mediaobject>
+</figure>
+
+
+<figure>
+  <title>LSS File Format</title>
+  <mediaobject>
+    <imageobject><imagedata fileref="lsslayout"/></imageobject>
+    <textobject><phrase>[Example LSS File Layout]</phrase></textobject>
+  </mediaobject>
+</figure>
+
+<para>
+An addressable offset in an LSS volume is a multiple of
+16 bytes.  A pointer to an LSS record is a 32-bit quantity.
+The top 4 bits denote the volume number (although an LSS repository
+may contain only 10 volumes, 0-9) and the low 28 bits specify the
+granule within the volume (each granule is 16 bytes).  Hence, each volume may
+be up to 4GB in size and the total addressable disk space in LSS
+is 40GB.
+</para>
+
+</sect2>
+
+<sect2 id="sect.lssrectypes"><title>Record Types</title>
+
+<sect3><title><literal>DSEG</literal>: Data Segment</title>
+<para>
+A data segment record summarizes the records written since
+the previous data segment or EOF record.  The length field
+is the total number of bytes in the data segment including
+the DSEG record.
+</para>
+        <para>The <literal>DSEG</literal> record was originally
+designed to support traversing the LSS in the backwards direction, in
+case a commit record was not found at the EOF.  This works because a
+<literal>GAP</literal> record is inserted just before a DSEG to ensure
+that the <literal>DSEG</literal> appears in the last granule of a
+512-byte IO block.  Hence, in the backwards direction, you see a
+sequence of <literal>*EOF</literal> and <literal>DSEG</literal>
+records.  However, this is not currently done because it was found to
+be unreliable (probably because since a <literal>DSEG</literal> spans
+multiple IO blocks, we could not be sure that the last IO block would
+reliably contain a <literal>DSEG</literal>.  It could be the middle of
+some payload that happens to look like a <literal>DSEG</literal>.  Of
+course, that could be true for <literal>*EOF</literal>, too...)
+</para>
+      </sect3>
+
+<sect3><title><literal>DATA</literal>: Data Record</title>
+<para>
+A data record stores the payload of an application-level
+record (&eg;, a heap page from the pstore or an indirect
+page descriptor).  The low 4 bits of the space word identifies
+the compression algorithm used to compress the payload.  The
+high 28 bits is the number of granules occupied by the data
+record, not counting the record header (which, note, is 1 granule
+in size).
+</para>
+      </sect3>
+
+<sect3><title><literal>GAP</literal>: Granule Gap</title>
+<para>
+A <literal>GAP</literal> record is used to provide padding so that
+<literal>DSEG</literal> and <literal>*EOF</literal> records can appear
+in the last granule of an IO block.
+</para>
+      </sect3>
+
+<sect3><title><literal>VOLF</literal>: Volume File Name</title>
+<para>
+A <literal>VOLF</literal> record contains the path to
+other volumes.  Although a <literal>VOLF</literal> is present
+to describe the volume in which it appears, it is not used.
+</para>
+      </sect3>
+
+<sect3><title><literal>ZIPA</literal>: Compression Algorithm</title>
+<para>
+A <literal>ZIPA</literal> record contains the string name
+of a compression algorithm.
+</para>
+      </sect3>
+
+<sect3><title><literal>COMM</literal>: Commit Record</title>
+<para>
+A <literal>COMM</literal> record represents a commit point
+and stores all the information about the commit, including
+a pointer to the master index record (<literal>MIDX</literal>)
+which is used to map application-level record numbers to
+LSS pointers.  See <xref linkend="sect.lss.commit"/> for
+more details.
+</para>
+      </sect3>
+
+<sect3><title><literal>*EOF</literal>: End of File Marker</title>
+<para>
+An <literal>*EOF</literal> record marks the end of the file.  An
+<literal>*EOF</literal> record always appears at the end of an IO
+block that also contains a commit record (<literal>COMM</literal>).
+</para>
+
+        <para>The presence of an <literal>*EOF</literal> record at the
+end of the last IO block in a volume is how the LSS quickly finds the
+most recent commit record in a volume.  If the EOF record is not
+present, then the fallback is to scan forward from the last known
+commit record (as recorded in the volume header,
+<literal>\LSS</literal>) until a new commit record is found.</para>
+
+      </sect3>
+
+<sect3><title><literal>INDX</literal>: Index Record</title>
+<para>
+An <literal>INDX</literal> record is a bucket in the hash
+table which maps (application level) record numbers to
+LSS record pointers.  These records are loaded lazily into
+<structname>IndexEntry</structname> structures in memory,
+where it is called a <emphasis>cache line</emphasis>.
+</para>
+      </sect3>
+
+<sect3><title><literal>MIDX</literal>: Master Index Record</title>
+<para>
+A <literal>MIDX</literal> record contains the contents
+of a hash table pointing to <literal>INDX</literal>
+records.
+</para>
+      </sect3>
+
+<sect3><title><literal>\LSS</literal>: Volume Header</title>
+<para>
+A <literal>\LSS</literal> record appears only at the beginning
+of a volume file, and describes the volume as a whole.
+The payload of the <literal>\LSS</literal> record corresponds to the
+<structname>LSSVolumeHeader</structname> structure, and is
+mostly constant except for the <structfield>last_cr_at</structfield>
+and <structfield>last_cr_generation</structfield> fields which
+are updated occasionally to point to a recent commit record.
+</para>
+      </sect3>
+
+</sect2>
+
+<sect2 id="sect.lss.commit">
+      <title>The LSS Commit Record</title>
+<para>
+All the goodies...
+Metadata (generation #, version#, timestamp), bookmarks,
+diff list, midx pointer, prev CR ptr, VH fuel
+</para>
+    </sect2>
+
+<sect2 id="sect.lss.startup">
+      <title>LSS Startup Processing</title>
+<para>
+How we find a commit record... how we find...
+(1) the last, if no gen# is specified,
+(2) a bookmarked one,
+(3) some other one (if gen# is specified),
+(4) one if EOF is messed up,
+(5) if there are multiple volumes
+</para>
+    </sect2>
+
+<sect2><title>Commit Point Bookmarks</title>
+      <para>The LSS supports a concept of bookmarking particular
+checkpoints.  The commit record maintains direct pointers to
+each of the bookmarked commit records in addition to the
+previous commit record.
+</para>
+      <para>Bookmarks are intended to support being able to easily
+roll back to particular significant points in history.  For example,
+bookmark #1 is used by the pstore's online garbage collector to
+represent the snapshot against which the persistent traversal
+is taking place (since it employs a snapshot-at-beginning strategy,
+and multiple commits may happen between when the garbage collection
+cycle starts and when it completes).
+</para>
+    </sect2>
+
+<sect2><title>Compression Algorithms</title>
+<para>
+The payload of data records are compressed using one of
+16 defined compression algorithms.  The commit record contains
+a table of 15 pointers to the compression algorithm descriptors,
+which are <literal>ZIPA</literal> records.  Algorithm 0 is always
+the null algorith which denotes no compression.
+</para>
+    </sect2>
+
+<sect2><title>Command-Line Tools</title>
+<para><literal>lssctl</literal></para>
+</sect2>
+
+</sect1>
+
+<sect1><title>How the PStore Uses the LSS</title>
+
+<para>
+The persistent store stores three kinds of records in the underlying LSS.
+</para>
+
+<orderedlist>
+
+  <listitem>
+    <formalpara><title>Root</title>
+        <para>The root record, which is always record number 0 (zero),
+              stores information about the pstore as a whole.  The contents
+              correspond to the structure
+              <structname>RStoreCommitInfo</structname>.
+        </para>
+    </formalpara>
+   </listitem>
+              
+  <listitem>
+    <formalpara><title>Indirect Page Data</title>
+        <para>Certain kinds of indirect pages can contain information used
+              to elaborate the actual objects at runtime.  These record
+              numbers are in the range <literal>#x100</literal> - <literal>#xFFFFFF</literal>.
+        </para>
+    </formalpara>
+  </listitem>
+
+  <listitem>
+    <formalpara><title>Heap Page Data</title>
+        <para>The contents of each page of the persistent heap
+              are stored in records.
+              Each record corresponds to one page, starting at
+              record <literal>#x2000000</literal>.
+        </para>
+    </formalpara>
+  </listitem>
+</orderedlist>
+
+<sect2><title>Indirect Page Data</title>
+<para>
+Currently, for example, symbols that are referenced by the store
+use indirect page data to store the string repr of the symbol.
+When a indirect page is referenced by a page that is being loaded,
+</para>
+</sect2>
+
+<sect2><title>Root Record</title>
+
+<para>
+The contents of the root record (record number 0) 
+correspond to the structure <structname>RStoreCommitInfo</structname>
+in <filename>rstoret.h</filename>
+and it basically just stores a pointer to the default, or "main",
+allocation area.
+</para>
+
+</sect2>
+
+<sect2><title>Heap Page Data</title>
+
+<para>
+Each page of data in the persistent heap is stored in it's own
+record in the underlying LSS.  Record numbers for heap pages
+start at <literal>#x2000000</literal> (actually, in older
+versions of RScheme they started at <literal>#x1000000</literal>
+[XXX which versions]).
+</para>
+
+<para>
+Unlike in Texas, heap page data is explicitly serialized into
+the record, instead of being written directly to the underlying
+storage (with only the pointer rewriting transform).  The serialized
+data is in turn compressed by LSS before being written to the disk.
+(See <xref linkend="fig.serzstack"/>)
+</para>
+
+<para>
+The serialized data is a stream of words (sent to the LRU high-level
+compression model), and looks like:
+</para>
+
+<figure>
+  <title>Serialized Page Data</title>
+  <mediaobject>
+    <imageobject><imagedata fileref="serzpage"/></imageobject>
+    <textobject><phrase>[Serialized Page Data template]</phrase></textobject>
+  </mediaobject>
+</figure>
+
+<figure id="fig.serzstack">
+  <title>Flow of Data Between Memory Pages and Disk</title>
+  <mediaobject>
+    <imageobject><imagedata fileref="serzstack"/></imageobject>
+    <textobject><phrase>[Page] --words-- (serializer) --words-- (LRU model) --symbols-- (libz) --bytes-- [disk]</phrase></textobject>
+  </mediaobject>
+</figure>
+
+</sect2>
+
+</sect1>
+
+<?rs:webnode impl?>
+<sect1>
+<title>Implementation Details</title>
+
+<sect2>
+<title>Differences from Texas</title>
+<para>
+Although <package>rs.db.rstore</package> is based on the Texas
+persistent store described by Wilson et.al., there are several
+differences.
+</para>
+
+<para>
+(1) Texas mapped persistent addresses more-or-less directly 
+into the persistent file, and used a separate roll-forward log file
+instead of being layered on top of a log-structured store.
+</para>
+
+<para>
+(2) Texas pages on disk were direct images of the in-memory pages
+(among other things, limiting the virtual address space to 4GB if
+you wanted persistable pointers to be the same size as regular pointers.
+I seem to recall that persistable pointers had an extra field, though...
+[Check the paper])
+The RScheme store serializes pages, affording an opportunity for
+a larger persistent address space at no cost to in-memory representation
+size.  (As it happens, it also allows us to do persistent page table
+mapping lookups more efficiently, because for us we only have to do
+one lookup per referenced persistent page; in Texas it was a lookup
+per pointer).
+</para>
+
+<para>
+(3) In Texas, objects that were to be persistent had to be allocated
+initially in the store.  That's too much of a pain for dynamic systems
+(e.g., think about all those cons cells you want to persist that were
+created by calling `append' or whatever).  Hence, RScheme automatically
+migrates (copies) objects into the store when needed.
+</para>
+
+<para>
+(4) Since Texas is built for C++, a whole separate technology for RTTD
+is required.  Our store is for a dynamic language, so we leverage the
+dynamic type information that's already available [include note about
+gvecs vs bvecs when opening a store without pivots, i.e., from another
+application]
+</para>
+
+<para>
+(5) Since RScheme pointers are always to the "front" of objects, it is
+much easier to find the header of an object, and it's first allocated
+page, given a pointer.  Because we only allocate multiple pages for
+"large" objects, and then only put one object in such a multi-page
+sequence, we can be sure that the "first" page is the page to which
+the pointer directly refers.  This makes it easier to find metadata
+like what store an object belongs to, once we know that it is a
+persistent object (future versions of RScheme should allocate
+transient objects within pages, too, unifying this concept with the
+transient store).
+</para>
+
+</sect2>
+</sect1>
+
+<?rs:webnode bib?>
+<sect1><title>Bibliography</title>
+<bibliography>&file.bibliography;</bibliography>
+</sect1>
+
+<?rs:webnode aux?>
+<sect1><title>Aux Doc Notes</title>
+
+<sect2><title>Questions To Answer</title>
+
+<orderedlist>
+ <listitem><para>Are signals handled while a commit is going on?</para></listitem>
+ <listitem><para>Since there's a online-gc, do we still have to protect commits from
+simultaneous read access to the store?  (Would it be possible to catch
+commit/write conflicts at the thread system level instead of application
+level locking?)</para></listitem>
+ <listitem><para>How many pstores may a program have open simultaneously?  (Breaking
+the 40GB limit.)</para></listitem>
+ <listitem><para>Problems when a pstore is closed?</para></listitem>
+ <listitem><para>What is the cost of a "null" commit, and how to avoid it?</para></listitem>
+</orderedlist>
+</sect2>
+
+<sect2><title>An old outline...</title>
+
+<screen>
+
+** Design
+[] Architectural Overview
+*** Pointer Swizzling at Page Fault Time
+*** Architectural Adaption (Compatibility)
+*** Multiple Heaps
+*** Disk Storage Management and Recovery
+**** Log-structured Storage Manager
+
+** Use Cases
+*** Simple Persistent Application
+
+** Memory-Mapped Object Repository
+*** Initialization
+*** Pivots
+*** Garbage Collection
+*** Commit Processing
+**** Reachability-based Persistence
+**** Loss of Object Identity
+*** Allocation Areas
+*** Swizzle Modes
+*** Rollback
+*** Page Stream Format
+
+** Log Structured Storage Manager
+*** Record-Structured Storage
+*** Multiple Volumes
+*** Compaction
+*** Index Diffing
+*** Distributed LSS
+
+** Reference
+</screen>
+</sect2>
+</sect1>
+
+</chapter>

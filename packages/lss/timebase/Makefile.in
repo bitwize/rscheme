@@ -1,0 +1,15 @@
+CC=@CC@
+CFLAGS=-g -O2
+CFILES=timebase_ops.c @READ_C@
+SFILES=@READ_S@
+
+OFILES=$(CFILES:.c=.o) $(SFILES:.s=.o)
+LD=ld
+
+PRODUCT=timebase.o
+
+$(PRODUCT): $(OFILES)
+	$(LD) -r $(OFILES) -o $(PRODUCT)
+
+clean::
+	rm -f $(OFILES) $(PRODUCT)

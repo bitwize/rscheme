@@ -1,0 +1,46 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}string->dir{/RefName}
+  {RefPurpose}Creates a pathname object naming a directory{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/string->dir/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/string/{/ParamDef}{ParamDef role="returns"}
+{Parameter}dirname{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}string{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}dir-name{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<directory-name>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function parses the given string into an internal
+{ClassName/<directory-name>/ object.  This involves recognizing
+"up" ({UserInput}..{/UserInput}) entries and removing them when possible,
+and recognizing root directory indicators.{/para}
+{/RefSect1}
+{/RefEntry}

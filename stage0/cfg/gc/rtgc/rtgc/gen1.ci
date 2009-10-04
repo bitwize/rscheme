@@ -1,0 +1,113 @@
+#ifndef GEN1_CI
+#define GEN1_CI
+#include <assert.h>
+#include <rtgc/gen.hh>
+
+// This file contains all of the inline function definitions for the
+// generational part of the garbage collector.  See the file gen.hh
+// for more information on the generational code, and the file gen.cc
+// for the non-inline functions.
+
+#undef LINK_TYPE
+#ifdef INLINES
+#define LINK_TYPE inline 
+#else
+#define LINK_TYPE
+#endif
+
+
+
+//****************************************************************************
+// generation::set_work_left_to_do
+//
+// set_work_left_to_do sets the counter which holds the amount of work
+// that should be performed for a garbage collection increment to the
+// value of its parameter.  Usually, this will be the value of the
+// throttle setting times the amount to allocate per increment.
+
+LINK_TYPE void generation::set_work_left_to_do(int work)
+{
+    work_left_to_do = work;
+}
+
+
+//*************************************************************************
+// generation::is_shaded
+//
+// This routine returns true if the object pointed to by "object" is shaded 
+// with respect to this generation and false otherwise.  The pointer is
+// assumed to not be derived at this point in the code.
+
+LINK_TYPE int generation::is_shaded(gc_object_base *object)
+{
+    return(object->get_color() == current_shade_color);
+}
+
+
+//*************************************************************************
+// generation::get_current_shade_color
+//
+// returns the color currently being used to shade objects in this generation.
+
+LINK_TYPE colors generation::get_current_shade_color(void)
+{
+    return((colors) current_shade_color);
+}
+
+//*************************************************************************
+// generation::toggle_current_shade_color
+//
+//  Switches the shading color for this generation.
+
+LINK_TYPE void generation::toggle_current_shade_color(void)
+{
+  /* this apparently-useless assignment is to suppress a g++ warning
+   * about comparisons between signed and unsigned
+   */
+  int x = current_shade_color;
+  current_shade_color = !x;
+}
+
+//***************************************************************************
+// generation::add_ptr_stored_into_list
+//
+// This routine adds a pointer to the list of pointers that need to be
+// rescanned to gray the objects at which they point.  Currently, this list
+// is used by the write_barrier.
+
+LINK_TYPE void generation::add_ptr_stored_into_list(pos_ptr_addr ptr)
+{
+    assert((((unsigned int)stored_into_list_tail+1) &
+	    STORED_INTO_LIST_MASK) !=
+	   unsigned(stored_into_list_head));
+    stored_into_list[stored_into_list_tail++] = ptr;
+    // decrement amount_allocated to reflect that failing the write barrier
+    // will cause us work later in rescanning an object.
+    // Since the stored into list size is always a power of two (defined
+    // in the file config.hh) we can do modulo arithmatic by just masking
+    // off the low pits of the list position.
+    stored_into_list_tail = ((unsigned int)stored_into_list_tail) &
+      STORED_INTO_LIST_MASK;
+}
+
+
+//***************************************************************************
+// generation::get_ptr_stored_into_list
+//
+// This routine returns one pointer from the pointer to do list (the list of
+// pointers that still need to be processed by the garbage collector.
+
+LINK_TYPE pos_ptr_addr generation::get_ptr_stored_into_list(void) {
+    pos_ptr_addr return_val;
+    if(stored_into_list_head == stored_into_list_tail) {
+	// the list is empty
+	return (0);
+    } else {
+	return_val = stored_into_list[stored_into_list_head++];
+	stored_into_list_head = stored_into_list_head & STORED_INTO_LIST_MASK;
+	return (return_val);
+    }
+}
+
+
+#endif //GEN1_CI

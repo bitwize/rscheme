@@ -1,0 +1,545 @@
+\documentclass[10pt,letterpaper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{mathptmx}
+\usepackage{helvet}
+\usepackage{courier}
+
+\usepackage{epsfig}
+
+\begin{document}
+
+\title{Persistent Object Storage for Scheme}
+\author{Donovan Kolbly}
+\date{\today}
+\maketitle
+
+\begin{abstract}
+
+Persistent storage of data is crucial to many applications, yet often
+the approach is to explicitly serialize and deserialize the relevant
+objects of the application.  In the RScheme system, which is an
+implementation of the Scheme language, we adopted a persistent object
+storage approach using the pointer swizzling at page-fault time
+described in [Texas].  This approach has the advantage that program
+objects are loaded into memory automatically by the system as required,
+using the fast page-table hardware to remove all cost of runtime access
+while preserving support for destructive updates (mutation).
+
+In this paper, we discuss the implementation and how the approach
+interacts with a garbage collected and dynamically typed language.
+
+\end{abstract}
+
+\section{Introduction}
+
+\section{How It Works}
+
+A. When a pstore is created, this is what happens:
+
+1. create the file on disk
+
+2. create a root allocation area, which in turn allocates a single
+   page in memory.  The act of initializing the AA will mark the
+   page dirty.
+
+[goto C]
+
+B. When a pstore is opened, this is what happens:
+
+1. open the file on disk.  By default, write access is obtained and
+   the file is locked for exclusive access using flock() or a similar
+   OS primitive.
+
+2. read record 0 and extract the
+
+[goto C]
+
+C. Here is how things proceed:
+
+1. maintain a page info table.  Each page is either RESERVED, LOADED,
+   or DIRTY.  In these cases, the page is respectively READ-PROTECTED,
+   WRITE-PROTECTED, or UNPROTECTED.  Keep these in three sets with
+   mutual containment (i.e., reserved >= loaded >= dirty).
+
+2. when a read fault happens (presumably to a RESERVED page), load the
+   page from disk and mark it LOADED
+
+3. when a write fault happens (presumably to a LOADED page), mark the
+   page DIRTY.
+
+4. when a commit is invoked, create a Moved Objects table.  Then, as long
+   as there are DIRTY pages, try to write one out [call D].  When there
+   are no dirty pages left, write out the commit record.
+
+D. Writing out a page (in the context of a Moved Objects table)
+
+1. A page is either a page of small objects, the first page of a large
+   object, or an interior page of a large object.  Use that information
+   to identify the framing of the page and which memory locations contain
+   scheme objects (potential pointers)
+
+   Throughout a single page, we maintain a Needs Moving list.
+
+2. Process the page in two passes.  The first pass is a scan, in which
+   a table of all the referenced pages is assembled.  The second pass
+   is actual serialization of the page, starting with a representation
+   of the referenced-pages list, followed by the objects themselves.
+   (During the first pass, we actually remember the referenced pages
+   in slot-traversal order so that during the second pass we don't have
+   to recompute this information.)
+
+   Between the two passes, the act of assembling the table of referenced
+   pages assigns ``local'' page numbers, which are essentiall indexes into
+   the table.
+
+
+3. When a pointer is encountered, one of the following pertains:
+
+3a. The pointer is a key in Moved Objects.  In this case, replace
+    the pointer with the value and try again.
+
+3b. The pointer is a key in the Pivot table.  In this case, write out
+    the value in the Pivot Id, which is as follows:
+
+\begin{verbatim}
+             24                           6         2
++----------------------------------+-------------+-----+
+|    Virtual Page Number           |   Index     | 1 1 |
++----------------------------------+-------------+-----+
+\end{verbatim}
+
+3c. The pointer is onto a persistent page.  In this case, we simply
+    reference the object.
+
+
+3d. The pointer is onto a non-persistent (transient) page.  In this
+    case, we add the object to the Needs Moving list.
+
+4. When finished with the first pass, if the Needs Moving list is
+   empty we proceed to the second pass in which we serialize the
+   data and write it to the underlying LSS.
+
+5. If the Needs Moving list is not empty, then we have identified
+   some objects which are to be copied into the store.  We return
+   this list to the scheme level, where it is interpreted as an
+   unsuccessful commit attempt.  The Scheme-side implementation
+   traverses the list, copying the objects to the store and inserting
+   the appropriate entries in the Moved Objects table.
+
+   The Scheme-side also extends the symbol table list when it sees a
+   symbol in the Needs Moving list.  In this case, of course, instead
+   of copying the symbol into the store it adds an entry in an
+   indirect page for symbols.  On the next pass, then, scanning the
+   symbol will go down the Pivot table branch.
+
+
+Serialized Representation of a Pointer:
+
+\begin{verbatim}
+             19                           11        2
++----------------------------------+-------------+-----+
+|    Local Page Number             |   Offset    | 1 1 |
++----------------------------------+-------------+-----+
+\end{verbatim}
+
+Although the pointer format contains only 19 bits, this is more than
+enough because there cannot possibly be more than 2048 different pointers
+referenced from a single 8K page with 32-bit words (i.e., if every
+pointer pointed into a different page, you would get that many).
+The Local Page Index, on the other hand, has a full 32 bits to refer
+to the target page.  Hence, up to 4G pages of 8K can be referenced
+in the current implementation, corresponding to 32TB of persistent
+virtual address space.
+
+
+
+Note that since the VPN is only 24 bits, pivot references are limited
+to pages 0 - 0xFF,FFFF.
+
+
+\section{First-Class Memory Allocation Areas}
+
+In non-garbage-collected languages, heap allocation is fairly
+explicit.  This happens because, in the absence of garbage collection,
+the application must pay close attention to objects being allocated
+because it will have to free them up later.  The Texas system exploited
+this fact and required each allocation site to name the particular
+allocation area from which the new object should be obtained.
+
+In contrast, Scheme and other GC'd languages more often have standard
+procedures that allocate memory on behalf of the application.  For
+example, the Scheme map procedure allocates pairs which are returned
+to the application.  It would be impractical to have ``persistent''
+versions of all such procedures, and would require embedding knowledge
+of persistence deeply into the application (and system) code.
+
+
+Because of this widespread and implicit allocation, specifying the
+appropriate allocation area explicitly at each call site is
+impractical.
+
+RScheme addresses this issue by implementing a dynamically scoped
+``current allocation area''.  This feature is part of the base system
+(and may be used to implement the memory allocation aspect of
+sandboxes), but using the persistent store adds a new kind of allocation
+area which is a persistent allocation area.
+
+The term ``area'' does not imply that the pages are contiguous.
+In virtual memory, pages obtained from the operating system to store
+persistent and transient objects may be intermixed, and pages
+from different allocation areas within a single store may
+also be intermixed.
+
+\subsection{Hierarchical Allocation Areas}
+
+
+\section{Reachability-Based Persistence and Losing Object Identity}
+
+In some cases, it is not convenient even to change the default allocation
+area either because it is not even known at the time allocation takes
+place whether or not the object is destined for the persistent heap.
+In general, this can be handled by GCing the persistent heap.  Nevertheless,
+a high persistent allocation rate is far more difficult to deal with
+than an equal dynamic heap allocation rate.
+
+For this reason, the pstore employs reachability-based persistence as
+a fallback mechanism to employ when a pointer to a transient object is
+encountered in attempting to write out a page.
+
+RScheme employs a non-moving [cite GC paper] garbage collector.  Since
+objects must be placed on persistent pages in order to be managed by
+the system, we lose temporarily object identity for transient objects
+that are reachable from persistent objects.
+
+\section{Persistent Garbage Collection}
+
+This section describes the garbage collection issues and implementation
+involved with both the persistent object store and how it interacts
+with the transient heap.  
+
+Because the separation of the two heaps
+is largely transparent to the application, the system must ensure
+GC correctness in the presence of many cross-heap pointers and in
+the presence of adversarial mutator (application) activity.
+
+Correctness is defined as never reclaiming an object that could
+possibly still be used by the application.  An object could possibly
+be used if there is some path to it from a root.  In RScheme, the
+roots consist of the virtual machine registers, the stack cache,
+and the root vectors for each loadable module.
+
+In RScheme, the transient and persistent garbage collections are both
+\emph{incremental}.  This means that the application
+continues to run while GC activity happens behind the scenes.  This
+greatly complicates the implementation (especially in the presence of
+two heaps!)  but provides the considerable benefit of allowing the
+application to avoid any long pauses.  In order to achieve
+incrementality, RScheme uses a \emph{write barrier} to
+notice when application activity might interfere with the correctness
+of an ongoing garbage collection cycle.
+
+A persistent store does not, by default, have garbage collection
+enabled for it.  To turn on GC for a persistent store, call
+<code>(start-online-compacter <replaceable>pstore</replaceable>)</code>.
+Online compaction and GC is only applicable to pstores that have two
+LSS volumes, because part of the process involves compacting the
+underlying LSS.
+
+\subsection{Interaction with Transient GC}
+
+It is possible for an uncommited persistent object store to hold the
+only pointer to a transient object.  Hence, correctness requires that
+the system keep track of pointers from persistent objects into the
+transient heap.  This type of tracking is typical for any generational
+garbage collector, and these kinds of pointers represent
+\emph{intergenerational pointers}.  Here, the
+uncommitted state of the persistent store acts as an older generation
+which may contain pointers into a younger generation.
+
+As an example, consider Figure \ref{fig.intergen}.  Persistent
+object f contains the only reference to transient object h, and
+persistent object k the only reference to transient object l.  If the
+system did not notice that f has a pointer to h, then the storage for
+h might be reclaimed as garbage.  A subsequent traversal through e and
+f would likely crash the system.
+
+\begin{figure}
+\centering
+\epsfig{file=intergen.pdf}
+\caption{Data Structures Spanning Transient and Persistent Heaps}
+\label{fig.intergen}
+\end{figure}
+
+\begin{figure}
+\centering
+\epsfig{file=extraheapptrs.pdf}
+\caption{Use of the \texttt{extraHeapPointers} Set}
+\end{figure}
+
+
+\section{Symbols, Classes, and ``Program'' Objects}
+
+Objects that are to be considered part of the program and not
+part of the data must be marked in a special way so to exempt
+them from the reachability-based persistence traversal.
+
+Furthermore, they must be given names that are consistent among
+different attempts to open the store.
+
+
+RScheme handles this by requiring that the application assign each
+such special object an integer value, which is used to refer the
+object in the store.
+
+In the current implementation, the namespace is
+actually organized as virtual persistent pages.
+
+Furthermore, by default, the system supplies a set of such
+mappings for common classes such as <pair> and <string>.  These
+defaults allow an application to persist standard scheme data
+objects without any special setup.
+
+\begin{verbatim}
+(define *p* (create-pstore "foo.sto"))
+(commit *p* (vector 1 'a (2 3 4) "foo"))
+\end{verbatim}
+
+\begin{figure}
+\centering
+\epsfig{file=symindirpp.pdf}
+\caption{Format of Symbol Indirect Page Payload}
+\end{figure}
+
+In addition there are two words of header data introduced by the
+indirect page framework:
+
+\begin{figure}
+\begin{verbatim}
++---------------+---------------+-----/ /---
+|    type id    |  instance id  |   payload
++---------------+---------------+-----/ /---
+\end{verbatim}
+\caption{Indirect Page Overhead Data}
+\end{figure}
+
+The type id is used so that different sorts of indirect pages may
+exist.  The instance id is an extra word that the type-specific
+processor can utilize.
+
+This mechanism, for example, would allow us to store linker information
+so that general code pointers could be stored.
+
+Currently, only type id 0 is assigned and refers to a symbol vector,
+and it always uses instance id 0.
+
+Unfortunately, because translation of addresses from persistent
+to transient addresses happens at page fault time, it is impossible
+in RScheme to have a full Scheme-level callback to handle these
+translations.  New indirection types must have their unswizzling
+handlers implemented in C code.  Other scheme implementations and
+other langauges may not have this limitation.
+
+Forward indirect pointer binding (swizzling of new pivotal objects
+like symbols) can happen at the scheme level, and does in the current
+implementation.
+
+[optional...] This problem arises because RScheme uses /precise/
+garbage collection (i.e., not stack scanning) only at ``safe points''.
+Since a page fault could happen at any time, it might not be a safe
+point so invoking scheme code to handle it would not be allowed.
+[This is a general problem with RScheme's interaction with C-level
+code.  It may be possible to do a trick that turns off all GC except
+at top-level safe points, but this may have its own issues.  In
+particular, lots of low-level code in RScheme assumes that monotones
+are atomic and uses this fact to avoid locking.]
+
+
+\section{Persistent Page Numbers}
+
+VPPs appear in the address space of normal pages.  Each such VPP can
+hold up to 64 objects.  The system reserves 10 pages for itself (page
+numbers 0 through 9) to supply a default set of pivot objects.  Pages
+10 through 255 are available for use by the user application.  Pages
+256 through 0xFF,FFFF are used for dynamically created pivots such as
+symbols.  The system starts allocating persistent page numbers at
+0x100,0000
+
+
+
+
+\section{Log-structured Storage}
+
+The RScheme system builds the persistent object store atop a
+log-structured store (which was actually developed specifically to
+support the pstore, although it can be used independently.)
+The LSS exports a model of records, identified by unsigned 32-bit
+integers, read and write operations, and a commit operation.
+The pstore maps virtual page numbers directly to record numbers.
+Since VPPs up to 0x100 do not have any correpsonding data to
+store, record numbers 0-255 are available for other purposes.  In the
+current implementation, we use record number 0 to store the
+pstore-level commit information.
+
+pstore-level commit info:
+
+  \texttt{next\_page\_num}
+  \texttt{next\_indirect\_page}
+  \texttt{root\_area}
+
+
+
+Useful for building persistent hash tables.
+
+Returns the normal transient hash code for objects which are
+transient, and in this sense is an elaboration or extension of the
+transient->hash primop.
+
+Note that RScheme does not have a default implementation of
+hash-code (i.e., a method on <object>), and even if it did
+(in the spirit of the default behavior of equal? being eq?),
+loading the pstore module would not suggest overriding that
+behavior to use hash-code/persistent because the latter
+is much more expensive.
+
+\section{Issues}
+
+\subsection{Escaping Pointers}
+
+In theory, functions and closures can be written out, but in practice
+it is quite difficult to get right.  The use of reachability-based
+persistence together with a split heap (persistent vs. transient)
+implies it is very difficult to avoid pointer escape when writing
+functions.  Also, code contains pointers into the program memory.
+In the current implementation, code pointers must be annotated explicitly
+in a Pivot table or else they will not be translated.  Only the code
+pointers for the bytecode interpreter are stored by default.
+
+Consider, for example, the procedure (lambda (a) (+ a 1)).  Behind the
+scenes is a pointer to the `+' procedure (actually, in the default
+environment of RScheme, this will contain a pointer to the `+'
+top-level variable object because side-effecting + is allowed.)  In
+addition, the compiler may insert various other references for debugging
+or optimization support.  For example, in RScheme simply writing a lambda
+at the top level creates a closure which contains a pointer to the current
+top-level environment which is used for optimizing the lambda.)
+
+
+In RScheme, we have therefore found it convenient to have the
+Needs Moving processor check to see if the object to be moved
+is probably an inadvertant escaping pointer, such as a <<class>>
+object.  If such an object is encountered, an error will
+be signalled.
+
+   At the Scheme level, some kinds of objects can be marked as ``NO COPY''
+   as a debugging hint that they should never be copied.  For example,
+   by default <<class>> instances (i.e., classes) are NO COPY because
+   generally it is a bad idea when a class gets written out.
+
+(1) cleanup so a failure commit doesn't leave things broken, e.g.,
+    in case of class escape
+
+(2) commit of
+
+        top[1]=>(define (f x) `(1 ,x 1))
+        value := f
+        top[2]=>(commit p f)
+
+
+hangs!
+
+
+Improvements
+
+(1) fast-copy class list
+
+(2) build symbol set fast
+
+(3) use symbol set across more than one commit currently, because the
+    scope of the New Symbols list is the copy-in operation, we blow up
+    to one page per (dirty page per commit, up to 1/(64*N) as
+    efficient!)
+
+(4) paging out from pstore instead of letting OS do it (LOADED -> RESERVED)
+
+(5) reclaiming VM (RESERVED -> FREE)
+
+(6) pivots with structured names instead of integers.
+
+(7) concurrency... multiple read OK, multiples writers or mixed BAD.  commit
+    may count as writing because it mutates things as it moves them.  Although,
+    note that if nothing needs to be copied in, commit is atomic with respect
+    to RScheme threads.
+
+
+I can and plan on doing (1)-(3) by the next major RS release
+(0.7.3.5).  (4) is not too hard, but (5) is quite difficult because of
+the GC interactions [i.e., we have to make sure that we don't unmap a
+page that is referenced by the transient heap.  This might turn out to
+be easy if we just notice that a page [that is not the body of a large
+object] that is RESERVED for a complete GC cycle can be unmapped.
+This works because the act of traversal will touch a page when the GC
+reads the header bits during scanning of the referencing object.]
+
+(6) is doable but harder than (4).
+
+
+
+\section{Appendix A.  Name Rationalization...}
+
+The symbol names used in the current implementation are actually
+somewhat quirky.  For clarity, this paper uses rationalized names.
+This table maps the names used in this paper to the actual
+implementation.
+
+\begin{tabular}{|l|l|}
+\hline
+current (RS 0.7.3.4-b3) name    &       name in paper (if different) \\
+\hline
+\texttt{<persistent-store> }    &  \\
+\texttt{open-persistent-store } &       \texttt{open-pstore} \\
+\texttt{create-persistent-store }       & \texttt{create-pstore} \\
+\texttt{open-pstore-on-lss }    & \\
+\texttt{close-pstore }  &       \texttt{close-pstore} \\
+\hline
+
+\texttt{root-object }   &       \texttt{pstore-root} \\
+\texttt{commit }        &       \texttt{pstore-commit} \\
+\texttt{num-dirty-pages }       &       \texttt{pstore-dirty-page-count} \\
+\texttt{default-allocation-area }       &       \texttt{pstore-root-allocation-area} \\
+\texttt{object->allocation-area }       &       \texttt{object-allocation-area} \\
+\texttt{make-allocation-area }  & \\
+\texttt{register-indirect-page }        &       \texttt{pstore-set-virtual-page-contents} \\
+\hline
+
+\texttt{pstore-write-protect? } &       \texttt{pstore-write-protected?} \\
+\texttt{pstore-set-write-protect! }     &       \texttt{pstore-set-write-protected!} \\
+\hline
+
+\texttt{transient->persistent } &       \texttt{object->paddr} \\
+\texttt{persistent->transient } &       \texttt{paddr->object} \\
+\texttt{pstore-last-commit-id } &       \texttt{pstore-snapshot} \\
+\texttt{pstore-set-commit-id }  &       \texttt{pstore-set-snapshot!} \\
+\hline
+
+
+\texttt{persistent-hash }       &       \texttt{hash-code/persistent} \\
+\hline
+
+\end{tabular}
+
+\begin{figure}
+\centering
+\epsfig{file=gcphases.pdf}
+\caption{Phases of Persistent Garbage Collection}
+\end{figure}
+
+\begin{figure}
+\centering
+\epsfig{file=pagesinmem.pdf}
+\caption{Pages In Memory}
+\end{figure}
+
+
+\end{document}

@@ -1,0 +1,53 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:	packages/syscalls/syscalls.mcf
+ | Version:     1.5
+ | Date:        %G% 12:29:40
+ | Build:       v0.7.3.4-b7u, 2007-05-30
+ |
+ | Purpose:     System Call Interface (Unix-Style) module file
+ |------------------------------------------------------------------------|
+ | Notes:
+ |	Most of what's here was previously in the unixm module,
+ |	but the presence of unix-like interfaces on other systems
+ |	(notably GUSI on the Mac) made factoring this out a good
+ |	idea.
+ `------------------------------------------------------------------------|#
+
+((syscalls
+	"$dist/syscalls"    ;; what directory to put resulting files in
+	"$dist/modules")   ;; what directory to put image file in
+ ;;
+ ;; header files that our glue code needs
+ ;;
+ (require-c-header "<rscheme/hashfn.h>")
+
+ (open primops *scheme* low-scheme objsys iolib mathlib tables high-scheme)
+ (open paths mlink start)
+ (open corelib)
+
+ (other-files "sysio.ci")
+ (c-files "sysiox")
+ (c-files "scmtime")
+ (h-files "scmtime")
+
+ (h-files "systemh")
+
+
+ (files safeglue)
+ (files "sysio.bcx")   ;; get the bytecode extension primops
+ (files time)
+ (files sockaddr hostname)
+ (files stat sockets files fdport dirent)
+ (files sockopt)
+
+ (files scanprof)
+ ;;
+ (open regex)
+ (files ident)
+ ;;
+ ;;  we provide an extension to the bytecode interpreter
+ ;;  for system function calls
+ ;;
+ (bytecode-extension 11 "sysio")
+
+ (export :local))

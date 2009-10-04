@@ -1,0 +1,57 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}make-fd-set{/RefName}
+  {RefPurpose}Create a file descriptor set for use by fd-select.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/make-fd-set/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/reads/ {Parameter/writes/ {Parameter/exceptions/{/ParamDef}{ParamDef role="returns"}
+{Parameter}set{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}reads{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<list>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}writes{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<list>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}exceptions{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<list>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}set{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fd-select-set>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Constructs a file descriptor set (which is really made up of three sets,
+corresponding to watching for readability, writability, and exceptions).
+The resulting set can be used in the {Phrase Role="var"}fd-select{/Phrase} function.{/para}
+{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,60 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    packages/rstore/mmglue.sun
+ *
+ *          Copyright (C)1996 Donovan Kolbly <d.kolbly@rosette.com>
+ *          as part of the RScheme project, licensed for free use
+ *
+ * Version: 1.6
+ * Date:    2000-11-21 23:25:05
+ * Build:   v0.7.3.4-b7u, 2007-05-30
+ *
+ * Purpose: *** Solaris *** memory-management glue
+ *------------------------------------------------------------------------*/
+
+#include <siginfo.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+
+static void raw_mm_free( void *base, size_t bytes )
+{
+  munmap( base, bytes );
+}
+
+static void *raw_mm_alloc( size_t bytes, enum mm_mode mode )
+{
+void *p;
+int rc;
+
+/* the Solaris man page says using sbrk() will confuse malloc(),
+ * and we use malloc() in other places.  Hence, we must use malloc
+ * rather than sbrk() here
+ */
+  p = malloc( bytes + MM_PAGE_SIZE - 1 );
+  if (!p)
+    return NULL;
+
+  p = (void *)((((unsigned long)p) + MM_PAGE_MASK) & ~MM_PAGE_MASK);
+
+  rc = mprotect( (caddr_t)p, bytes, prot[mode] );
+  if (rc < 0)
+    return NULL;
+
+  return p;
+}
+
+static void handler( int sig, siginfo_t *info, void *unused )
+{
+  mmc_access_failed( (void *)info->si_addr );
+}
+
+void init_mm( void )
+{
+  struct sigaction sa;
+  
+  sa.sa_handler = (void *)handler;
+  sigemptyset( &sa.sa_mask );
+  sa.sa_flags = SA_RESTART|SA_SIGINFO;
+  sigaction( SIGSEGV, &sa, NULL );
+  sigaction( SIGBUS, &sa, NULL );
+}

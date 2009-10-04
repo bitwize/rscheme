@@ -1,0 +1,51 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}get-next-client{/RefName}
+  {RefPurpose}Get the next client connecting to a service.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/get-next-client/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/service/{/ParamDef}{ParamDef role="returns"}
+{Parameter}fd{/Parameter} {Parameter}peer{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}service{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<server>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}fd{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}peer{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<socket-addr>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This procedure extracts the next client connecting to
+{Parameter}service{/Parameter}.  It returns the socket, {Parameter}fd{/Parameter}, and the
+peer socket name.{/para}
+{/RefSect1}
+{/RefEntry}

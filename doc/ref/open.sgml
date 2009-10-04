@@ -1,0 +1,16 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}open{/RefName}
+  {RefPurpose}Import module into current module{/RefPurpose}
+  {RefClass role="Type"}mcf{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/open/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/module/{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{/RefSynopsisDiv}
+
+{/RefEntry}

@@ -1,0 +1,68 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}handler-bind{/RefName}
+  {RefPurpose}Establishes signal handlers{/RefPurpose}
+  {RefClass role="Type"}special{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/handler-bind/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/class/ {Parameter/function/ {Parameter/body/{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}class{/Term}
+    {ListItem}{para}
+A subclass of {ClassName/<condition>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}function{/Term}
+    {ListItem}{para}
+A function of two arguments.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}body{/Term}
+    {ListItem}{para}
+A sequence of expressions.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This special form arranges for the {Parameter}body{/Parameter} forms to be evaluated
+in a context in which the given {Parameter}function{/Parameter} is the handler for
+the set of conditions specified by the {Parameter}class{/Parameter} and it's subclasses.{/para}
+{para}
+That is, if a condition is signalled during the execution of the
+{Parameter}body{/Parameter} forms, and the condition object is a general instance of
+{Parameter}class{/Parameter}, then the {Parameter}function{/Parameter} is called with two arguments.{/para}
+{para}
+The first argument is the condition object that was signalled, which
+will be an instance of {Parameter}class{/Parameter}.{/para}
+{para}
+The second argument is the {Quote}next handler{/Quote} procedure, which is a procedure
+of no arguments which, when called, will arrange to invoke the next
+outermost handler.  {/para}
+{para}
+The next-handler procedure may be used to be more selective in which
+conditions to handle, by invoking it if the {Parameter}function{/Parameter} chooses not
+to handle the condition.{/para}
+{para}
+The {Parameter}function{/Parameter} is called in the context of the signalling expression.
+In particular, the handling context established by this {Phrase Role="var"}handler-bind{/Phrase}
+and any interior {Phrase Role="var"}handler-bind{/Phrase}'s will still be in force.  Hence, if
+a condition which is an instance of {Parameter}class{/Parameter} is
+signalled within the execution of {Parameter}function{/Parameter}, then {Parameter}function{/Parameter}
+may be called again (and will be, if an interior {Phrase Role="var"}handler-bind{/Phrase}
+does not handle the condition).{/para}
+{/RefSect1}
+{/RefEntry}

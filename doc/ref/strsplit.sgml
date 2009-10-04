@@ -1,0 +1,80 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}string-split{/RefName}
+  {RefPurpose}Split a string into substrings{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/string-split/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/string/ {Parameter/delim/{/ParamDef}{ParamDef role="returns"}
+{Parameter}list{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}string{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}delim{/Term}
+    {ListItem}{para}
+The delimitation on which to break {Parameter}string{/Parameter}.
+May be a {ClassName/<string>/, {ClassName/<char>/, or a {ClassName/<function>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}list{/Term}
+    {ListItem}{para}
+The list of substrings of {Parameter}string{/Parameter} which are
+delimited by {Parameter}delim{/Parameter}.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function breaks the {Parameter}string{/Parameter} up into substrings
+delimited by {Parameter}delim{/Parameter}, which may be a string, a character,
+or a procedure.{/para}
+{para}
+In the latter case, where {Parameter}delim{/Parameter} is a procedure, {Parameter}delim{/Parameter}
+is presumed to have the interface of a regular expression
+search procedure.  That is, it must be a procedure of two
+arguments (a string and an offset), and return two values
+if the pattern is found (the start and ending indexes) and
+no values or #f if the pattern is not found.{/para}
+{para}
+{/para}
+{InformalExample}
+{Para}
+{UserInput Role="ToEval"}(string-split "foo bar baz" #\space){/UserInput}
+{ComputerOutput Role="EvalsTo"}("foo" "bar" "baz"){/ComputerOutput}
+{Para}
+{UserInput Role="ToEval"}(string-split ".foo..bar...baz" #\.){/UserInput}
+{ComputerOutput Role="EvalsTo"}("" "foo" "" "bar" "" "" "baz"){/ComputerOutput}
+{Para}
+{UserInput Role="ToEval"}(define p (reg-expr->proc '(+ #\,))){/UserInput}
+{Para}
+{UserInput Role="ToEval"}(string-split "foo,,bar,,,baz" p){/UserInput}
+{ComputerOutput Role="EvalsTo"}("foo" "bar" "baz"){/ComputerOutput}
+{/InformalExample}
+{para}
+If the delimitation is by function, and the function matches 
+the empty string
+at some point in the process of trying to delimit the input string,
+then an error is signalled.{/para}
+{/RefSect1}
+{/RefEntry}

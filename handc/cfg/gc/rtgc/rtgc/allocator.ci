@@ -1,0 +1,195 @@
+#ifndef  ALLOCATOR_CI
+#define  ALLOCATOR_CI
+
+#ifndef NDEBUG
+#include <iostream.h>
+#endif
+
+#include <rtgc/colorset.hh>
+#include <rtgc/allocator.hh>
+#ifdef NDEBUG
+#ifdef TEST_FRAGMENTATION
+#include <rtgc/gc.hh>
+#endif TEST_FRAGMENTATION
+#else //NDEBUG
+#include <rtgc/gc.hh>
+#endif //NDEBUG
+
+#ifdef INLINES
+#ifndef NDEBUG
+#include <rtgc/gen1.ci>
+#endif
+#endif
+
+#ifdef TEST_LIFETIME_DIST
+#include <sys/time.h>
+#endif
+
+#undef LINK_TYPE
+#ifdef INLINES
+#define LINK_TYPE inline
+#else
+#define LINK_TYPE
+#endif
+
+//****************************************************************
+//* color_set::allocate
+//*
+//* This routine returns a pointer to a chunk of memory that can be
+//* used as a heap object.  If there are no free
+//* hunks of memory, then a new page is requested and carved up into
+//* objects of this size..
+//* 
+//* Note: This is the only c++
+LINK_TYPE gc_object_base* color_set::allocate(void)
+{
+
+// If there is no more free objects, then serve more free objects.
+#ifdef ALLOCATE_BLACK
+   if (free == white) {
+#else // ALLOCATE_WHITE
+   if (free == tail) {
+#endif
+      assert(number_of_free == 0);
+      reclaim_or_allocate_objects_when_no_free();
+   }
+   assert(number_of_free > 0);
+#ifdef ALLOCATE_BLACK
+   assert(free != white);    
+#else
+   assert(free != tail);
+#endif
+   
+   // set the color of the newly allocated object
+   free->set_color(allocation_color);
+#ifdef ALLOCATE_WHITE
+#ifdef GENERATIONAL
+   assert(free->get_color() != gc.get_gen(0)->get_current_shade_color());
+#else
+   assert(free->get_color() != gc.get_current_shade_color());
+#endif
+#else
+#ifdef GENERATIONAL
+   assert(free->get_color() == gc.get_gen(0)->get_current_shade_color());
+#else
+   assert(free->get_color() == gc.get_current_shade_color());
+#endif
+#endif
+   
+#ifdef GENERATIONAL
+   free->set_gen_num(0);
+   free->set_containing_list(this);
+#ifdef ALLOCATE_WHITE
+   // Set the step to 0.
+   free->set_step(0);
+#else
+   // In black allocation, set the step to 1. See the discussion in
+   // colorset.hh
+   free->set_step(1);
+#endif
+#endif// GENERATIONAL
+   
+   // Set aside the pointer to the allocated object.
+   gc_object_base *allocated = free;
+   
+   free = free->get_next();
+
+   // if we are allocating black, then number_of_non_black should be
+   // decremented.  If we are allocating white, number_of_black will get
+   // decremented when the object is blacken by the garbage collector.
+#ifdef ALLOCATE_BLACK
+   number_of_non_black--;
+#ifdef TEST_FRAGMENTATION
+   object_manager *om = gc.get_object_manager(free->get_previous());
+   om->num_objects_in_use++;
+#endif
+   assert(number_of_non_black >= 0);
+#endif
+
+   number_of_free--;
+   assert(((UINT_32)free->get_previous())%4 == 0);
+
+   // Return the address of the ex-free object.
+
+   assert((char*)allocated >= gc.start_of_heap);
+   assert((char*)allocated < gc.end_of_heap);
+
+   return(allocated);
+}
+   
+#ifdef FOREIGN
+#undef LINK_TYPE
+#define LINK_TYPE extern "C"
+#endif
+
+LINK_TYPE gc_obj_addr gc_alloc(size_t size)
+{
+   // keep track of the amount of memory that has been allocated.
+   color_set *alloc_set;
+   // If the amount of object size is smaller than the fast lookup table
+   // size, then you can find the pointer to the allocating color set in
+   // the table. Otherwise, get the size class and get the corresponding 
+   // color set.
+   if(size < FAST_LOOKUP_TABLE_SIZE){
+      alloc_set = allocation_set_fast_lookup[size];
+   } else {
+      alloc_set
+	 = allocation_sets[get_size_class(size+SIZE_OF_GC_OBJECT_BASE)]; 
+#ifndef NDEBUG
+      if (get_size_class(size+SIZE_OF_GC_OBJECT_BASE) > NUM_SIZE_CLASSES) {
+	 cout << "error: tried to allocate too big an object " << size
+	    << endl;
+	 assert(0);
+      }
+#endif
+   }
+   // We should return the address returned by allocate()
+   // + sizeof(gc_object_base), which indicates the actual address from which
+   // the user can use. 
+   gc_obj_addr the_newly_allocated_object =
+      (char *)(alloc_set->allocate()) + SIZE_OF_GC_OBJECT_BASE;
+   amount_allocated -= alloc_set->get_size();
+   
+#ifdef TEST_LIFETIME_DIST
+   struct timeval tp;
+   struct timezone tzp;
+   INT_32 return_flag;
+   return_flag = gettimeofday(&tp,&tzp);
+   assert(return_flag == 0);
+   gc.alloc_count++;
+   fwrite(&size,sizeof(size_t),1,gc.lifetime_file);
+   fwrite(&the_newly_allocated_object,sizeof(gc_obj_addr),1,gc.lifetime_file);
+   fwrite(&(tp.tv_sec),sizeof(int),1,gc.lifetime_file);
+   fwrite(&(tp.tv_usec),sizeof(int),1,gc.lifetime_file);
+#endif
+   
+   return (the_newly_allocated_object);
+}
+
+
+LINK_TYPE gc_obj_addr gc_alloc_nb(size_t size)
+{
+   // for now, we are going to implement gc_alloc and gc_alloc_nb the same way.
+   // keep track of the amount of memory that has been allocated.
+   color_set *alloc_set;
+   if(size < FAST_LOOKUP_TABLE_SIZE){
+      alloc_set = allocation_set_fast_lookup[size];
+   }else{
+      alloc_set
+	 = allocation_sets[get_size_class(size+SIZE_OF_GC_OBJECT_BASE)];
+#ifndef NDEBUG
+      if (get_size_class(size+SIZE_OF_GC_OBJECT_BASE) > NUM_SIZE_CLASSES) {
+	 cout << "error: tried to allocate too big an object "
+	    << size << endl;
+	 assert(0);
+      }
+#endif
+      
+   }
+   
+   amount_allocated -= alloc_set->get_size();
+   return ((char *)(alloc_set->allocate()) + SIZE_OF_GC_OBJECT_BASE);
+}
+
+
+#endif // ALLOCATOR_CI

@@ -1,0 +1,77 @@
+clean::
+	rm -f lss.o lssctl.o lssctl 
+	rm -f foo foo.log fox fox.log foy foy.log
+	rm -f t.out t2.out dict.out
+
+basic:: lssctl
+	@rm -f t.out
+	lssctl -c t.out -w 1 one -w 2 babar -w 3 quux -.
+	lssctl -o t.out -w 0 zero -.
+	lssctl -o t.out -r 1 -r 0
+	lssctl -P t.out
+	lssctl -o t.out -w 10 ten -.
+	lssctl -o t.out -w 20 twenty -.
+	lssctl -o t.out -w 30 thirty -.
+	lssctl -cx t2.out t.out -w 5 five -.
+	lssctl -o t2.out -w 15 fifteen -.
+	lssctl -o t2.out -w 25 twenty-five -.
+	lssctl -o t2.out -w 35 thirty-five -.
+	lssctl -o t2.out -w 45 forty-five -.
+	lssctl -o t2.out -w 55 fifty-five -.
+	lssctl -o t2.out -w 56 - -w 57 fifty-seven -. < lssv2.c
+	lssctl -o t2.out -w 58 - -w 59 fifty-nine -. < lssctl.c
+	date | lssctl -o t2.out -w 0 - -.
+
+bigtest::
+	mkdir -p /tmp/w ; cd /tmp/w ; grep -n . /usr/dict/words | split -l 6500
+	lssctl -c dict.out -w 0 "This is /usr/dict/words" -.
+	for i in /tmp/w/x* ; \
+	do lssctl -o dict.out -la - -. < $$i ; \
+	done
+
+otest::
+	@rm -f foo foo.log fox fox.log foy foy.log
+	lssctl -f foo -c
+	date | lssctl -f foo -w 23
+	lssctl -f foo -r 23
+	echo hello | lssctl -f foo -w 24
+	lssctl -f fox -g foo
+	date | lssctl -f fox -w 24
+	date | lssctl -f fox -w 25
+	lssctl -f foy -g fox
+	date | lssctl -f foy -w 26
+	lssctl -f foy -p
+	for i in * ; do ls -l $$i | lssctl -f foy -w 27 ; sleep 1 ; done
+
+v2::
+	rs +rstore \
+	  -e '(define p (create-persistent-store "v2.sto"))' \
+	  -e "(commit p '(1 2 3 \"This is one test\"))" \
+	  -e "(commit p '#(5 6 7 \"This is another test\"))" \
+	  -e "(vector-set! (root-object p) 1 (range 500))" \
+	  -e "(commit p)" \
+	   -exit
+
+TESTBASE=/tmp/rsfam.bak
+
+INDEX=/tmp/ztest-index
+INDEX1=/tmp/ztest-index.1
+ZDATA=/tmp/ztest-data
+
+$(INDEX): $(TESTBASE)
+	lssctl -ro $(TESTBASE) -L | sort -n +3 > $(INDEX)
+
+$(INDEX1): $(INDEX)
+	awk '{ print $$1 }' $(INDEX) > $(INDEX1)
+
+$(ZDATA): $(INDEX1) lssctl
+	xargs lssctl -ro $(TESTBASE) -q -z > $(ZDATA).tmp < $(INDEX1)
+	mv $(ZDATA).tmp $(ZDATA)
+
+testz:: $(ZDATA)
+	awk '{ NB += $$2; NZ += $$4 } END { print NB, NZ }' $(ZDATA)
+
+# compute best substrings from a substring log:
+# zcat zstore-substr.out | grep -v '^;' | sort | uniq --count \
+# | awk '{ print (NF-1) * $1, NF, $0 }' | sort -n > zstore-substr.res 
+

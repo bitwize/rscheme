@@ -1,0 +1,49 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}interval-interval{/RefName}
+  {RefPurpose}Interval difference.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/interval-interval/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/dt1/ {Parameter/dt2/{/ParamDef}{ParamDef role="returns"}
+{Parameter}dt3{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}dt1{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<interval>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}dt2{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<interval>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}dt3{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<interval>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Subtracts the given intervals, {Parameter}dt1{/Parameter} minus {Parameter}dt2{/Parameter}.{/para}
+{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,50 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}read{/RefName}
+  {RefPurpose}Read an S-expression{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/read/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+{/ParamDef}{ParamDef role="returns"}
+{Parameter}expr{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}input-port{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<input-port>/. Default is the current input port.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}expr{/Term}
+    {ListItem}{para}
+The internal representation of the
+next expression on the port.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function is the RScheme expression parser.  It converts a
+sequence of characters on port to the internal representation
+of an expression.  The value returned can be as simple as a
+character and as complicated as a vector of almost arbitrary
+RScheme objects.  The object returned depends on the sequence
+of characters, which must obey the syntactic conventions of
+RScheme.{/para}
+{/RefSect1}
+{/RefEntry}

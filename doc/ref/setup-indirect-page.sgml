@@ -1,0 +1,63 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}setup-indirect-page{/RefName}
+  {RefPurpose}Configure a page of pivot objects{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/setup-indirect-page/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/pstore/ {Parameter/page-num/ {Parameter/vector/{/ParamDef}{ParamDef role="returns"}
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}pstore{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<persistent-store>/.
+  {/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}page-num{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/.
+  {/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}vector{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<vector>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function configures an {Quote}indirect page{/Quote} in the persistent store's
+address space.  An indirect page is used to hold pivot objects.  Each
+indirect page can hold up to 64 pivot objects, which in this case
+are the objects
+referenced by the elements of {Parameter}vector{/Parameter}.{/para}
+{para}
+The {Parameter}page-num{/Parameter} is which page to configure with pivot objects.  Page
+numbers 0-63 are reserved for use by the system{Footnote}{para}
+Although currently 
+only
+page 0 is used; it is used to store the standard pivot objects, and it
+is common practice to use pages 1-9 for application class object 
+pivots.{/para}
+{/Footnote}, 
+and page numbers 64-255 are available for the application.{/para}
+{para}
+If more pivot pages are needed, they may be obtained with
+the {Phrase Role="var"}alloc-indirect-pages{/Phrase} function.{/para}
+{/RefSect1}
+{/RefEntry}

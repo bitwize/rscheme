@@ -1,0 +1,44 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}with-input-from-file{/RefName}
+  {RefPurpose}Redirect input from file{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/with-input-from-file/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/string/ {Parameter/proc/{/ParamDef}{ParamDef role="returns"}
+{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}string{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/ representing a file name{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}proc{/Term}
+    {ListItem}{para}
+A function of one parameter{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function creates a new input port from the file name in
+the string as in open-input-file.  It then calls the procedure
+with the new port.  If the procedure returns, then the port
+will be closed as with close-input-port.  If the procedure
+does not return, the port will not be closed until and unless
+it can be shown that the port cannot be used for any
+input operations.{/para}
+{/RefSect1}
+{/RefEntry}

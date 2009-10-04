@@ -1,0 +1,18 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    modules/editinp/editinp.mcf
+ |
+ |          Copyright (C)1995 Donovan Kolbly <donovan@tkg.com>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.8
+ | Date:    1998-12-14 10:22:28
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ |
+ `------------------------------------------------------------------------|#
+
+((editinp "$dist/editinp" "$install/resource/modules")
+ (open  primops *scheme* iolib low-scheme objsys mathlib tables high-scheme)
+ (open corelib)
+ (require-c-header "<rscheme/rdln.h>")
+ (files editinp readlin)
+ (export :local))

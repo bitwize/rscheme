@@ -1,0 +1,47 @@
+{Chapter}
+{Title}Input/Output{/Title}
+{Para}
+{Para}
+The input/output facilities of RScheme use the concept of a "port".  A
+port is a first-class RScheme object that is passed (implicitly or
+explicitly) to the input/output functions.  
+{Para}
+In RScheme, ports come in two varieties, namely input ports which are
+instances of <input-port> and output ports that are instances of
+<output-port> [we don't have input output ports?].
+{Para}
+While some ports exist when RScheme is started, most have to be
+created explicitly by an open operation.  The open operations thus
+create ports from other types of objects such as strings that
+represent file names, or just strings that are themselves used for
+input or output.
+{Para}
+RScheme ports usually buffer input/output for efficiency.  This means
+that you might not see the effect of an output operation immediately.
+Instead the output may be stored internally in a buffer associated
+with the port and only written to the underlying device when the
+buffer is full, or as a result of an explicit flush operation.
+{Para}
+When all desired input/output has been accomplished from/to a
+particular port, you should close the port.  Closing the port will
+free up resources of the operating system and flush the contents of
+the port. 
+<!>
+{Sect1} <!--  id="u.inports" -->
+{Title}Input port constructors{/Title}
+&ref.input-port;
+&ref.current-input-port;
+&ref.open-input-file;
+&ref.with-input-from-file;
+&ref.open-input-process1;
+&ref.close-input-port;
+&ref.read-char;
+&ref.peek-char;
+&ref.char-ready;
+&ref.read;
+&ref.output-port;
+&ref.current-output-port;
+&ref.open-output-file;
+&ref.with-output-to-file;
+&ref.close-output-port;
+&ref.open-output-process;

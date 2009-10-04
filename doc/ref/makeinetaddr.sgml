@@ -1,0 +1,44 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}string->inet-addr{/RefName}
+  {RefPurpose}Create an internet address object.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/string->inet-addr/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/ip/{/ParamDef}{ParamDef role="returns"}
+{Parameter}in{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}ip{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<string>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}in{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<inet-addr>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Parses {Parameter}ip{/Parameter} (in dotted quad format) and creates
+a {ClassName/<inet-addr>/ object.{/para}
+{/RefSect1}
+{/RefEntry}

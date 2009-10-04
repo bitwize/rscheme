@@ -1,0 +1,68 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}vector-map{/RefName}
+  {RefPurpose}Maps a function over a vector{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/vector-map/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/proc/ {Parameter/vec/{/ParamDef}{ParamDef role="returns"}
+{Parameter}result{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}proc{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<function>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}vec{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<vector>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}result{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<vector>/.{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+This function is to vectors what {Phrase Role="var"}map{/Phrase} is to lists.{/para}
+{para}
+The length of {Parameter}result{/Parameter} is the {Emphasis}minimum{/Emphasis} of the lengths
+of the {Parameter}vec{/Parameter} arguments.
+Hence, if one of {Parameter}vec{/Parameter} is an empty vector (having 0 length),
+then an empty vector is returned and {Parameter}proc{/Parameter} is never called.{/para}
+{InformalExample}
+{Para}
+{UserInput Role="ToEval"}(define x '#(1 2 3)){/UserInput}
+{Para}
+{UserInput Role="ToEval"}(define y '#(10 20 30)){/UserInput}
+{Para}
+{UserInput Role="ToEval"}(vector-map + x y){/UserInput}
+{ComputerOutput Role="EvalsTo"}#(11 22 33){/ComputerOutput}
+{Para}
+{UserInput Role="ToEval"}(define z '#(8 9)){/UserInput}
+{Para}
+{UserInput Role="ToEval"}(vector-map + y z){/UserInput}
+{ComputerOutput Role="EvalsTo"}#(18 19){/ComputerOutput}
+{/InformalExample}
+{/RefSect1}
+{/RefEntry}

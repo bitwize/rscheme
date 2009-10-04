@@ -1,0 +1,172 @@
+/*-----------------------------------------------------------------*-C-*---
+ * File:    handc/runtime/readwrit.ci
+ *
+ *          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ *          as part of the RScheme project, licensed for free use.
+ *          See <http://www.rscheme.org/> for the latest information.
+ *
+ * File version:     1.10
+ * File mod date:    1998-12-04 08:12:46
+ * System build:     v0.7.3.4-b7u, 2007-05-30
+ *
+ *------------------------------------------------------------------------*/
+
+#include <rscheme/gcserver.h>
+
+/******************** Memory Read Functions ********************/
+
+#ifdef DEBUG_SMEMORY
+CI_DECL obj gvec_read( obj gvec, UINT_32 byte_offset )
+{
+  obj item;
+
+#ifdef VALIDATE_BLOCKS
+    validate_block( PTR_TO_GCPTR(gvec) );
+#endif
+    assert( (byte_offset & (sizeof(UINT_32)-1)) == 0 );
+    assert( byte_offset < SIZEOF_PTR(gvec) );
+    item = *(obj *)(((char *)PTR_TO_DATAPTR(gvec)) + byte_offset);
+    /* if there is a read barrier, we need to apply it to the
+     * extracted value, since it may be the first time this value
+     * gets into the root set
+     */
+    return READ_BARRIER(item);
+}
+#endif
+
+CI_DECL UINT_8 bvec_read_uint8( obj bvec, UINT_32 byte_offset )
+{
+#ifdef VALIDATE_BLOCKS
+    validate_block( PTR_TO_GCPTR(bvec) );
+#endif
+    assert( byte_offset < SIZEOF_PTR(bvec) );
+    return ((UINT_8 *)PTR_TO_DATAPTR(bvec))[byte_offset];
+}
+
+
+/******************** Memory Write Functions ********************/
+
+CI_DECL void gvec_write( obj gvec, UINT_32 byte_offset, obj value )
+{
+obj *dest = (obj *)(((char *)PTR_TO_DATAPTR(gvec)) + byte_offset);
+
+    assert( !EQ(*dest,DEBUG_TRAP_OBJ) );
+
+    if (OBJ_ISA_PTR(value))
+      {
+	write_barrier( PTR_TO_GCPTR(gvec), dest, PTR_TO_GCPTR(value) );
+      }
+    else
+      {
+	write_barrier_lval_clobber( PTR_TO_GCPTR(gvec), dest );
+      }
+
+    assert( (byte_offset & (sizeof(UINT_32)-1)) == 0 );
+    assert( byte_offset < SIZEOF_PTR(gvec) );
+    *dest = value;
+}
+
+CI_DECL void gvec_write_ptr( obj gvec, UINT_32 byte_offset, obj value )
+{
+    assert( OBJ_ISA_PTR(value) );
+    gvec_write( gvec, byte_offset, value );
+}
+
+CI_DECL void gvec_write_non_ptr( obj gvec, UINT_32 byte_offset, obj value )
+{
+obj *dest = (obj *)(((char *)PTR_TO_DATAPTR(gvec)) + byte_offset);
+
+    assert( !OBJ_ISA_PTR(value) );
+    assert( (byte_offset & (sizeof(UINT_32)-1)) == 0 );
+    assert( byte_offset < SIZEOF_PTR(gvec) );
+
+    write_barrier_lval_clobber( PTR_TO_GCPTR(gvec), dest );
+    *dest = value;
+}
+
+
+
+/* an object is FRESH from the time it is allocated to
+   the next GC_SAFE_POINT.  This is extraordinarily useful
+   if you are allocating white, in which case the write
+   barrier becomes a NOP
+*/
+
+CI_DECL void gvec_write_fresh( obj gvec, UINT_32 byte_offset, obj value )
+{
+obj *dest = (obj *)(((char *)PTR_TO_DATAPTR(gvec)) + byte_offset);
+
+    assert( !EQ(*dest,DEBUG_TRAP_OBJ) );
+    if (OBJ_ISA_PTR(value))
+    {
+	write_barrier_lval_fresh( PTR_TO_GCPTR(gvec),
+				      dest,
+				      PTR_TO_GCPTR(value) );
+    }
+    assert( (byte_offset & (sizeof(UINT_32)-1)) == 0 );
+    assert( byte_offset < SIZEOF_PTR(gvec) );
+    *dest = value;
+}
+
+/* an initializing write is the first write to that slot
+   of the target object.  
+
+   !!! The gvec is necessarily FRESH, because a gvec MUST
+   !!! be fully initialized before the next gc safe point
+*/
+
+CI_DECL void gvec_write_init( obj gvec, UINT_32 byte_offset, obj value )
+{
+obj *dest = (obj *)(((char *)PTR_TO_DATAPTR(gvec)) + byte_offset);
+
+    assert( EQ(*dest,DEBUG_TRAP_OBJ) );
+
+    if (OBJ_ISA_PTR(value))
+      {
+	write_barrier_lval_init(PTR_TO_GCPTR(gvec),dest,PTR_TO_GCPTR(value));
+      }
+
+    assert( (byte_offset & (sizeof(UINT_32)-1)) == 0 );
+    assert( byte_offset < SIZEOF_PTR(gvec) );
+    *dest = value;
+}
+
+
+CI_DECL void gvec_write_fresh_ptr( obj gvec, UINT_32 byte_offset, obj value )
+{
+    assert( OBJ_ISA_PTR(value) );
+    gvec_write_fresh( gvec, byte_offset, value );
+}
+
+
+CI_DECL void gvec_write_fresh_non_ptr( obj gvec, UINT_32 byte_offset, obj value )
+{
+    assert( !OBJ_ISA_PTR(value) );
+    gvec_write_fresh( gvec, byte_offset, value );
+}
+
+CI_DECL void gvec_write_init_ptr( obj gvec, UINT_32 byte_offset, obj value )
+{
+    assert( OBJ_ISA_PTR(value) );
+    gvec_write_init( gvec, byte_offset, value );
+}
+
+
+CI_DECL void gvec_write_init_non_ptr( obj gvec, UINT_32 byte_offset, obj value )
+{
+    assert( !OBJ_ISA_PTR(value) );
+    gvec_write_init( gvec, byte_offset, value );
+}
+
+/*  Allocate a gvec filled with FALSE_OBJ's  */
+
+CI_DECL obj gvec_alloc( UINT_32 len, obj obj_class )
+{
+UINT_32 i;
+obj thing;
+
+    thing = alloc( sizeof(obj) * len, obj_class );
+    for (i=0; i<len; i++)
+	gvec_write_init_non_ptr( thing, SLOT(i), FALSE_OBJ );
+    return thing;
+}

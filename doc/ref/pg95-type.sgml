@@ -1,0 +1,53 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}pg95-type{/RefName}
+  {RefPurpose}Get the type name for a given PG95 type id.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/pg95-type/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/cnxn/ {Parameter/type-id/{/ParamDef}{ParamDef role="returns"}
+{Parameter}type-name{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}cnxn{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<pg95-connection>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+   {VarListEntry}
+    {Term}type-id{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}type-name{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<symbol>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Looks up the given type id (an OID in the {UserInput}pg_type{/UserInput} table)
+and returns the corresponding type name ({UserInput}typname{/UserInput} column).{/para}
+{para}
+To improve performance, the results of the lookup
+are cached in a hash table associated with the connection.{/para}
+{/RefSect1}
+{/RefEntry}

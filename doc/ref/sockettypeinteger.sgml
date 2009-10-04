@@ -1,0 +1,46 @@
+{RefEntry}
+{RefNameDiv}
+  {RefName}socket-type->integer{/RefName}
+  {RefPurpose}Identifiy socket type.{/RefPurpose}
+  {RefClass role="Type"}function{/RefClass}
+{/RefNameDiv}
+{RefSynopsisDiv}
+{FuncSynopsis Role="Scheme"}
+{FuncPrototype}
+{FuncDef}{Function/socket-type->integer/{/FuncDef}
+{ParamDef role="arguments"}<!-- spaces are significant -->
+ {Parameter/type-name/{/ParamDef}{ParamDef role="returns"}
+{Parameter}type{/Parameter}{/ParamDef}{/FuncPrototype}
+{/FuncSynopsis}
+{RefSect2}
+  {Title}Arguments{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}type-name{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<symbol>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{RefSect2}
+  {Title}Return Values{/Title}
+  {VariableList}
+   {VarListEntry}
+    {Term}type{/Term}
+    {ListItem}{para}
+An instance of {ClassName/<fixnum>/{/para}
+    {/ListItem}
+   {/VarListEntry}
+  {/VariableList}
+{/RefSect2}
+{/RefSynopsisDiv}
+{RefSect1}
+  {Title}Description{/Title}
+{para}
+Find local name (integer) for socket address type.
+Supports {UserInput}socket-type/stream{/UserInput},
+{UserInput}socket-type/datagram{/UserInput}.
+and {UserInput}socket-type/raw{/UserInput}.{/para}
+{/RefSect1}
+{/RefEntry}

@@ -1,0 +1,32 @@
+
+((x11 "$dist/x11" "$dist/modules")
+
+ (require-c-header "adapt.h")
+ (require-c-header "<X11/Xlib.h>")
+ (require-c-header "<rscheme/hashfn.h>")
+ (require-c-header "<rscheme/hashmain.h>")
+ (require-c-header "<string.h>")
+ (require-c-header "<X11/Xutil.h>")
+
+ (h-files adapt)
+ (c-files adapt layout-text)
+	
+ (open start mathlib low-scheme iolib primops *scheme* objsys corelib)
+ (open tables high-scheme)
+
+ ;;
+ ;; low-level (X) stuff
+ ;;
+
+ (files events safeglue geom glue constants drawing color)
+ (files fonts image)
+ (files drawlines event-access gif)
+
+ ;;
+ ;; higher-level (toolkit) stuff...
+ ;;
+ (files atoms)
+ (files config toolkit responder)
+ (files windows views focus)
+ (export :local))
+
