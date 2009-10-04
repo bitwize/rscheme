@@ -1,0 +1,54 @@
+________________________________________________________________________
+
+http://cr.yp.to/smtp.html
+
+There are several IETF SMTP specifications:
+
+   1. RFC 821, published in 1982.
+   2. RFC 1123, published in 1989. A few corrections to RFC 821.
+   3. RFC 1425, published in 1983. Introduced the EHLO verb.
+   4. RFC 1651, published in 1994. Replaced RFC 1425.
+   5. RFC 1869, published in 1995. Replaced RFC 1651.
+   6. RFC 2821, published in 2001, code-named Klensin. Replaced 821/1123/1869. 
+
+   7. RFC 3463, published in 2003, Enhanced Mail System Status Codes
+
+________________________________________________________________________
+
+Other useful resources:
+
+http://www.networksorcery.com/enp/rfc/rfc2554.txt
+http://www.networksorcery.com/enp/protocol/smtp.htm
+http://www.sendmail.org/~ca/email/authrealms.html
+http://www.ietf.org/rfc/rfc2831.txt
+http://postfix.state-of-mind.de/patrick.koetter/smtpauth/smtp_auth_mailclients.html
+
+
+______________________________________________________________________
+
+MAIL FROM:<donovan@rscheme.org>
+RCPT TO:<sue@xscheme.org>
+DATA
+From: Donovan Kolbly <donovan@rscheme.org>
+To: Sue <sue@rscheme.org>
+
+Hello!
+.
+
+
+EHLO star.westgate.xynthesis.com
+AUTH DIGEST-MD5
+
+
+
+smtp-server = westgate.xynthesis.com/user=donovan/submit
+
+
+DATA
+From: Bob <bob@rscheme.org>
+To: Donovan <donovan@xscheme.org>
+Date: Thu, 15 Sep 2005 19:56:42 +0200
+Message-ID: <y9lu0gmkyed.fsf@informatik.uni-tuebingen.de>
+
+Well, bob howdy!
+.

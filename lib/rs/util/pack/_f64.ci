@@ -1,0 +1,11 @@
+
+void FNAME(pack,f64)( obj bvec, UINT_32 offset, obj value )
+{
+  IEEE_64 v = basic_ieee64( value );
+  BVEC_SLOT(IEEE_64) = CNV(v);
+}
+
+obj FNAME(unpack,f64)( obj bvec, UINT_32 offset )
+{
+  return ieee64_to_basic( CNV(BVEC_SLOT(IEEE_64)) );
+}

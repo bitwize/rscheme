@@ -1,0 +1,43 @@
+<style> :: <object> (abstract)
+
+        name
+        basis
+        properties
+
+inheritance, naming, composition, overrides, etc. are defined
+for all <style>'s
+
+each concrete <style> class has an inspector
+
+<color-style> :: <style>
+        color
+        gray
+        alpha
+        value-change            ; composition rule "value"
+        hue-change              ; composition rule "hue"
+        saturation-change       ; composition rule "saturation"
+        name                    ; for named (palette) colors
+
+<stroke-style> :: <style>
+        line-width
+        line-join
+        line-cap
+        miter-limit
+        color
+
+<fill-style> :: <style>
+        color
+        winding-rule
+
+<character-style> :: <style>
+        base-font
+        size
+        bold
+        italic
+        small-cap
+
+<paragraph-style> :: <style>
+        tabs
+        first-indents
+        align
+        justify

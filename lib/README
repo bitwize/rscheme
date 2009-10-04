@@ -1,0 +1,109 @@
+This is the contents of the RScheme Module Repository
+=====================================================
+
+How to Build
+------------
+
+0. Get the Repository
+
+   % export CVSROOT=:pserver:rscheme@cvs.rscheme.org:/cvs/rsfam 
+   % cvs login
+   (Logging in to rscheme@cvs.rscheme.org)
+   CVS password: public
+                 ^^^^^^ this doesn't echo
+   % cvs checkout dev
+
+1. Have RScheme
+
+   You need RScheme installed, at least RScheme 0.7.3, and
+   probably 0.7.3.1-b19u or later, available from:
+
+       <ftp://ftp.rscheme.org/priv/b/rs-0.7.3.1-b19.tar.gz>
+
+   this module repository builds on top of the fasl shell,
+   so if you installed RScheme in $PREFIX, you should have
+   an executable $PREFIX/bin/fshell.
+
+2. Have and Run Autoconf
+
+   I use autoconf to build the configure script, so you will
+   need to have autoconf.  Run it like so, from dev/ (the directory
+   containing this README)
+
+   % cd dev/
+   % autoconf
+
+3. Configure the tree
+
+   You need to tell it where your fshell executable is:
+
+   % ./configure --with-rs=$PREFIX/bin/fshell
+
+   (personally, I always have `mrs' linked to the latest fshell,
+   so I can just say ./configure --with-rs=mrs)
+
+
+4. Compile
+
+   This just runs RScheme, specifying all the module files to 
+   be loaded.  If you have problems in there somewhere, you can
+   (now) give a `-v' flag to RScheme to make it noisy about what
+   its loading and compiling.
+
+   % make
+
+   Lots of warnings are generated.
+
+   A new fast-loading image is constructed.
+
+
+5. Install the new image
+
+   % make install
+
+   This installs it in $PREFIX/resource/fshell.fas, which is where
+   fshell looks _FIRST_ for an image to load (notice that the
+   distribution RScheme creates fshell.orig.fas, which fshell looks
+   for _AFTER_ fshell.fas)
+
+
+6. If you need to remake from scratch
+
+   % make again
+
+   which uninstalls (so that running `fshell' doesn't pick up the
+   new image again), cleans (in case dependencies aren't right),
+   compiles, and reinstalls.  I do this a lot in later phases of
+   testing.
+
+
+7. Run
+
+   % PATH=$PREFIX/bin:$PATH
+   % fshell
+
+
+8. Run a sample gui app
+   (you'll need tiff utilities do build the composite tiff;
+   you may need to add additional directories to your AFM path;
+   the example shown is for a linux-alpha system, probably RedHat,
+   but I'm not sure.
+
+   % export RS_MODULE_PATH=`pwd`
+   % cd gui/app/dv
+   % make about.tiff
+   % fshell -q +graphics.afm
+   top[0]=>(push-afm-directory "/usr/share/ghostscript/fonts" "Fontmap")
+   value := (...
+   top[1]=>,(use gui.app.dv)
+                              <--- this takes a while; its loading the app
+   ... warning and info messages ...
+   top[2]=>(start-dv *self*)
+   701-100D opening display foo.bar.com:12.0
+   611-101D X authorization for foo.bar.com:12: MIT-MAGIC-COOKIE-1
+   701-102D initializing client #[<client> foo.bar.com:12.0]...
+   ...
+       <--- you should get a menu at this point
+
+   (personally, I have ~/lib/rs/modules linked to `.../dev', so I
+   don't need to set RS_MODULE_PATH)

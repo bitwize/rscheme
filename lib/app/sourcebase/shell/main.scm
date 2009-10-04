@@ -1,0 +1,63 @@
+(define (vsh (state <vsh-state>))
+ (fluid-let ((*vsh-state* state))
+    (define-executable "chroot" chroot)
+    (define-executable "mkfs" mkfs)
+    (define-executable "mkuser" mkuser)
+    (define-executable "mkgroup" mkgroup)
+    (define-executable "why" why)
+    (define-executable "chtop" chtop)
+    (define-executable "snap" snap)
+    (define-executable "df" df)
+    (define-executable "ls" ls)
+    (define-executable "lscr" list-change-req)
+    (define-executable "pwd" pwd)
+    (define-executable "load" vsh-load)
+    (define-executable "vi" vi)
+    (define-executable "ci" checkin)
+    (define-executable "cid" checkin-dir)
+    (define-executable "co" checkout)
+    (define-executable "sync" sync)
+    (define-executable "iq" itemqueue)
+    (define-executable "req" req)
+    (define-executable "cat" cat-cmd)
+    (define-executable "lock" lock)
+    (define-executable "unlock" unlock)
+    (define-executable "cd" cd)
+    (define-executable "stat" stat-cmd)
+    (define-executable "mkdir" mkdir-cmd)
+    (define-executable "id" proc-id)
+    (define-executable "scheme" scheme-escape)
+    (define-executable 
+	"set"
+	(lambda ((name <string>) val)
+	    (vsh-var-set! name val)
+	    val))
+    (define-executable 
+	"prompt" 
+	(lambda ((n <integer>))
+	    (format #f "~d:~a> "
+			n
+			(if (current-path state)
+			    (fs-path->string (current-path state))
+			    "none"))))
+    (let loop ((i 0))
+       ;(set-primary-prompt! (current-input-port) (vsh-eval (list "prompt" i)))
+       (let ((arglist (vsh-read (current-input-port))))
+	 ;(format #t "[input ~s]\n" arglist)
+	 (if (eof-object? arglist)
+	    (values)
+	     (if (null? arglist)
+		(loop i)
+		(bind ((#rest a (vsh-eval arglist)))
+		    (if (pair? a)
+			(format #t "~@#*70a\n" (car a)))
+		    (loop (add1 i)))))))))
+		    
+;;
+
+
+(define (rm arglist) (values))
+(define (ln arglist) (values))
+
+(define (chgrp grp . fspecs) (values))
+;(define (reason . args) (values))

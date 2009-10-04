@@ -1,0 +1,317 @@
+Adjusted for the RScheme 0.7.3 module system -- 1999.12.12
+Ported to RScheme 0.7.1 module system by Donovan Kolbly -- 1997.10.17
+from version found on scheme repository (www.cs.indiana.edu/scheme-repository)
+.....................................................................
+Copyright 1992 William Clinger
+
+Permission to copy this software, in whole or in part, to use this
+software for any lawful purpose, and to redistribute this software
+is granted subject to the restriction that all copies made of this
+software must include this copyright notice in full.
+
+I also request that you send me a copy of any improvements that you
+make to this software so that they may be incorporated within it to
+the benefit of the Scheme community.
+
+This directory contains a prototype implementation of the R4RS
+high-level macro system [1] using the algorithm of [2].  Several
+extensions have been added to address problems identified in [3]
+and to allow QUASIQUOTE to be written as a high-level macro.  The
+low-level system of [1] is not implemented, but a low-level system
+along the lines of [4] could easily be added.  The code is written
+in IEEE/ANSI Scheme and has been tested in MacScheme, Gambit, and
+Chez Scheme.
+
+This directory contains the following files:
+ 
+    README               this file
+    expand.sch           the kernel of the macro expander
+    misc.sch             miscellaneous procedures
+    prefs.sch            implementation-dependent parameters
+    syntaxenv.sch        an implementation of syntactic environments
+    syntaxrules.sch      a compiler for SYNTAX-RULES
+    tests.sch            a tiny test suite
+    usual.sch            macros for Scheme's derived expressions
+
+The system can be loaded in the following order:
+
+    (begin
+     (load "expand.sch")
+     (load "misc.sch")
+     (load "prefs.sch")
+     (load "syntaxenv.sch")
+     (load "syntaxrules.sch")
+     (load "usual.sch"))
+
+There are two external entry points, MACRO-EXPAND and
+DEFINE-SYNTAX-SCOPE.  MACRO-EXPAND is a procedure of one
+argument that takes a Scheme expression or definition,
+represented as a list, symbol, or self-evaluating constant
+in the traditional way, and returns a fully macro-expanded
+form of that expression or definition.  Top-level DEFINE and
+DEFINE-SYNTAX forms encountered by MACRO-EXPAND have the side
+effect of updating the global syntactic environment.  The form
+of the macro-expanded code is determined by the parameters
+in "prefs.sch" and by the procedures in "expand.sch".
+
+DEFINE-SYNTAX-SCOPE, which is described below, determines the
+scope of syntactic keywords bound by DEFINE-SYNTAX.
+
+
+SCOPE RULES.
+
+It is considered good practice to organize programs so that all
+syntactic definitions occur at the beginning of a program,
+ordered so that no syntactic definition contains any references
+to syntactic keywords defined by subsequent syntactic definitions.
+If this practice is followed, and no syntactic keyword (including
+the standard keywords such as LAMBDA) is redefined, then the
+meaning of the program will not depend on the subtly detailed
+scope rules described below.
+
+The R4RS is deliberately vague about the scope of variables
+introduced by top-level DEFINE, and the description of the
+high-level macro system in the R4RS is even more deliberately
+vague about the scope of syntactic keywords introduced by
+DEFINE-SYNTAX.  It is left to each implementation to specify
+the details, in part to encourage experimentation with different
+scope rules.  The scope rules described below are the rules for
+this implementation, but they should not be construed as an
+authoritative interpretation of the R4RS on this subject.
+
+The region of a syntactic keyword defined using DEFINE-SYNTAX
+includes any expression or definition that follows the definition
+of the syntactic keyword, and does not include any expression or
+definition that precedes the definition of the syntactic keyword.
+This rule does not specify the region of a syntactic keyword with
+respect to syntactic definitions.  There are three plausible scope
+rules for syntactic keywords bound by DEFINE-SYNTAX.  I call these
+rules the LETREC, LETREC*, and LET* rules:
+
+  LETREC   The region includes all syntax definitions.
+
+  LETREC*  The region includes the syntactic definition in which
+           the syntactic keyword is bound, together with all
+           subsequent syntactic definitions.
+
+  LET*     The region includes all subsequent syntactic definitions,
+           but does not include the syntactic definition in which
+           the syntactic keyword is bound.
+
+The LET* rule is incompatible with some of the R4RS examples
+but can be extremely useful nonetheless, as suggested by some
+examples in "tests.sch".  The LETREC and LETREC* rules both
+appear to be completely compatible with the R4RS.  The
+advantages and disadvantages of these three scope rules are:
+
+  LETREC   Advantages:
+             Supports mutually recursive global macros.  Corresponds
+             to the scope rule for variables bound by top-level
+             DEFINE in most implementations.
+           Disadvantages:
+             Cannot capture the current meaning of a syntactic
+             keyword that is later extended or redefined using
+             DEFINE-SYNTAX.  Does not correspond to the scope
+             rule for syntactic keywords with respect to expressions
+             and definitions in this implementation.
+
+  LETREC*  Advantages:
+             Allows self-recursive global macros.  Allows the
+             current meaning of a syntactic keyword to be captured.
+             Corresponds to the scope rule for syntactic keywords
+             with respect to expressions and definitions in this
+             implementation.
+           Disadvantages:
+             Does not support mutually recursive global macros.
+             Does not correspond to the scope rule for variables
+             bound by top-level DEFINE in most implementations.
+
+  LET*     Advantages:
+             Allows the current meaning of a syntactic keyword
+             to be captured and used to define an extended meaning.
+             Like the LETREC* rule, it corresponds to the scope
+             rule for syntactic keywords with respect to expressions
+             and definitions in this implementation.
+           Disadvantages:
+             Does not support recursive global macros.  Several
+             examples given in the R4RS would not work with this
+             scope rule.  Does not correspond to the scope rule
+             for variables bound by top-level DEFINE.
+
+This implementation contains two extensions designed to encourage
+experimentation with these three scope rules.
+
+DEFINE-SYNTAX-SCOPE is a procedure that determines which of
+these three scope rules is the default for syntactic keywords
+defined by DEFINE-SYNTAX.  With no arguments, DEFINE-SYNTAX-SCOPE
+indicates the current default by returning one of the symbols
+LETREC, LETREC*, or LET*.  Given one of those three symbols as
+an argument, DEFINE-SYNTAX-SCOPE changes the default scope rule.
+The default scope rule is set to LETREC by "usual.sch".
+
+The second extension allows syntactic definitions of the form
+
+    (DEFINE-SYNTAX <keyword> <scope> <transformer spec>)
+
+where <scope> is one of the identifiers LETREC, LETREC*, or LET*.
+
+The scope rule used to interpret a syntactic definition in this
+implementation does not affect the scope of the syntactic keyword
+bound by that syntactic definition.  Instead it determines the
+scope rule used to resolve references to syntactic keywords that
+occur within the <transformer spec>.  Although this sounds weird,
+it seems to offer the most useful semantics.
+
+
+MACROS THAT DEFINE MACROS.
+
+This implementation contains an extension to ease the construction
+of macros that define other macros.  If a <template> of the form
+
+    (::: <template>)
+
+occurs as a subtemplate on the right side of a <syntax rule>, then
+all ellipses that occur within the <template>, and all occurrences
+of the ::: symbol itself, will be transcribed as if they were
+ordinary identifiers.  This allows a macro to expand into expressions
+that contain ellipses, or ellipses escaped by the ::: symbol.  See
+"tests.sch" for examples.
+
+Pattern variables that occur within a template escaped by ::: will
+still be expanded, which is occasionally useful, but it means that
+the pattern variables of macros defined by a macro-defining macro
+must be distinct from the pattern variables of the macro-defining
+macro.  I have found this to be a common source of bugs in the
+macro-defining macros I have written.
+
+
+VECTORS AS PATTERNS.
+
+The R4RS macro system does not allow vectors as patterns.  Vector
+patterns are needed to write QUASIQUOTE as a high-level macro,
+however, so this implementation adds the following productions
+to the syntax of R4RS:
+
+    <pattern>   -->  #(<pattern>*)
+                  |  #(<pattern>* <pattern> <ellipsis>)
+    <template>  -->  #(<template element>*)
+
+Vectors cannot be used as a <pattern datum> or <template datum>,
+which is incompatible with the R4RS.
+
+
+
+REFERENCES.
+
+[1]  William Clinger and Jonathan Rees [editors], "The Revised^4
+Report on the Algorithmic Language Scheme", Lisp Pointers Volume IV,
+Number 3, July-September 1991, pages 1-55.
+
+[2]  William Clinger and Jonathan Rees, "Macros That Work",
+1991 ACM Conference on Principles of Programming Languages, pages
+155-162.
+
+[3]  William Clinger, "Macros in Scheme", Lisp Pointers Volume IV,
+Number 4, October-December 1991, pages 17-23.
+
+[4]  William Clinger, "Hygienic Macros Through Explicit Renaming",
+Lisp Pointers Volume IV, Number 4, October-December 1991, pages
+17-23.
+
+[5]  Marianne Baudinet and David MacQueen, "Tree Pattern Matching
+for ML", available from David MacQueen, AT&T Bell Laboratories,
+600 Mountain Avenue, Murray Hill NJ 07974, 1985.
+
+Corrections to [2]:
+
+  *  The algorithm is O(n), where n is the time required by
+     naive macro expansion as in C.  Naive macro expansion
+     as in Common Lisp can be arbitrarily faster than naive
+     macro expansion in C, because a Common Lisp macro can
+     insert an arbitrarily large quoted constant in constant
+     time, and the macro expander does not have to traverse
+     that constant later.  Our algorithm can insert a large
+     quoted constant in constant time only if it contains no
+     symbols, and the macro expander must later traverse the
+     constant to see whether it contains identifiers that
+     must be reverted to symbols.  This means that, on
+     contrived examples, naive macro expansion as in Common
+     Lisp can be arbitrarily faster than the algorithm of our
+     POPL paper.  So far as I can tell, this fact has no
+     practical significance.
+
+  *  In our paper I claimed that the ability to compile rules
+     at macro definition time had no effect on the asymptotic
+     time required by our algorithm.  This is not true.  One
+     can contrive examples to show that compilation of rules
+     at macro definition time is necessary to achieve O(n)
+     performance.
+
+
+KNOWN BUGS.
+
+  *  MACRO-EXPAND is not robust when given a syntactically
+     incorrect argument.  Circular lists in particular will
+     cause trouble.  So will syntactically incorrect macro
+     definitions.
+
+  *  The macro system does not complain if it encounters an
+     unquoted vector, empty list, procedure, et cetera, but
+     instead passes such things through in the macro-expanded
+     code.  Some will consider this a feature, not a bug.
+
+  *  This implementation is not O(n) because the operations on
+     syntactic environments do not run in constant time.  In
+     many implementations of Scheme, constant-time operations
+     can be obtained by using property lists and the technique
+     of shallow binding.
+
+  *  The compiler for SYNTAX-RULES fails to detect and exploit
+     subtemplates that contain no pattern variables and no
+     inserted identifiers.  On contrived examples this can
+     affect the asymptotic complexity of the implementation.
+     See the above corrections to the 1991 POPL paper.
+
+  *  Quoted data are fully copied.  They can and should be
+     copied to the least possible extent.
+
+  *  This implementation seems to be roughly twice as slow as the
+     implementation of naive macro expansion in MacScheme.  There
+     are many things that could be tuned to make it faster, while
+     remaining within the bounds of IEEE/ANSI Scheme.  One is to
+     use some data type other than symbols to represent
+     identifiers, since the string and symbol manipulation
+     operations required to create a new symbol are usually slow.
+     Another is to compile rule patterns as is done in Standard
+     ML of New Jersey [5].
+
+
+KNOWN FEATURES:
+
+  *  Top-level DEFINE and DEFINE-SYNTAX have the side effect
+     of replacing the top-level denotation of the identifier
+     being defined.  A warning is issued if the top-level
+     denotation being replaced is that of a syntactic keyword.
+
+  *  Expressions are permitted following a sequence of top-level
+     definitions or syntax definitions.  Top-level definitions
+     may not be mixed with syntax definitions within a single
+     form.
+
+  *  All three plausible scope rules for syntactic keywords
+     (LETREC, LETREC*, and LET*) are available as described above.
+     Each can be implemented efficiently by itself, but it's a bit
+     of a pain to support all three efficiently in a single
+     implementation.  Currently the LETREC* and LET* scope rules
+     are implemented much less efficiently than the LETREC rule.
+
+  *  The ::: symbol can be used as an escape to allow the ellipsis
+     symbol to be inserted by the right hand side of a syntax
+     rule.
+
+  *  This implementation allows vectors as patterns and templates.
+
+William Clinger
+9 April 1993
+revised 13 April 1993
+  (fixed bugs in M-MATCH, named LET; improved CASE)

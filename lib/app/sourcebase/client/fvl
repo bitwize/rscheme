@@ -1,0 +1,39 @@
+#!/bin/sh
+
+find_top() {
+   p="$1"
+   if test -f $p
+   then p=${p%/*}
+   fi
+   case "$p" in
+     /*) ;;
+     *) p=$PWD/$p
+   esac
+   fullp="$p"
+
+   while ! test -f $p/.top
+   do p1="${p%/*}"
+      if test "$p" = "$p1"
+      then echo Top not found
+           exit 1
+      fi
+      p=$p1
+   done
+   export SB_TOP=$p
+   . $p/.top $fullp
+   if test "$fs" = ""
+   then :
+   else SB_FILESPACE="$fs"
+   fi
+}
+
+strip_top () {
+   while test $# -gt 0
+   do a=$1
+      echo ${a#$SB_TOP}
+      shift
+   done
+}
+
+find_top "$1"
+exec sb --inspect --file $(strip_top "$@")

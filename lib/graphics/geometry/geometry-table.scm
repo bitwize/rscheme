@@ -1,0 +1,31 @@
+(define-class <geometry-table> (<table>)
+  (elements init-value: '())
+  (tolerance type: <real> init-value: 3))
+
+(define (make-geometry-table #optional t)
+  (if t
+      (make <geometry-table> tolerance: t)
+      (make <geometry-table>)))
+
+(define-method table-insert! ((self <geometry-table>) (key <geometric>) value)
+  (set-elements! self (cons (cons key value) (elements self)))
+  #f)
+
+(define-method table-lookup ((self <geometry-table>) (key <point>))
+  (let loop ((e (elements self))
+	     (best-distance #f)
+	     (best-pt #f)
+	     (best '(#f . #f)))
+    (if (null? e)
+	(values (cdr best) best-pt)
+	(bind ((r p (distance (caar e) key)))
+	  (if (and (<= r (tolerance self))
+		   (or (not best-distance)
+		       (< r best-distance)))
+	      (loop (cdr e) r p (car e))
+	      (loop (cdr e) best-distance best-pt best))))))
+
+(define-method table-for-each ((self <geometry-table>) proc)
+  (for-each (lambda ((e <pair> :trust-me))
+	      (proc 0 (car e) (cdr e)))
+	    (elements self)))

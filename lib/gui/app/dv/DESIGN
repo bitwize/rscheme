@@ -1,0 +1,421 @@
+{chapter}Introduction
+
+This document describes the design, design rationale, and
+implementation decisions for the dV application.  dV is a
+vector-graphic (as opposed to pixel-graphic) application of the genre
+which also contains Adobe Illustrator, Corel Draw, and Xfig.  It is
+intended to have the same extensibility and interaction flavor as GNU
+Emacs, to the extent that is compatible with the type of document
+being manipulated, and with some common interaction metaphors taken
+from the application domain (such as document windows and tools).
+
+It is written in RScheme, utilizing the CLX-like library available in
+RScheme 0.7.3 and later.  In general, dV makes full use of RScheme
+features to simplify the design and implementation, and to exercise
+those features.  It is freely distributed as a demonstration of RScheme's
+capabilities.
+
+It is intended to support small collaborations using a client/server
+architecture.  That is, a single dV application process can manage
+multiple users from different X displays, all working on the same
+document.  It is intended to work on a color X server with at least
+a few free color cells (ie, you may have to start it _after_ you 
+start Netscape, which tends to allocate all possible color cells).
+However, it will function on a monochrome screen (but not as prettily;
+in particular, no effort is made to use patterns to approximate gray
+levels in the display).
+
+The current implementation is not focussed on being able to manage
+very large documents (e.g., more than 10 pages).
+
+I intend to use it to draw the illustrations that will appear in my
+Ph.D. dissertation.  Hence, it should be possible to write a procedure
+that automatically extracts named "boxes" as eps files.
+
+Much of the application-independent functionality (such as I can
+identify it) is encapsulated in the gui.tk.sx.* modules (sx denotes a
+"Simple X" toolkit.  Someday we might have some toolkits like
+"gui.tk.swing" or "gui.tk.clim", too)
+
+{chapter}Clients
+Module: gui.tk.sx.client
+
+A client is the application-level representation of a display connection.
+
+
+{section}Frames
+Module: gui.tk.sx.frame
+
+A <frame> is the application-level representation of a top-level window.
+They are the locus of events that represent whole windows, such
+as focus-in/out, reconfiguration, etc.
+Frames are specialized in various ways:
+<view-frame>
+<menu-frame>
+<submenu-frame>
+<about-frame>
+<inspector-frame>
+<dialog-frame>
+
+{section}Key maps
+Module: gui.tk.sx.keymap
+
+Key maps are the mechanism for associating keys and key sequences
+with interactive commands.  A key sequence is represented by binding
+a prefix key to another key map instead of a procedure.
+
+I'm not sure if CANCEL (C-g) should be handled specially -- if we want
+to be able to actually interrupt a long-running (or stuck) procedure,
+it would need to be picked up even before the main event loop, which
+implies a thread which is reading X events and filtering them for
+a CANCEL request, handing the remainder off to the main event loop.
+
+On the other hand, that would be the perfect place to put a "busy box"
+(I was just thinking of a bubbles metaphor -- ie, the application
+is under water, and you need to wait for it to come up for air before
+you tell it anything else)
+
+That might also be a good place to put exposure-event collapsing, which
+is currently a real problem.
+
+{section}Tools
+A tool is a cursor mode.  
+Built-in tools are "select", "zoom", and "pan".
+Standard library tools are "box", "pen", "line", and "text".
+("pen" is for doing bezier curves; "line" is a simpler interface
+for drawing just straight lines)
+
+Called "major modes" in the current implementation.
+
+{section}Events
+Module: gui.tk.sx.eventmgr
+
+On the relationship between tools, 
+interactive invocations,
+and non-interactive invocations.
+
+A tool can be configured as a trigger for an
+interactive command.  If the interactive command has a
+click, rect, or line in its spec, then the system automatically
+collects that information and invokes the interactive command
+with that information supplied from the click.
+
+(Tools are also allowed to do fairly arbitrary event handling,
+if that is their desire.
+Tools come with a key map, too, so they can special key events
+as well as mouse events (anyway, aren't mouse events supposed
+to go through the map anyway?))
+
+During plain interactive execution (as by "M-x"), a click,
+rect, or line argspec will cause interpretation to pause modally
+while the data is collected (the status area will display the
+optional prompt).
+
+The basic mechanism is to capture the continuation and thereby suspend
+execution of that computation, returning control immediately to the
+main loop with an annotation that this modal operation is in
+progress.  When the modality is satisfied, computation resumes.
+The same thing as for (minibuffer) collections.
+
+This switching mechanism is encapsulated in the procedures
+(get-click), (get-rect), (get-drag), and (get-from-minibuffer).
+
+The only trick is to make sure only one continuation is alive at 
+a time, and when the suspended computation finishes,
+the temporary continuations that were collecting the modal data
+don't keep going.
+
+This can be arranged as a "modal suspension stack".  Calling
+e.g. (get-click) pushes the current continuation onto the stack and
+resumes at the main event loop with a hook to wait for the
+necessary completion to pop the modal suspension.
+
+[what's the difference between an explicit modal suspension stack
+and just re-entering the event loop?]
+
+The procedure (resume-modal-with THING) does the work of resuming
+a modal suspension, and is called by the event loop when the
+completing event is recognized.  It does not return.
+
+How, exactly, to structure things so that resume-modal-with gets
+called when the modality is satisfied, is an open question.
+
+[is there any relationship to Emacs excursions?]
+
+Another issue is how to handle transactions.  With modal suspension,
+a transaction might last an unbounded time, and the view-locking scheme
+proposed elsewhere breaks down -- we need to allow at least the
+locking client the ability to redraw through the view, so that she
+can see what's going on during a modal interaction.  On the other
+hand, other clients might get locked out indefinitely.  Complexity
+of implementation indicates that this should be a Known Limitation;
+the loser will just have to walk down the hall and tell the winner
+to finish their interaction, please, thank you very much.
+
+The (cancel-interaction) command (typically bound to C-g) is like
+(resume-modal-with) except it throws a <cancelled> exception
+instead of continuing with a value.
+
+{section}Views
+
+{subsection}Snap Maps and Geometry
+A snap map is a means of quickly finding out whether a control
+point being dragged is close to a point to which it should be
+snapped.  The "geometry" generalization (the ability to snap
+to arbitrary geometrical objects) means that things other than
+points might be the subject of snapping.
+
+The implementation I have in mind is a grid of sets.  Each
+grid element is a set of the geometry that intersects the
+grid square.  When checking for snap points, the cursor's grid square
+and all adjacent squares are checked, and the closest match taken
+(a point or intersection match should take priority, so that you can
+easily snap to the intersection of two geometric elements).
+
+Grid size is a tradeoff: a smaller grid size means shorter lists to check,
+but more grid points.  Probably 10x10 pixels or so is about right
+(note that it must be bigger than the snap distance; else we have
+to check more than just neighboring grid points)
+maybe with a cap on the number of grid points like 50x50.
+
+{subsection}Panning a view
+A recurring concept in managing document views is that of panning.
+It is used when a scrollbar is being dragged, when the "pan"
+tool is being dragged, and when a drag selection or 
+control point drag goes
+beyond the displayed area.
+
+There are several points to be considered in the panview abstraction.
+(1) because the panning is happening outside the transaction,
+the underlying view might be locked by another transaction.
+(2) the panning might be happening faster than is desirable to
+redisplay the entire view.  It may be desirable to redisplay
+just certain parts such as the page borders.  
+(3) It might be desirable to draw a larger view to an 
+off-screen buffer and composite around there.  With some
+cleverness, that could happen asynchronously "ahead" of the
+pan.  However, it is probably a BAD idea to try to draw
+the whole page, because you may be scaled up 1600%!
+
+{section}Minibuffers
+
+A minibuffer is a frame used for collecting a small amount of
+information from the user.  Typically, this information is
+in the form of a text string, but a more general dialog
+is possible.  A minibuffer can be thought of as an HTML
+form or a Mac dialog.
+
+The initial implementation only supports text input, however.
+
+An open question is how to best support on-the-fly interaction
+such as tab completion and error checking.  The Emacs forms
+library might be inFORMative (ha ha).
+
+{section}Menus
+{section}About Window
+
+
+{chapter}Transactions
+
+Each event from a client is potentially a transaction.  However,
+different clients have concurrent access to the system (to create
+a total ordering on transactions, clients are ordered arbitrarily).
+
+The <open-document> manages transactions against the document.
+When a client's procedure first updates a document, a transaction
+against that document is created.  At that point, all the open
+views are locked.  A locked view blocks on redisplay (this is
+only an issue if any other clients have an open view on the document,
+since the issuing client is busy working on that procedure).
+
+(That implies we don't support a multithreaded execution model
+at the user/programmer level.  Is that ok?)
+
+All the open views are also marked for redisplay.  When the issuing
+client finishes processing, the views are all unlocked.  This allows
+the posted redisplays to procede.
+
+If two clients are each updating two documents and get into a deadlock,
+then the "smaller" client wins and the loser gets rolled
+back.  Once the winner finishes, the loser restarts its transaction.
+This implies that some consistency is required in the non-persistent
+object model, so that an in-progress transaction can be rolled back
+even if changes to the transient object model have been made.
+
+The interaction problems could be solved by serializing the
+entire application.  This is worth considering, depending on the
+intended users.  That is, supporting fine-grain (SMP) collaboration is
+pretty expensive in terms of complicating the code base, and
+do we really think it's worth it?  99% of application instances
+will be single-client, 99% of the remainder will be supporting
+maybe 2 or 3 users.  So, by saying that we are not trying to
+scalably support workgroup-wide collaboration on an SMP architecture,
+we avoid mucho work.  Seems reasonable and cost-effective in
+terms of programmer resources.  The only downside is that we can't
+support small collaborations with long-running procedures.  
+
+[And note that modal interactions are long-running procedures!
+Also note that we weren't thinking of conflicting except on the
+same document.  This means that two long-running procedures that 
+touch two documents (in different orders) can cause roll-backs
+and discard user interactions, perhaps requiring them to redraw
+their lines or whatever.  Could be bad.]
+
+If we just have a little dialog (or something like Notes' lightning
+bolt) when a client request is queued too long behind someone else,
+we should be fine.  Although this implies that the serialization
+barrier is quite a ways into the application -- and I grant, it would
+be nice to support basic window redraw concurrently.
+
+What about things like mouse drags?  You don't want motion-notify
+sequences from different clients to be interleaved -- the modal "drag"
+should be a single transaction (necessary anyway for the right "undo" 
+granulariy...)
+
+Note that a transaction from one client might delete objects
+referenced by other clients (ie, client A has a current selection
+which includes object FOO.  client B deletes FOO.  client A redisplays
+OK, but must make sure to remove the object from its selection list
+as well (just one an example))
+
+{chapter}Documents
+
+{section}Pages
+Each page consists of a sequence of layers.
+
+{section}Layers
+Each layer consists of a sequence of objects, some of which
+may be groups and therefore have subobjects.
+
+{section}Master Layers
+FrameMaker supports the notion of a "master" page which is a powerful
+abstraction technique.  
+
+I wonder if its just a special use of a macro, in our context? 
+
+Note that a "master" layer is like a CLASS of pages, which gets
+instantiated for each layer that 
+
+Masters can have references which resolve at the instance level, too.
+For example, the last TextFlow on a page might contain a continuation
+reference to the "first TextFlow on the next page (topmost layer
+first)".  Hence, the reference is not resolved until the master
+is instantiated.
+
+The trick is to figure out which properties are part of the master and
+which aren't.  The position of most (all?) objects in the master is a
+master property, but the "contents" might not be.  For example, a
+master page might have two TextFlows, one of which has text in it
+(master text, like the title of the work) and another of which is
+blank (intended to take on text content in the page).
+
+{section}Views
+I'm not sure that views belong in the persistent document.
+It _is_ nice to save the views, but maybe that should be
+saved elsewhere (user preferences, perhaps?  But then, how
+to manage them as the user visits more and more documents?)
+
+I hadn't thought Emacs preserved anything like this, but look at
+"bookmarks".
+
+Note that _not_ putting views in the persistent document makes
+the usual meaning of "undo" more accessible, since we are planning
+on implementing undo using persistent object store rollbacks.
+
+{section}Graphics
+
+What about rounding?  Should we use a fixed-point representation
+like TeX does?  But that wouldn't help when, say, rotating an
+object 21 degrees and back again...
+
+{section}Groups
+Where do transformations belong?  Currently, each group can refine
+the coordinates for its constituents.  This makes it somewhat
+painful to figure out the coordinates for a given object (ie,
+you have to take its manifest coords and walk up the hierarchy).
+Why did I do that?  It is not clear what purpose it serves,
+except maybe avoiding rounding/error accumulation problems.
+
+Should groups highlight as "group objects" or as their constituents?
+What about supporting selection within groups, like Interface Builder
+does?
+
+{chapter}Object Extraction
+
+To support cut, copy, and paste.
+
+If there are document-level objects that the selection references,
+such as graphic macros, then they must be included, and if pasted
+into a different document, any name conflicts must be resolved.
+There are several possible ways to resolve name conflicts.  If
+a graphic macro "foo" is (implicitly) copied from one document
+to another, and a graphic macro by the same name already exists,
+then either (1) the imported graphic macro is renamed (to "foo2", say) in
+the new document, (2) the imported graphic macro is ignored and
+the existing macro used in place of the imported one, or 
+(3) a more complicated name space is provided that allows multiple
+"foo" macros to exist in the document, much like a module system.
+
+Solution (1) may make certain kinds of meta-level operations
+difficult, e.g., the "foo" macro can't say (eval '(bar 1 2)) because
+bar may get renamed.
+
+Solution (2) has the potential for serious conflicts, when the
+foos represent different graphics.
+
+Solution (3) complicates the user's model of things and may create
+a proliferation of modules which either can't be managed or are 
+difficult to sort out.  (For example, without some additional
+machinery, every time you paste something from another document,
+you may get a new module with the same contents as one you already
+have -- now imaging a script which copies three pages of a document
+to a new document by copying each object and pasting it into the
+new one.)
+
+{section}Use Case Scenarios
+
+{subsection}Dragging a scroll bar
+{subsection}Using the menu to cut/paste
+{subsection}Using "M-x paste"
+{subsection}Using M-y to paste
+{subsection}Executing procedure that updates several documents
+{subsection}Executing hook procedure to change date on 'save'
+{subsection}Clicking with Text tool
+{subsection}Dragging with Line tool
+{subsection}Changing tools
+{subsection}Grouping objects
+{subsection}Click/drag with Select tool
+{subsection}Reshaping a line
+{subsection}Tracking graphic dependencies
+As in Xfig, lines may track boxes to which they are attached.
+
+{subsection}Defining a graphic macro
+
+To preserve document independence and the ability to stand alone, any
+graphic macros which a document instantiates must be included in the
+persistent object model.
+
+Note that this is in contrast to Virtuoso, which allowed the
+definition of new PostScript constructs in ~/Virtuoso.ps.
+Thus, the extensions had "user" scope, which would
+be fine for most cases but does not encourage collaboration.
+(One difference between us and Virtuoso is that we 
+define new constructs in terms of old, whereas what they
+were doing was more a way to define new primitive objects
+in terms of the underlying PostScript.)
+
+Emacs doesn't permit macros in documents, storing only the results of
+elaborating any macros (executing any procedures).  I don't think
+that's sufficient for a flexible graphics application like this,
+because we want a change to a macro's definition to propagate to all
+occurrences.  Although the user should also have the ability to
+decouple (or "elaborate") a macro, replacing the macro object with its
+expansion.
+
+Although maybe a good approach would be to store the results of
+macro elaboration PLUS the ability to re-execute the macro,
+with some kind of "Update" command like a spreadsheet's
+refresh.  Then, "update" could be disabled if the right
+macro module is not present, and could even be automatic
+when the parameters change.
+

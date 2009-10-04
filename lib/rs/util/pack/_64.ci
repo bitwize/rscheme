@@ -1,0 +1,22 @@
+
+void FNAME(pack,u64)( obj bvec, UINT_32 offset, obj value )
+{
+  UINT_64 v = basic_uint64( value );
+  BVEC_SLOT(UINT_64) = CNVU(v);
+}
+
+void FNAME(pack,s64)( obj bvec, UINT_32 offset, obj value )
+{
+  INT_64 v = basic_int64( value );
+  BVEC_SLOT(INT_64) = CNV(v);
+}
+
+obj FNAME(unpack,u64)( obj bvec, UINT_32 offset )
+{
+  return uint64_to_basic( CNVU(BVEC_SLOT(UINT_64)) );
+}
+
+obj FNAME(unpack,s64)( obj bvec, UINT_32 offset )
+{
+  return int64_to_basic( CNV(BVEC_SLOT(INT_64)) );
+}

@@ -1,0 +1,240 @@
+void bvec_packn_u16( obj bvec, UINT_32 offset, obj value )
+{
+  UINT_16 v = basic_to_u16( value );
+  BVEC_SLOT( bvec, offset, UINT_16 ) = v;
+}
+obj bvec_unpackn_u16( obj bvec, UINT_32 offset )
+{
+  UINT_16 v = BVEC_SLOT( bvec, offset, UINT_16 );
+  return u16_to_basic( v );
+}
+void bvec_packb_u16( obj bvec, UINT_32 offset, obj value )
+{
+  UINT_16 v = basic_to_u16( value );
+  BVEC_SLOT( bvec, offset, UINT_16 ) = ntob_u16( v );
+}
+obj bvec_unpackb_u16( obj bvec, UINT_32 offset )
+{
+  UINT_16 v = BVEC_SLOT( bvec, offset, UINT_16 );
+  return u16_to_basic( bton_u16( v ) );
+}
+void bvec_packl_u16( obj bvec, UINT_32 offset, obj value )
+{
+  UINT_16 v = basic_to_u16( value );
+  BVEC_SLOT( bvec, offset, UINT_16 ) = ntol_u16( v );
+}
+obj bvec_unpackl_u16( obj bvec, UINT_32 offset )
+{
+  UINT_16 v = BVEC_SLOT( bvec, offset, UINT_16 );
+  return u16_to_basic( lton_u16( v ) );
+}
+void bvec_packn_s16( obj bvec, UINT_32 offset, obj value )
+{
+  INT_16 v = basic_to_s16( value );
+  BVEC_SLOT( bvec, offset, INT_16 ) = v;
+}
+obj bvec_unpackn_s16( obj bvec, UINT_32 offset )
+{
+  INT_16 v = BVEC_SLOT( bvec, offset, INT_16 );
+  return s16_to_basic( v );
+}
+void bvec_packb_s16( obj bvec, UINT_32 offset, obj value )
+{
+  INT_16 v = basic_to_s16( value );
+  BVEC_SLOT( bvec, offset, INT_16 ) = ntob_s16( v );
+}
+obj bvec_unpackb_s16( obj bvec, UINT_32 offset )
+{
+  INT_16 v = BVEC_SLOT( bvec, offset, INT_16 );
+  return s16_to_basic( bton_s16( v ) );
+}
+void bvec_packl_s16( obj bvec, UINT_32 offset, obj value )
+{
+  INT_16 v = basic_to_s16( value );
+  BVEC_SLOT( bvec, offset, INT_16 ) = ntol_s16( v );
+}
+obj bvec_unpackl_s16( obj bvec, UINT_32 offset )
+{
+  INT_16 v = BVEC_SLOT( bvec, offset, INT_16 );
+  return s16_to_basic( lton_s16( v ) );
+}
+void bvec_packn_u32( obj bvec, UINT_32 offset, obj value )
+{
+  UINT_32 v = basic_to_u32( value );
+  BVEC_SLOT( bvec, offset, UINT_32 ) = v;
+}
+obj bvec_unpackn_u32( obj bvec, UINT_32 offset )
+{
+  UINT_32 v = BVEC_SLOT( bvec, offset, UINT_32 );
+  return u32_to_basic( v );
+}
+void bvec_packb_u32( obj bvec, UINT_32 offset, obj value )
+{
+  UINT_32 v = basic_to_u32( value );
+  BVEC_SLOT( bvec, offset, UINT_32 ) = ntob_u32( v );
+}
+obj bvec_unpackb_u32( obj bvec, UINT_32 offset )
+{
+  UINT_32 v = BVEC_SLOT( bvec, offset, UINT_32 );
+  return u32_to_basic( bton_u32( v ) );
+}
+void bvec_packl_u32( obj bvec, UINT_32 offset, obj value )
+{
+  UINT_32 v = basic_to_u32( value );
+  BVEC_SLOT( bvec, offset, UINT_32 ) = ntol_u32( v );
+}
+obj bvec_unpackl_u32( obj bvec, UINT_32 offset )
+{
+  UINT_32 v = BVEC_SLOT( bvec, offset, UINT_32 );
+  return u32_to_basic( lton_u32( v ) );
+}
+void bvec_packn_s32( obj bvec, UINT_32 offset, obj value )
+{
+  INT_32 v = basic_to_s32( value );
+  BVEC_SLOT( bvec, offset, INT_32 ) = v;
+}
+obj bvec_unpackn_s32( obj bvec, UINT_32 offset )
+{
+  INT_32 v = BVEC_SLOT( bvec, offset, INT_32 );
+  return s32_to_basic( v );
+}
+void bvec_packb_s32( obj bvec, UINT_32 offset, obj value )
+{
+  INT_32 v = basic_to_s32( value );
+  BVEC_SLOT( bvec, offset, INT_32 ) = ntob_s32( v );
+}
+obj bvec_unpackb_s32( obj bvec, UINT_32 offset )
+{
+  INT_32 v = BVEC_SLOT( bvec, offset, INT_32 );
+  return s32_to_basic( bton_s32( v ) );
+}
+void bvec_packl_s32( obj bvec, UINT_32 offset, obj value )
+{
+  INT_32 v = basic_to_s32( value );
+  BVEC_SLOT( bvec, offset, INT_32 ) = ntol_s32( v );
+}
+obj bvec_unpackl_s32( obj bvec, UINT_32 offset )
+{
+  INT_32 v = BVEC_SLOT( bvec, offset, INT_32 );
+  return s32_to_basic( lton_s32( v ) );
+}
+void bvec_packn_u64( obj bvec, UINT_32 offset, obj value )
+{
+  UINT_64 v = basic_to_u64( value );
+  BVEC_SLOT( bvec, offset, UINT_64 ) = v;
+}
+obj bvec_unpackn_u64( obj bvec, UINT_32 offset )
+{
+  UINT_64 v = BVEC_SLOT( bvec, offset, UINT_64 );
+  return u64_to_basic( v );
+}
+void bvec_packb_u64( obj bvec, UINT_32 offset, obj value )
+{
+  UINT_64 v = basic_to_u64( value );
+  BVEC_SLOT( bvec, offset, UINT_64 ) = ntob_u64( v );
+}
+obj bvec_unpackb_u64( obj bvec, UINT_32 offset )
+{
+  UINT_64 v = BVEC_SLOT( bvec, offset, UINT_64 );
+  return u64_to_basic( bton_u64( v ) );
+}
+void bvec_packl_u64( obj bvec, UINT_32 offset, obj value )
+{
+  UINT_64 v = basic_to_u64( value );
+  BVEC_SLOT( bvec, offset, UINT_64 ) = ntol_u64( v );
+}
+obj bvec_unpackl_u64( obj bvec, UINT_32 offset )
+{
+  UINT_64 v = BVEC_SLOT( bvec, offset, UINT_64 );
+  return u64_to_basic( lton_u64( v ) );
+}
+void bvec_packn_s64( obj bvec, UINT_32 offset, obj value )
+{
+  INT_64 v = basic_to_s64( value );
+  BVEC_SLOT( bvec, offset, INT_64 ) = v;
+}
+obj bvec_unpackn_s64( obj bvec, UINT_32 offset )
+{
+  INT_64 v = BVEC_SLOT( bvec, offset, INT_64 );
+  return s64_to_basic( v );
+}
+void bvec_packb_s64( obj bvec, UINT_32 offset, obj value )
+{
+  INT_64 v = basic_to_s64( value );
+  BVEC_SLOT( bvec, offset, INT_64 ) = ntob_s64( v );
+}
+obj bvec_unpackb_s64( obj bvec, UINT_32 offset )
+{
+  INT_64 v = BVEC_SLOT( bvec, offset, INT_64 );
+  return s64_to_basic( bton_s64( v ) );
+}
+void bvec_packl_s64( obj bvec, UINT_32 offset, obj value )
+{
+  INT_64 v = basic_to_s64( value );
+  BVEC_SLOT( bvec, offset, INT_64 ) = ntol_s64( v );
+}
+obj bvec_unpackl_s64( obj bvec, UINT_32 offset )
+{
+  INT_64 v = BVEC_SLOT( bvec, offset, INT_64 );
+  return s64_to_basic( lton_s64( v ) );
+}
+void bvec_packn_f32( obj bvec, UINT_32 offset, obj value )
+{
+  IEEE_32 v = basic_to_f32( value );
+  BVEC_SLOT( bvec, offset, IEEE_32 ) = v;
+}
+obj bvec_unpackn_f32( obj bvec, UINT_32 offset )
+{
+  IEEE_32 v = BVEC_SLOT( bvec, offset, IEEE_32 );
+  return f32_to_basic( v );
+}
+void bvec_packb_f32( obj bvec, UINT_32 offset, obj value )
+{
+  IEEE_32 v = basic_to_f32( value );
+  BVEC_SLOT( bvec, offset, IEEE_32 ) = ntob_f32( v );
+}
+obj bvec_unpackb_f32( obj bvec, UINT_32 offset )
+{
+  IEEE_32 v = BVEC_SLOT( bvec, offset, IEEE_32 );
+  return f32_to_basic( bton_f32( v ) );
+}
+void bvec_packl_f32( obj bvec, UINT_32 offset, obj value )
+{
+  IEEE_32 v = basic_to_f32( value );
+  BVEC_SLOT( bvec, offset, IEEE_32 ) = ntol_f32( v );
+}
+obj bvec_unpackl_f32( obj bvec, UINT_32 offset )
+{
+  IEEE_32 v = BVEC_SLOT( bvec, offset, IEEE_32 );
+  return f32_to_basic( lton_f32( v ) );
+}
+void bvec_packn_f64( obj bvec, UINT_32 offset, obj value )
+{
+  IEEE_64 v = basic_to_f64( value );
+  BVEC_SLOT( bvec, offset, IEEE_64 ) = v;
+}
+obj bvec_unpackn_f64( obj bvec, UINT_32 offset )
+{
+  IEEE_64 v = BVEC_SLOT( bvec, offset, IEEE_64 );
+  return f64_to_basic( v );
+}
+void bvec_packb_f64( obj bvec, UINT_32 offset, obj value )
+{
+  IEEE_64 v = basic_to_f64( value );
+  BVEC_SLOT( bvec, offset, IEEE_64 ) = ntob_f64( v );
+}
+obj bvec_unpackb_f64( obj bvec, UINT_32 offset )
+{
+  IEEE_64 v = BVEC_SLOT( bvec, offset, IEEE_64 );
+  return f64_to_basic( bton_f64( v ) );
+}
+void bvec_packl_f64( obj bvec, UINT_32 offset, obj value )
+{
+  IEEE_64 v = basic_to_f64( value );
+  BVEC_SLOT( bvec, offset, IEEE_64 ) = ntol_f64( v );
+}
+obj bvec_unpackl_f64( obj bvec, UINT_32 offset )
+{
+  IEEE_64 v = BVEC_SLOT( bvec, offset, IEEE_64 );
+  return f64_to_basic( lton_f64( v ) );
+}

@@ -1,0 +1,222 @@
+* (2002-04-16)
+  Better script support
+  --> Edit script arguments
+  --> Using favorite editor
+        xterm -e vi /tmp/file
+        emacs /tmp/file
+  --> Explode
+
+* (2002-04-16)
+  Better X interaction
+  --> Close-window processing
+  --> Transient windows under Sawfish
+
+* (2002-04-16)
+  Better path handling
+  --> Change point constraint (Alt-drag => unconstrained handle motion?)
+  --> Show subpath selection (anchors, segments)
+  --> Area-select subpaths
+  --> Path join
+  --> Path split
+  --> Paths as script arguments
+  --> Apply arrow script
+
+* (2000-12-21)
+  Improve selection flexibility
+  --> The "handle id" is weak in expressing new kinds of
+      selectability.  Even implementing path-point selection
+      is nearly intractable.  Need some kind of transient abstract
+      <selected-item> which makes up the selection set, and 
+      references relevant graphic objects.
+  --> The "generic-dragger" should work for transformations other
+      than translation -- it should work for skew, rotate, etc.
+  --> Handle multiple-object selection better
+      * status view
+      * drag everything together
+      * select by area-drag (`completely-inside' or `some-inside' rule?)
+
+* (2000-12-18)
+  Add inspectors for system control
+  --> Stroke style (width, color, join, ...)
+  --> Fill style (color, complex fills, ...)
+  --> Font style
+  --> Page style
+  --> Layers
+  --> Style Dictionary
+  --> Grid (spacing, color, stipple, origin in user units)
+  --> Ruler (units, origin on paper, grid/user units?)
+  --> Undo/Revert Memory, GC
+  --> Object (position, size, ...)
+  --> Transform (Rotate, Scale, Skew, ...)
+
+* (2000-12-18)
+  Add complex fills
+  --> Gradient (linear/radial)
+  --> "Set Gradient Vector" tool
+  --> Pattern
+  --> Tile
+  --> PostScript (how to render?)
+
+* (2000-12-18)
+  Clip grid redraw to page outline
+
+* (2000-12-18)
+  Add rulers
+  --> drag origin from ruler corner
+
+* (2000-12-18)
+  Add guide layer
+  --> drag H/V guide from ruler
+
+* (2000-12-18)
+  Incorporate DESIGN and STYLES into doc/
+
+* (2000-12-18)
+  Integrate with RStep (gui.rstep.x) package
+   --> replace <client> with <dv-application>;
+       let RStep handle <client>
+
+* (2000-12-09)
+  Finish initial implentation of `script' object
+   --> finish object/script.scm, with `insert-scripted' tool
+   --> script palette
+   --> script/envelope.scm
+   --> macros/memorymap.scm
+   --> macros/statediagram.scm
+
+* (2000-12-05)
+   Filter/plugin architecture and samples
+   --> outline path
+   --> trim path (cut at intersection)
+       (analytic solution when parameters are exact?)
+
+* (2000-12-05)
+   XML (SVG) output format
+   --> Export
+   --> Backup-"save"
+
+* (2000-12-05)
+   Grouped objects
+   --> Property changes apply throughout group
+   --> Generic "explode"
+       explode: box -> path
+                circle -> path
+                path -> subpaths
+                text -> char...
+                group -> element...
+                char -> path
+                line -> path
+
+* (2000-12-05)
+  Rotate/Scale tools
+
+* (2000-12-05)
+  "Magnetize" objects for object-based snap-to
+
+* (2000-12-05)
+  Fix dragging of some objects
+  --> text has an offset
+  --> rects, lines, groups, etc. should drag outlines
+      (unless user clicks-and-hold, in which case draw to 
+      offscreen buffer and composite on to drag)
+
+
+* (2000-12-05)
+  Support window-close from window manager
+  --> on Minibuffer
+
+* (2000-12-05)
+  Filename completion in minibuffer
+  --> emacs-like filename completion popup list, 
+      where more TABs page through it (Some GUIs do part of this
+      by putting the `in-doubt' text to the right of the insertion
+      point, selected.  These semantics are consistent with type-to
+      overwrite selection.)
+  --> "Browse" filesystem option
+
+* (2000-12-05)
+  Text selection in minibuffer(s)
+
+* (2000-12-05)
+  Fix `find-bpp-and-pad' in gui.util.x
+
+* (1998-10-28)
+  Rework `current-geometry' to map from sheet coords to PAGE coords
+  to avoid roundoff accumulation error.  This involves moving it up
+  out of the driver, which is good anyway and can probably solve
+  the redraw annoyance (also, we don't need to always recompute
+  current-geometry -- just do it when dragging or clicking)
+
+* (1998-05-25)
+  Add text graphic objects
+  -- partially done
+  --> (2000-12-05) Select textually
+  --> (2000-12-05) interactive commands for setting alignment, font, etc.
+
+* (1998-05-25)
+  Add polylines and bezier curves
+  -- partially done
+  --> (2000-12-05) Implement path join and scissor
+  --> Implement corner/semismooth/smooth and point conversions
+  --> Implement fill and stroke styles
+
+* (1998-05-25)
+  Load/Save/Undo
+  -- partially done
+  --> (2000-12-05) Implement Undo
+
+* (1998-05-30)
+  Factor out lightweight event management to be sharable
+  by other applications (gui.app.framework.lightweight ?)
+
+* (1998-05-30)
+  Implement window resizing (that is, resize the window contents!)
+  --> Note that RStep may do this for us...
+  --> Find out what Robert's approach was.
+
+* (1998-05-30)
+  WM_NORMAL_HINTS for initial window placement from saved
+  positions.
+
+* (1998-05-30)
+  Effective (instead of just introspective) scrollbars
+  Scrollbar buttons
+  --> Fix initial non-centered placement
+  --> Fix divide-by-zero bug
+
+* (1998-05-31)
+  Support multiple displays; seperate out common frame concepts
+  from document graphic view concepts.
+
+* (1998-05-31)
+  Implement an effective inspector, i.e., one that can modify
+  the selected object.
+
+* (1998-06-05)
+  Add page functions `goto-page', `insert-page', `delete-page'
+
+* (1998-06-05)
+  Cut/copy/paste objects
+    - graphic objects
+    - pages
+    - layers
+
+* (1998-06-05)
+  Add view-local variables like `point'
+
+* (1998-06-05)
+  Add `C-x o' (other-window) for circulating among app windows
+
+* (1998-06-05)
+  Add (frame) or (rect) interactive type
+
+* (1998-06-05)
+  Add dialog interpreter (generalization of minibuffer)
+  -- partially done
+
+* (1998-06-05)
+  Add tabbed widget for inspectors etc.
+
+* (1998-06-05)
+  Add color to graphic objects
+

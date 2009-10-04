@@ -1,0 +1,101 @@
+#! /u/donovan/bin/rsq -*-scheme-*-
+
+(load "module.scm")
+
+,(use app.indexer)
+,(use rs.util.stdopt)
+,(use paths)
+
+(define *optspec*
+  (make <opt-spec>
+    options: '((#\v verbose)
+	       (#\u update)
+	       (#\h help)
+	       (#\c create)
+	       (#\m mailbox)
+	       (#\f file 1))))
+
+(define *v* 0)
+
+(define $default-file "/tmp/DocumentIndex.sto")
+
+(define (main args)
+  (let ((update-mode? #f)
+	(create? #f)
+	(mailbox-mode? #f)
+	(file #f))
+    (let loop ((i args))
+      (bind ((opt i x0 (getopt i *optspec*)))
+	(if opt
+	    (begin
+	      (case opt
+		((verbose) 
+		 (set! *v* (+ *v* 1)))
+		((file)
+		 (set! file x0))
+		((mailbox)
+		 (set! mailbox-mode? #t))
+		((create)
+		 (set! create? #t))
+		((help)
+		 (usage))
+		((update)
+		 (set! update-mode? #t)))
+	      (loop i))
+	    (let ((f (or file $default-file)))
+	      (if update-mode?
+		(run-update f (non-options i) create? mailbox-mode?)
+		(if create?
+		    (usage)
+		    (run-query f (non-options i))))))))))
+
+;;;
+
+(define (run-query database-file args)
+  (let ((ix (access-document-index file: database-file)))
+    (for-each
+     (lambda (e)
+       (format #t "> ~a\n" e))
+     (eval-query ix (read (open-input-string (car args)))))
+    (close-document-index ix)))
+
+(define (with-messages-from-port port proc)
+  (let ((text (port->string port)))
+    (if (string=? text "")
+	(values)
+	(let ((msgs (string-split (string-append "\n" text) "\nFrom")))
+	  (assert (string=? (car msgs) ""))
+	  (for-each proc (cdr msgs))))))
+
+(define (run-update database-file args create? mailbox-mode?)
+  (let ((ix (if (or create? (not (file-exists? database-file)))
+		(make-document-index file: database-file)
+		(open-document-index file: database-file)))
+	(genlist (if (equal? args '("-"))
+		     (list (lambda ()
+			     (values (current-input-port)
+				     (lambda (p)))))
+		     (map (lambda (f)
+			    (lambda ()
+			      (values (open-input-file f)
+				      close-input-port)))
+			  args))))
+    (define (add str)
+      (add-document ix
+		    type: 'email
+		    content: str))
+    ;;
+    (if (null? genlist)
+	(error "nothing to update from")
+	(for-each
+	 (lambda (open-src)
+	   (bind ((p closer (open-src)))
+	     (if mailbox-mode?
+		 (with-messages-from-port p add)
+		 (add (port->string p)))
+	     (closer p)))
+	 genlist))
+     (close-document-index ix)))
+
+(define (t)
+  (main '("-cvf" "/tmp/foo.sto" "-u" "msg1")))

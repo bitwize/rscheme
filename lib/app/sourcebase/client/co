@@ -1,0 +1,81 @@
+#!/bin/sh
+#
+#  usage:  co [-rrev] [-l] [-kk] [-p] file...
+#          co [-u] file...
+#          co [-R] dir...
+#
+
+sb=sb
+
+flags=""
+recursive=false
+
+find_top() {
+   p="$1"
+   if test -f $p
+   then p=${p%/*}
+   fi
+   case "$p" in
+     /*) ;;
+     *) p=$PWD/$p
+   esac
+   fullp="$p"
+
+   while ! test -f $p/.top
+   do p1="${p%/*}"
+      if test "$p" = "$p1"
+      then echo "\`.top' not found"
+           exit 1
+      fi
+      p=$p1
+   done
+   export SB_TOP=$p
+   . $p/.top $fullp
+   if test "$fs" = ""
+   then :
+   else SB_FILESPACE="$fs"
+   fi
+}
+
+strip_top () {
+   while test $# -gt 0
+   do a=$1
+      echo ${a#$SB_TOP}
+      shift
+   done
+}
+
+do_unlock() {
+  $sb --file "$@" $flags --unlock
+}
+
+do_checkout() {
+  $sb --file "$@" $flags --checkout
+}
+
+do_tar() {
+  $sb --file "$@" --tar
+}
+
+cmd=do_checkout
+
+while test $# -gt 0
+do case "$1" in
+    -l)  flags="$flags --lock" ;;
+    -kk) flags="$flags --nokeys" ;;
+    -p)  flags="$flags --stdout" ;;
+    -r*) z="$1"
+         flags="$flags --version ${z#-r}" ;;
+    -f*)  z="$1"
+	  fs="${z#-f}"
+          ;;
+    -u)  cmd=do_unlock ;;
+    -R)  cmd=do_tar ;;
+    -*)  echo "unrecognized option '$1'"
+         exit 1 ;;
+    *)   find_top $1
+         $cmd `strip_top $@`
+         exit $? ;;
+   esac
+   shift
+done

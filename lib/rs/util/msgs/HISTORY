@@ -1,0 +1,8 @@
+History
+=======
+
+1997-09-30	various fixes and semantic changes; addition
+		of warning messages, message types, unified message
+		prefixes, etc.
+
+1997-09-28	initial implementation

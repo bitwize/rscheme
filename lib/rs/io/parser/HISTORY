@@ -1,0 +1,7 @@
+History
+=======
+
+1997-09-26	converted to module using `define-module', 
+		removed subparts (scanner and charsets) to other modules
+
+1996-11-24	initial implementation for prototype RS 0.9

@@ -1,0 +1,100 @@
+{chapter}Character Sets and Tables
+{ch.front}
+{p}
+A character table is a special kind of table which
+is specialized to use characters as keys.  Character sets
+are further specialized to have boolean values.
+<!>
+{notice}The functionality described in this chapter is available
+in the {typed}rs/util/charset{/typed} module.{/notice}
+{p}
+Since character sets and tables are kinds of tables,
+the common table operations are available.  In particular,
+{var/key-sequence/ and {var/value-sequence/ may be used
+to extract their contents.  (Of course, the value sequence
+of a character set is somewhat boring; it contains only
+&t; values!).
+<!>
+{section}Common Character Sets
+{p}
+Some common character sets are exported from
+this module as instances
+of {var/<char-set>/.  The following character
+classes are available:
+<!>
+{table}
+{tablehead}name|description
+{row}*digit*|decimal digits: 0, 1, ..., 9
+{row}*hex-digit*|hexadecimal digits: 0, 1, ..., 9, a, ... , f, A, ..., F
+{row}*octal-digit*|octal digits: 0, 1, ... 7
+{row}*letter*|letters: a, ..., z, A, ..., Z
+{row}*whitespace*|whitespace: newline, space, tab, form-feed (ff), and carriage return (cr)
+{/table}
+
+{section}Scanner
+{p}
+The token scanner ({typed}rs/io/scanner{/typed}) also exports
+some character sets which are used in the process of scanning
+tokens.
+<!>
+{table}
+{tablehead}name|description
+{row}*id-initial*|initial identifier characters
+{row}*id-continued*|subsequent identifier characters
+{row}*num-initial*|initial numeric characters
+{row}*num-continued*|subsequent numeric characters
+{row}*special-initial*|initial special characters
+{row}*special-continued*|subsequent special characters
+{/tablehead}
+<!>
+{section}Functions and Methods
+======================================================================
+(char-set-union (charset <char-set>)) => ((set <char-set>))
+Create union of given character sets.
+
+Create a new character set whose membership is the union
+of the given {arg/charset/s.  If no arguments are given,
+return a new, empty character set.
+======================================================================
+(make-char-set) => ((set <char-set>))
+Create an empty character set.
+
+Create an empty character set.
+======================================================================
+(make-char-table) => ((set <char-table>))
+Create an empty character table.
+
+Create an empty character table.
+======================================================================
+(members->char-set (chars <collection>)) => ((set <char-set>))
+Construct a populated character set.
+
+Construct a character set with initial contents as given
+in the collection of characters, {arg/chars/.  The collection
+can be a {var/<string>/, a {var/<list>/, or a {var/<vector>/.
+The latter two collections should have members 
+======================================================================
+(key-sequence (set <char-set>)) => ((chars <vector>))
+Get a sequence of {arg/set/'s keys.
+
+Construct a {var/<vector>/ sequence containing 
+the keys in the character
+set.
+======================================================================
+(key-sequence (table <char-table>)) => ((chars <vector>))
+Get a sequence of {arg/table/'s keys.
+
+Construct a {var/<vector>/ sequence containing
+the keys in the character
+table.
+======================================================================
+(value-sequence (table <char-table>)) => ((values <vector>))
+Get a sequence of {arg/table/'s value.
+
+Construct a {var/<vector>/ sequence containing
+the values in the character
+table.  As per the table protocol, the order of
+elements in {arg/values/ is the same as the order
+of elements in the value returned by {var/key-sequence/
+(provided no changes have been made to {arg/table/).
+======================================================================

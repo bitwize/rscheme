@@ -1,0 +1,20 @@
+
+Chapter 10 (tables), doesn't explicitly mention that the "tables"
+module must be loaded.
+
+The library from CVS would not compile. Errors regarding malformed
+numbers such as 1/3 were emitted.
+
+The function 'make-inet-addr' doesn't exist. Should I use
+string->inet-addr instead?
+
+What should I provide for the 'out-of-band?' argument to 'recv-from'?
+
+What should I provide in the 'peer-class' argument to 'recv-from'?
+
+socket-bind/inet-sockaddr isn't documented.
+
+There's a typo near the docs for socket-bind/inet. The name appears as
+'socket-bindinet/'.
+
+

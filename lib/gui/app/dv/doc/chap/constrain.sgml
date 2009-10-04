@@ -1,0 +1,186 @@
+<!-- -*- mode: sgml; mode: auto-fill; fill-column: 60 -*-  -->
+
+<chapter> <title>Mouse Activity</title>
+
+<para>
+Mouse activity starts in the form of a button-press
+event in the content window.  A button press is either a
+selection attempt or a manipulation of an object, or both.
+
+<para>
+The mouse point is sent to the handler in device
+coordinates; it is up to the handler to apply the
+appropriate constraints.  This is for flexibility in
+handling, and consistency among the different interfaces
+(&eg;, <function>start-active-drag-handle</function>,
+<function>drawbox-button-press</function>, etc.) although
+it should by no means be interpreted as a license for
+arbitrarily different handling!
+
+<sect1><title>Event Interpretation</title>
+
+<para>
+As usual, the problem of determining the user's intention is
+quite tricky.  A very specific algorithm has been developed
+to try to provide the common behaviors that users are likely to
+expect (partly from experience with other popular drawing
+programs, such as Illustrator and Virtuoso) while at the
+same time providing flexibility and a clean mental model.
+
+<para>
+If the button-press is close to an active object handle,
+then the event is interpreted as a manipulation
+(<quote>drag</quote>) of the closest handle.  For this
+purpose, closeness means within a few device pixels.
+
+<para>
+If the location is within the fill region of a selected
+object, then the event is interpreted as a translation drag
+of the object.
+
+<para>
+Otherwise, the event is interpreted as a selection attempt.
+If the location is close to the stroke path of an object,
+that object is selected and any subsequent drag is
+interpreted as a translation drag.  If the location is close
+to a handle of the newly selected object, the drag is
+interpreted as a translation drag with that handle as the anchor.
+
+<para>
+If the location is within the fill region of an object, that
+object is selected and a subsequent drag is interpreted as a
+translation drag.  As above, if the location is close to a
+handle of the newly selected object, the drag is relative to
+that handle.
+
+<sect1><title><quote>Through</quote> Selection</title>
+
+<para>
+If the Alt modifier is present on the button-press event,
+then the event is always interpreted as a selection attempt
+with the constraint that the resulting selected object must not be
+above (in z-order) a currently selected object if the
+currently selected object is otherwise a possible target of
+the selection.
+
+<para>
+Hence, it is possible to select a buried object by holding
+down Alt and clicking until the desired object is selected.
+Similarly, it is possible to select a stack of objects N
+deep by holding down Alt and Shift while clicking N times.
+
+<sect1><title>Constraints</title>
+
+<para>
+There are several kinds of constraints which may be applied
+during mouse activity which is manipulating an object.
+(Mouse activity which is a selection attempt is never
+constrained.)
+
+<itemizedlist>
+  <listitem><formalpara><title>Geometry</title>
+                <para>If <quote>snap to geometry</quote> is
+                enabled for a given view, then, if the
+                device coordinate is close to that of an
+                object's handle, the location is
+                <quote>snapped</quote> to that of the handle.
+  <listitem><formalpara><title>Grid</title>
+                <para>If <quote>snap to grid</quote> is
+                turned on for a given view, then the user
+                coordinates are restricted to integer points
+                when expressed in the <quote>grid geometry</quote>.
+  <listitem><formalpara><title>Relative</title>
+                <para>If the Shift modifier is held down
+                during a drag, a relative constraint is
+                imposed.  Typically, this is in the form of
+                an angular constraint (&eg;, motion only
+                in a 45&deg; angle from the drag anchor),
+                although one might imagine a pluggable
+                Shift-constraint hook.  Also, whether or not
+                the constraint is relative to the start of
+                the drag or the <quote>other end</quote> of
+                the object varies.
+  <listitem><formalpara><title>Object</title>
+                <para>An object may have an explicit
+                constraint bound to it.  For example, a line
+                object may have a <quote>length =
+                1in</quote> constraint imposed by the user.
+</itemizedlist>
+
+<para>
+Constraints are applied during the transformation of a mousing
+location from device (view) coordinates to user coordinates.
+This way, if a grid or geometry constraint is applied, the
+resulting user coordinate value is
+<emphasis>exacty</emphasis> the correct value, and there is
+no accumulation of error through a view transformation and
+its inverse.
+
+<para>
+All constraints are expressed, for a particular
+transformation, as &lt;geometric&gt; objects in user space.
+During the first pass, each constraint chooses a geometric
+and assigns it a weight.  Constraints which are out of
+bounds (&ie;, outside their configured tolerance) do not
+contribute.  The resulting weights are sorted, and the top
+set of compatible constraints are chosen.
+
+<para>
+If the strongest weight is a 0-dimensional object, then that
+location is chosen.
+
+<para>
+If the strongest weight is a 1-dimensional object, then the
+next strongest object is chosen.  If that is 0-dimensional,
+then that location is constrained to the 1-dimensional
+geometry and the resulting location used.  On the other
+hand, if it is 1-dimensional, then the intersection of the
+two curves is taken.  If the resulting manifold is
+1-dimensional, then the process repeats.  If the result is a
+close point, then that point is used.  If the result is a
+distant point, then the process continues.
+
+<para>
+Note that the first pass discards any geometry that is out
+of range, and no new geometry is introduced which is out of
+range.  Hence, the resulting location is within range.
+Furthermore, note that a 0-dimensional object must result,
+because the original point in user space is included.
+
+<para>
+Note that this algorithm is a special case of a general
+process of dimensionality reduction.  The system applies
+constraints in order of strength until constrained to a single point.
+
+<para>
+This scheme enables constraints to express as arbitrary
+curves and the system 
+
+<itemizedlist>
+  <listitem><para>0 - original point
+  <listitem><para>30 - unselected geometry
+  <listitem><para>40 - selected geometry
+  <listitem><para>50 - guides
+  <listitem><para>70 - grid
+  <listitem><para>100 - relative
+</itemizedlist>
+
+<sect1><title>Transient Constraints</title>
+
+<para>
+&dv; supports <emphasis>transient constraints</emphasis>,
+which are certain kinds of geometry that are temporarily
+added to the constraint space during mouse motion.
+
+<para>
+When enabled for the current tool, &dv; maintains a set of
+current transient constraints.  Initially, and at the end of
+every mouse up and mouse down event, the set is empty.
+During mouse motion, if the cursor snaps to 0-dimensional
+geometry, then 4 lines are added to the transient constraint
+set (the 4 lines are at 0, 45, 90, and 135 degrees and
+intersecting at the geometry).  If the cursor snaps to a
+1-dimensional geometric, then a line is added to the
+transient constraint which is parallel to the slope of the
+geometric at the snap point, and intersects the geometric at
+that point.

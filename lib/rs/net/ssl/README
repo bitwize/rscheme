@@ -1,0 +1,147 @@
+
+_______________________________________________________________________________
+
+Generating certificates for the https.scm demo program:
+
+  openssl req -passout pass:foobar \
+              -keyout root.private -out root.cert \
+              -newkey rsa:768 -x509 \
+              -subj '/C=US/ST=Texas/L=Austin/OU=RScheme Development/CN=keyman'
+
+  openssl req -passout pass:foobar \
+              -keyout server.private -out server.csr \
+              -newkey rsa:768 \
+              -subj '/C=US/ST=Texas/L=Austin/OU=RScheme Development/CN=moon.westgate.xynthesis.com'
+
+  openssl req -passout pass:foobar \
+              -keyout client.private -out client.csr \
+              -newkey rsa:768 \
+              -subj '/C=US/ST=Texas/L=Austin/OU=RScheme Development/CN=samiam'
+
+  openssl x509 -req -set_serial 123 -CA root.cert -CAkey root.private \
+               -in server.csr -out server.cert
+
+  openssl x509 -req -set_serial 456 -CA root.cert -CAkey root.private \
+               -in client.csr -out client.cert
+
+  
+
+  # Remove the passphrase (for some reason, 'req' wont let you specify
+  # an empty passphrase)
+
+  mv server.private server.prot
+  openssl rsa -in server.prot -out server.private \
+              -passin pass:foobar -passout pass:
+
+  cp root.cert self.cert
+
+
+_______________________________________________________________________________
+
+SSLMGR(1)                        RScheme                               SSLMGR(1)
+
+NAME
+      sslmgr - manage SSL connections for RScheme
+
+SYNOPSIS
+      sslmgr [-e] [-F] [-c CERT] [-k KEY] [-A CA] [-T TRUST] -p PORT
+
+DESCRIPTION
+
+  The SSL adaption process (compiled into the `sslmgr' executable)
+  is responsible for reading and writing SSL data based on plaintext
+  supplied to it via it's stdin and stdout.
+
+  sslmgr can operate in either "framing" or "passthrough" mode.  In
+  framing mode, status and control data is multiplexed over stdin/stdout
+  using a binary framing protocol.  This mode is intended to be used
+  to communicate with a parent (RScheme) process.
+
+  In passthrough mode, there is no control channel and status is reported
+  out stderr.  This is useful for testing from the command line.
+
+  Command-line usage:
+
+    -e          Request a peer certificate
+
+    -E          Require a peer certificate
+
+    -q          Operate quietly (no status messages)
+
+    -v          Operate verbosely (lots more status messages)
+
+    -F          Turn on framing mode (used to mux control/data on fd 0, 1)
+
+    -c CERT     Set this side's certificate (CERT should be a PEM-format file)
+
+    -k KEY      Set this side's private key (KEY should be a PEM-format private key)
+
+    -A CA       Set the CA certificate that will be sent to the peer
+                when requesting a peer certificate (the peer theoretically
+                can choose which certificate to send based on the CA listed.)
+                (Currently, only one '-A' may be supplied.)
+
+    -T TRUST    Set the trust store, which is a file containing a concatenation
+                of PEM-formatted certificates corresponding to CAs that we
+                trust for the purpose of verifying the peer.
+
+    -p PORT     Configure how we'll connect to the SSL peer.  This can be
+                in one of the following formats:
+
+                fdsrv:N                 Be a server on file descriptor N
+                fdclient:N              Be a client on file descriptor N
+                listen:PORT             Be an inet server on port PORT
+                connect:HOST:PORT       Be an inet client, connecting to
+                                        host HOST on port PORT
+
+EXIT STATUS
+
+  The exit status is 0 in case of a successful, clean shutdown either
+  locally initiated or from the peer.  Otherwise, the exit status
+  indicates the nature of the error:
+
+     1  Option or argument syntax error (missing required argument,
+        inability to parse given file, etc.)
+
+     2  Local protocol problem (i.e., framing error) or internal problem
+
+     3  I/O error attempting to establish connection
+
+     4  I/O or SSL error after connection establishment
+
+     5  I/O or SSL error during connection shutdown
+
+
+BUGS
+
+  Only one '-A' option can be supplied, even though the protocol supports
+  sending a whole list of CAs that this side will select
+
+EXAMPLE
+
+  Given some certificates as needed...
+
+  to act as the server,
+
+        
+        % sslmgr -T root.cert -A root.cert -e \
+                 -c server.cert -k server.private \
+                 -p listen:9990
+
+  meanwhile, to be the client to it:
+
+        % sslmgr -A root.cert \
+                 -c client.cert -k client.private \
+                 -p connect:localhost:9990
+
+  stdin on each side will be sent via SSL to the peer and printed on stdout.
+
+  curl can also be used as the client
+
+        % cat client.private client.cert > client.x
+        % curl -E client.x:foobar
+
+COMPILING
+
+  gcc -DOPENSSL_NO_KRB5 -g -Wall server.c -o sslmgr  -lssl
+

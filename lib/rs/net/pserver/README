@@ -1,0 +1,19 @@
+
+To set things up...
+
+
+  rsf -q test.scm
+  =>(init-testfam)
+
+
+To run the pserver
+
+  rsf -q test.scm
+  =>(t)
+
+
+To access it:
+
+  export CVSROOT=:pserver:donovan@localhost:2401/sb/testfam/foo
+  cvs co a
+  perl -pi.bak -e 's/What/WHAT/' a/x/one.txt

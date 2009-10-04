@@ -1,0 +1,12 @@
+,(use rs.io.parser)
+,(use rs.io.textport)
+(define (chk str)
+  (let ((p (make-text-input-port (open-input-string str))))
+    (let loop ()
+      (let ((n (input-port-parse p)))
+        (if (eof-object? n)
+            (values)
+             (begin
+              (format #t "~a: ~s\n" (location (start-token n)) 
+			            (parse->datum n))
+	      (loop)))))))

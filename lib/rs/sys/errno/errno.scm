@@ -1,0 +1,514 @@
+
+(define-safe-glue (make-errno-list)
+  properties: ((other-h-files "<errno.h>"))
+{
+  obj first = cons( ZERO, NIL_OBJ );
+  obj last, entry;
+
+  last = first;
+
+#define ERROR_SYMBOL(n)  \
+        do { entry = cons( cons( lookup_symbol( # n ), int2fx( n ) ), \
+                           NIL_OBJ );\
+             pair_set_cdr( last, entry ); \
+             last = entry; } while (0)
+
+#ifdef E2BIG
+ERROR_SYMBOL(E2BIG);
+#endif
+
+#ifdef EACCES
+ERROR_SYMBOL(EACCES);
+#endif
+
+#ifdef EADDRINUSE
+ERROR_SYMBOL(EADDRINUSE);
+#endif
+
+#ifdef EADDRNOTAVAIL
+ERROR_SYMBOL(EADDRNOTAVAIL);
+#endif
+
+#ifdef EADV
+ERROR_SYMBOL(EADV);
+#endif
+
+#ifdef EAFNOSUPPORT
+ERROR_SYMBOL(EAFNOSUPPORT);
+#endif
+
+#ifdef EAGAIN
+ERROR_SYMBOL(EAGAIN);
+#endif
+
+#ifdef EALREADY
+ERROR_SYMBOL(EALREADY);
+#endif
+
+#ifdef EBADE
+ERROR_SYMBOL(EBADE);
+#endif
+
+#ifdef EBADF
+ERROR_SYMBOL(EBADF);
+#endif
+
+#ifdef EBADFD
+ERROR_SYMBOL(EBADFD);
+#endif
+
+#ifdef EBADMSG
+ERROR_SYMBOL(EBADMSG);
+#endif
+
+#ifdef EBADR
+ERROR_SYMBOL(EBADR);
+#endif
+
+#ifdef EBADRQC
+ERROR_SYMBOL(EBADRQC);
+#endif
+
+#ifdef EBADSLT
+ERROR_SYMBOL(EBADSLT);
+#endif
+
+#ifdef EBFONT
+ERROR_SYMBOL(EBFONT);
+#endif
+
+#ifdef EBUSY
+ERROR_SYMBOL(EBUSY);
+#endif
+
+#ifdef ECHILD
+ERROR_SYMBOL(ECHILD);
+#endif
+
+#ifdef ECHRNG
+ERROR_SYMBOL(ECHRNG);
+#endif
+
+#ifdef ECOMM
+ERROR_SYMBOL(ECOMM);
+#endif
+
+#ifdef ECONNABORTED
+ERROR_SYMBOL(ECONNABORTED);
+#endif
+
+#ifdef ECONNREFUSED
+ERROR_SYMBOL(ECONNREFUSED);
+#endif
+
+#ifdef ECONNRESET
+ERROR_SYMBOL(ECONNRESET);
+#endif
+
+#ifdef EDEADLK
+ERROR_SYMBOL(EDEADLK);
+#endif
+
+#ifdef EDEADLOCK
+ERROR_SYMBOL(EDEADLOCK);
+#endif
+
+#ifdef EDESTADDRREQ
+ERROR_SYMBOL(EDESTADDRREQ);
+#endif
+
+#ifdef EDOM
+ERROR_SYMBOL(EDOM);
+#endif
+
+#ifdef EDOTDOT
+ERROR_SYMBOL(EDOTDOT);
+#endif
+
+#ifdef EDQUOT
+ERROR_SYMBOL(EDQUOT);
+#endif
+
+#ifdef EEXIST
+ERROR_SYMBOL(EEXIST);
+#endif
+
+#ifdef EFAULT
+ERROR_SYMBOL(EFAULT);
+#endif
+
+#ifdef EFBIG
+ERROR_SYMBOL(EFBIG);
+#endif
+
+#ifdef EHOSTDOWN
+ERROR_SYMBOL(EHOSTDOWN);
+#endif
+
+#ifdef EHOSTUNREACH
+ERROR_SYMBOL(EHOSTUNREACH);
+#endif
+
+#ifdef EIDRM
+ERROR_SYMBOL(EIDRM);
+#endif
+
+#ifdef EILSEQ
+ERROR_SYMBOL(EILSEQ);
+#endif
+
+#ifdef EINPROGRESS
+ERROR_SYMBOL(EINPROGRESS);
+#endif
+
+#ifdef EINTR
+ERROR_SYMBOL(EINTR);
+#endif
+
+#ifdef EINVAL
+ERROR_SYMBOL(EINVAL);
+#endif
+
+#ifdef EIO
+ERROR_SYMBOL(EIO);
+#endif
+
+#ifdef EISCONN
+ERROR_SYMBOL(EISCONN);
+#endif
+
+#ifdef EISDIR
+ERROR_SYMBOL(EISDIR);
+#endif
+
+#ifdef EISNAM
+ERROR_SYMBOL(EISNAM);
+#endif
+
+#ifdef EL2HLT
+ERROR_SYMBOL(EL2HLT);
+#endif
+
+#ifdef EL2NSYNC
+ERROR_SYMBOL(EL2NSYNC);
+#endif
+
+#ifdef EL3HLT
+ERROR_SYMBOL(EL3HLT);
+#endif
+
+#ifdef EL3RST
+ERROR_SYMBOL(EL3RST);
+#endif
+
+#ifdef ELIBACC
+ERROR_SYMBOL(ELIBACC);
+#endif
+
+#ifdef ELIBBAD
+ERROR_SYMBOL(ELIBBAD);
+#endif
+
+#ifdef ELIBEXEC
+ERROR_SYMBOL(ELIBEXEC);
+#endif
+
+#ifdef ELIBMAX
+ERROR_SYMBOL(ELIBMAX);
+#endif
+
+#ifdef ELIBSCN
+ERROR_SYMBOL(ELIBSCN);
+#endif
+
+#ifdef ELNRNG
+ERROR_SYMBOL(ELNRNG);
+#endif
+
+#ifdef ELOOP
+ERROR_SYMBOL(ELOOP);
+#endif
+
+#ifdef EMEDIUMTYPE
+ERROR_SYMBOL(EMEDIUMTYPE);
+#endif
+
+#ifdef EMFILE
+ERROR_SYMBOL(EMFILE);
+#endif
+
+#ifdef EMLINK
+ERROR_SYMBOL(EMLINK);
+#endif
+
+#ifdef EMSGSIZE
+ERROR_SYMBOL(EMSGSIZE);
+#endif
+
+#ifdef EMULTIHOP
+ERROR_SYMBOL(EMULTIHOP);
+#endif
+
+#ifdef ENAMETOOLONG
+ERROR_SYMBOL(ENAMETOOLONG);
+#endif
+
+#ifdef ENAVAIL
+ERROR_SYMBOL(ENAVAIL);
+#endif
+
+#ifdef ENETDOWN
+ERROR_SYMBOL(ENETDOWN);
+#endif
+
+#ifdef ENETRESET
+ERROR_SYMBOL(ENETRESET);
+#endif
+
+#ifdef ENETUNREACH
+ERROR_SYMBOL(ENETUNREACH);
+#endif
+
+#ifdef ENFILE
+ERROR_SYMBOL(ENFILE);
+#endif
+
+#ifdef ENOANO
+ERROR_SYMBOL(ENOANO);
+#endif
+
+#ifdef ENOBUFS
+ERROR_SYMBOL(ENOBUFS);
+#endif
+
+#ifdef ENOCSI
+ERROR_SYMBOL(ENOCSI);
+#endif
+
+#ifdef ENODATA
+ERROR_SYMBOL(ENODATA);
+#endif
+
+#ifdef ENODEV
+ERROR_SYMBOL(ENODEV);
+#endif
+
+#ifdef ENOENT
+ERROR_SYMBOL(ENOENT);
+#endif
+
+#ifdef ENOEXEC
+ERROR_SYMBOL(ENOEXEC);
+#endif
+
+#ifdef ENOLCK
+ERROR_SYMBOL(ENOLCK);
+#endif
+
+#ifdef ENOLINK
+ERROR_SYMBOL(ENOLINK);
+#endif
+
+#ifdef ENOMEDIUM
+ERROR_SYMBOL(ENOMEDIUM);
+#endif
+
+#ifdef ENOMEM
+ERROR_SYMBOL(ENOMEM);
+#endif
+
+#ifdef ENOMSG
+ERROR_SYMBOL(ENOMSG);
+#endif
+
+#ifdef ENONET
+ERROR_SYMBOL(ENONET);
+#endif
+
+#ifdef ENOPKG
+ERROR_SYMBOL(ENOPKG);
+#endif
+
+#ifdef ENOPROTOOPT
+ERROR_SYMBOL(ENOPROTOOPT);
+#endif
+
+#ifdef ENOSPC
+ERROR_SYMBOL(ENOSPC);
+#endif
+
+#ifdef ENOSR
+ERROR_SYMBOL(ENOSR);
+#endif
+
+#ifdef ENOSTR
+ERROR_SYMBOL(ENOSTR);
+#endif
+
+#ifdef ENOSYS
+ERROR_SYMBOL(ENOSYS);
+#endif
+
+#ifdef ENOTBLK
+ERROR_SYMBOL(ENOTBLK);
+#endif
+
+#ifdef ENOTCONN
+ERROR_SYMBOL(ENOTCONN);
+#endif
+
+#ifdef ENOTDIR
+ERROR_SYMBOL(ENOTDIR);
+#endif
+
+#ifdef ENOTEMPTY
+ERROR_SYMBOL(ENOTEMPTY);
+#endif
+
+#ifdef ENOTNAM
+ERROR_SYMBOL(ENOTNAM);
+#endif
+
+#ifdef ENOTSOCK
+ERROR_SYMBOL(ENOTSOCK);
+#endif
+
+#ifdef ENOTTY
+ERROR_SYMBOL(ENOTTY);
+#endif
+
+#ifdef ENOTUNIQ
+ERROR_SYMBOL(ENOTUNIQ);
+#endif
+
+#ifdef ENXIO
+ERROR_SYMBOL(ENXIO);
+#endif
+
+#ifdef EOPNOTSUPP
+ERROR_SYMBOL(EOPNOTSUPP);
+#endif
+
+#ifdef EOVERFLOW
+ERROR_SYMBOL(EOVERFLOW);
+#endif
+
+#ifdef EPERM
+ERROR_SYMBOL(EPERM);
+#endif
+
+#ifdef EPFNOSUPPORT
+ERROR_SYMBOL(EPFNOSUPPORT);
+#endif
+
+#ifdef EPIPE
+ERROR_SYMBOL(EPIPE);
+#endif
+
+#ifdef EPROTO
+ERROR_SYMBOL(EPROTO);
+#endif
+
+#ifdef EPROTONOSUPPORT
+ERROR_SYMBOL(EPROTONOSUPPORT);
+#endif
+
+#ifdef EPROTOTYPE
+ERROR_SYMBOL(EPROTOTYPE);
+#endif
+
+#ifdef ERANGE
+ERROR_SYMBOL(ERANGE);
+#endif
+
+#ifdef EREMCHG
+ERROR_SYMBOL(EREMCHG);
+#endif
+
+#ifdef EREMOTE
+ERROR_SYMBOL(EREMOTE);
+#endif
+
+#ifdef EREMOTEIO
+ERROR_SYMBOL(EREMOTEIO);
+#endif
+
+#ifdef ERESTART
+ERROR_SYMBOL(ERESTART);
+#endif
+
+#ifdef EROFS
+ERROR_SYMBOL(EROFS);
+#endif
+
+#ifdef ESHUTDOWN
+ERROR_SYMBOL(ESHUTDOWN);
+#endif
+
+#ifdef ESOCKTNOSUPPORT
+ERROR_SYMBOL(ESOCKTNOSUPPORT);
+#endif
+
+#ifdef ESPIPE
+ERROR_SYMBOL(ESPIPE);
+#endif
+
+#ifdef ESRCH
+ERROR_SYMBOL(ESRCH);
+#endif
+
+#ifdef ESRMNT
+ERROR_SYMBOL(ESRMNT);
+#endif
+
+#ifdef ESTALE
+ERROR_SYMBOL(ESTALE);
+#endif
+
+#ifdef ESTRPIPE
+ERROR_SYMBOL(ESTRPIPE);
+#endif
+
+#ifdef ETIME
+ERROR_SYMBOL(ETIME);
+#endif
+
+#ifdef ETIMEDOUT
+ERROR_SYMBOL(ETIMEDOUT);
+#endif
+
+#ifdef ETOOMANYREFS
+ERROR_SYMBOL(ETOOMANYREFS);
+#endif
+
+#ifdef ETXTBSY
+ERROR_SYMBOL(ETXTBSY);
+#endif
+
+#ifdef EUCLEAN
+ERROR_SYMBOL(EUCLEAN);
+#endif
+
+#ifdef EUNATCH
+ERROR_SYMBOL(EUNATCH);
+#endif
+
+#ifdef EUSERS
+ERROR_SYMBOL(EUSERS);
+#endif
+
+#ifdef EWOULDBLOCK
+ERROR_SYMBOL(EWOULDBLOCK);
+#endif
+
+#ifdef EXDEV
+ERROR_SYMBOL(EXDEV);
+#endif
+
+#ifdef EXFULL
+ERROR_SYMBOL(EXFULL);
+#endif
+
+  REG0 = pair_cdr( first );
+  RETURN1();
+})

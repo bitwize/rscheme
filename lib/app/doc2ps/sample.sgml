@@ -1,0 +1,14 @@
+<!doctype chapter PUBLIC "-//Davenport//DTD DocBook V3.0//EN">
+
+<chapter>
+<docinfo><releaseinfo>1.2.3 Buckle my tree</releaseinfo>
+</docinfo>
+<title>Sample Chapter</title>
+
+<para>
+This is a short sample chapter
+</para>
+
+</chapter>
+
+

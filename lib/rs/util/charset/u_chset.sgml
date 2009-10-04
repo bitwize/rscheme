@@ -1,0 +1,156 @@
+{chapter}Character Sets and Tables
+{ch.front}
+{p}
+A character table is a special kind of table which
+is specialized to use characters as keys.  Character sets
+are further specialized to have boolean values.
+<!>
+{notice}{p}The functionality described in this chapter is available
+in the {typed}rs.util.charset{/typed} module.{/notice}
+{p}
+Since character sets and tables are kinds of tables,
+the common table operations are available.  In particular,
+{var/key-sequence/ and {var/value-sequence/ may be used
+to extract their contents.  (Of course, the value sequence
+of a character set is somewhat boring; it contains only
+&t; values!).
+<!>
+{section}Common Character Sets
+{p}
+Some common character sets are exported from
+this module as instances
+of {var/<char-set>/.  The following character
+classes are available:
+<!>
+{table}
+{tablehead}name|description
+{row}*digit*|decimal digits: 0, 1, ..., 9
+{row}*hex-digit*|hexadecimal digits: 0, 1, ..., 9, a, ... , f, A, ..., F
+{row}*octal-digit*|octal digits: 0, 1, ... 7
+{row}*letter*|letters: a, ..., z, A, ..., Z
+{row}*whitespace*|whitespace: newline, space, tab, form-feed (ff), and carriage return (cr)
+{/table}
+
+{section}Scanner
+{p}
+The token scanner ({typed}rs.io.scanner{/typed}) also exports
+some character sets which are used in the process of scanning
+tokens.
+<!>
+{table}
+{tablehead}name|description
+{row}*id-initial*|initial identifier characters
+{row}*id-continued*|subsequent identifier characters
+{row}*num-initial*|initial numeric characters
+{row}*num-continued*|subsequent numeric characters
+{row}*special-initial*|initial special characters
+{row}*special-continued*|subsequent special characters
+{/table}
+<!>
+{section}Functions and Methods
+{vardefn type=function}char-set-union
+{short}Create union of given character sets.
+{fnsig}{fnsig.use}(char-set-union {arg/charset/ &...;)
+       {fnsig.ret}{arg/set/
+{fnargs}
+{fnarg}charset
+{p}An instance of {var/<char-set>/
+{fnvals}
+{fnval}set
+{p}An instance of {var/<char-set>/{descr}
+{p}
+Create a new character set whose membership is the union
+of the given {arg/charset/s.  If no arguments are given,
+return a new, empty character set.
+{/vardefn}
+<!>
+{vardefn type=function}make-char-set
+{short}Create an empty character set.
+{fnsig}{fnsig.use}(make-char-set)
+       {fnsig.ret}{arg/set/
+{fnvals}
+{fnval}set
+{p}An instance of {var/<char-set>/{descr}
+{p}
+Create an empty character set.
+{/vardefn}
+<!>
+{vardefn type=function}make-char-table
+{short}Create an empty character table.
+{fnsig}{fnsig.use}(make-char-table)
+       {fnsig.ret}{arg/set/
+{fnvals}
+{fnval}set
+{p}An instance of {var/<char-table>/{descr}
+{p}
+Create an empty character table.
+{/vardefn}
+<!>
+{vardefn type=generic}members->char-set
+{short}Construct a populated character set.
+{fnsig}{fnsig.use}(members->char-set {arg/chars/)
+       {fnsig.ret}{arg/set/
+{fnargs}
+{fnarg}chars
+{p}An instance of {var/<collection>/
+{fnvals}
+{fnval}set
+{p}An instance of {var/<char-set>/{descr}
+{p}
+Construct a character set with initial contents as given
+in the collection of characters, {arg/chars/.  The collection
+can be a {var/<string>/, a {var/<list>/, or a {var/<vector>/.
+The latter two collections should have members 
+{/vardefn}
+<!>
+{vardefn type=method}key-sequence
+{short}Get a sequence of {arg/set/'s keys.
+{fnsig}{fnsig.use}(key-sequence {arg/set/)
+       {fnsig.ret}{arg/chars/
+{fnargs}
+{fnarg}set
+{p}An instance of {var/<char-set>/
+{fnvals}
+{fnval}chars
+{p}An instance of {var/<vector>/{descr}
+{p}
+Construct a {var/<vector>/ sequence containing 
+the keys in the character
+set.
+{/vardefn}
+<!>
+{vardefn type=method}key-sequence
+{short}Get a sequence of {arg/table/'s keys.
+{fnsig}{fnsig.use}(key-sequence {arg/table/)
+       {fnsig.ret}{arg/chars/
+{fnargs}
+{fnarg}table
+{p}An instance of {var/<char-table>/
+{fnvals}
+{fnval}chars
+{p}An instance of {var/<vector>/{descr}
+{p}
+Construct a {var/<vector>/ sequence containing
+the keys in the character
+table.
+{/vardefn}
+<!>
+{vardefn type=method}value-sequence
+{short}Get a sequence of {arg/table/'s value.
+{fnsig}{fnsig.use}(value-sequence {arg/table/)
+       {fnsig.ret}{arg/values/
+{fnargs}
+{fnarg}table
+{p}An instance of {var/<char-table>/
+{fnvals}
+{fnval}values
+{p}An instance of {var/<vector>/{descr}
+{p}
+Construct a {var/<vector>/ sequence containing
+the values in the character
+table.  As per the table protocol, the order of
+elements in {arg/values/ is the same as the order
+of elements in the value returned by {var/key-sequence/
+(provided no changes have been made to {arg/table/).
+{/vardefn}
+<!>

@@ -1,0 +1,99 @@
+{chapter}Displays
+
+{ch.front}
+An X server, together with its screens and input devices, is
+called a {defn/display/.  The &rx; display object encapsulates
+all the information about an X server, its screens, and input
+devices, as well as the state necessary to communicate with
+the display over its connection.
+
+Before an application can use a particular display, the application
+must establish a connection to the X server managing the display.
+One the connection has been established, the macros and functions
+described in this chapter will return information about the
+underlying X display.
+
+This section describes how to:
+{list}
+  {item} Connect to (open) a particular display.
+  {item} Get information about a display.
+  {item} Manage the transmission of requests to a display's server.
+  {item} Disconnect from (close) a display.
+{/list}
+
+{section}Connecting to a display
+
+{vardefn type=class}<x-display>
+{short}Represents the connection to a display of an X server.
+{descr}
+The {var/<x-display>/ class represents a connection to
+a particular display of an X server.
+
+A display object is created by the {var/open-display/ function.
+{/vardefn}
+
+{vardefn type=function}display?
+{short}Test if an object is a display object
+{fnsig}{fnsig.use}(display? {arg/object/)
+       {fnsig.ret}{arg/bool/
+{fnargs}
+{fnarg}object
+Any object.
+{fnvals}
+{fnval}bool
+&t; if and only if {arg/object/ is an instance of {var/<x-display>.
+&f; otherwise.
+{descr}
+Returns &t; or &f; according as whether
+{arg/object/ is an X display object.
+{/vardefn}
+
+{vardefn type=function}open-display
+{short}Connects to a display on particular X server.
+{fnsig}{fnsig.use}(open-display {arg/host/ #key {arg/display/ {arg/protocol/)
+       {fnsig.ret}{arg/display/
+{fnargs}
+{fnarg}host
+{p}The name (a string) or IP address (an {var/<inet-addr>/) of
+the host on which the X server is running.
+{fnarg}display
+{p}The integer id of the display to which to connect.
+This is used because X allows a single server to support
+multiple displays.  Defaults to 0.
+{fnarg}protocol
+{p}The protocol using which to connect.  Currently must be {symbol/tcp/.
+{fnvals}
+{fnval}display
+{p}A {var/<x-display>/ object.
+{descr}
+{p}
+Authorization, apart from server-side {code/xhost/ style,
+is not currently supported.
+
+Once connected to a display, all of its screens are
+available to the application.
+{/vardefn}
+
+{section}Getting information about a display
+{section}Managing server requests
+{section}Disconnecting from a display
+
+{vardefn type=function}close-display
+{short}Disconnects from the given display.
+{fnsig}{fnsig.use}(close-display {arg/display/)
+{fnargs}
+{fnarg}display
+{p}An instance of {var/<x-display>/ to be closed.
+{descr}
+Closes the display's connection to the X server and
+frees all local resources associated with the display.
+
+Most operations on a closed display signal an error.
+
+By default, all X server resources that are associated
+with the client application will be destroyed when the
+display is closed.  This can be overridden by changing
+the close-down mode (see {var/set-close-down-mode!/).
+
+Any buffered but unsent requests are discarded.
+{/vardefn}

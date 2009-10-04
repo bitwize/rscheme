@@ -1,0 +1,22 @@
+#! /bin/sh
+
+echo "*** SourceBase RECYCLE ***" >&2
+
+set -x
+
+v0=/tmp/test074.sto
+v1=/tmp/test074.sto.v1
+
+if lssctl -clonev ${v1} ${v1}~
+then mv ${v1}~ ${v1}
+else exit 1
+fi
+
+# tail call BACK into the sb process
+
+# SBTEST_SB is set in the environment by `test-074.sh'
+
+sb=${SBTEST_SB}
+bootf=${sb}/test/test-074.scm
+
+exec ${sb}/sbs ${bootf} -e '(open1)' -e '(bd)'

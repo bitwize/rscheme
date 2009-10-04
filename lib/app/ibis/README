@@ -1,0 +1,213 @@
+   IBIS == Issue Based Information System
+
+   An IBIS tool implementation in RScheme -- by Donovan Kolbly
+
+Using IBIS for Requirements Management
+--------------------------------------
+
+In the IBIS view, a "requirement" is a Position which has been marked
+as "taken".  IBIS provides requirement tracability by following the
+Position to its associated Issue, and from that Issue to related
+Issues.
+
+
+Creating An Issue Base
+----------------------
+rs +app.ibis.backend -e '(create-ibis-store "mystore" admin: "me")' -exit
+
+Migrating an Old Issue Base
+---------------------------
+First, make a backup!
+
+        cp mystore.v0 mystore.v0~
+        cp mystore.v1 mystore.v1~
+
+then, migrate it
+
+        (migrate-ibis-store "mystore")
+
+System Startup
+--------------
+Once an issuebase has been created, the server can be started as
+follows:
+
+rs +app.ibis.backend -e '(ibisd "mystore" port: 5150)'
+
+or, equivalently,
+
+rs +app.ibis.backend
+(with-system-state
+  (open-ibis-store "mystore")
+  (lambda ()
+    (server-daemon port: 5150)))
+
+
+Issue Tree Queries
+------------------
+
+There are several different ways one might want to extract nodes from
+the issue base.
+
+  - Shallow: Sub-issues are expressed only a links ("c.f.") to the
+    derived issue.  This can be overridden by marking an issue as
+    "keep with parent", which causes it to be traversed anyway.
+    "Shallow" is equivalent to using a depth of 1.
+
+  - Deep: All sub-issues are displayed (possibly to some specified
+    fixed depth)
+
+  - Taken: Only taken positions are rendered.  Non-taken positions are
+    ignored.
+
+  - Prune-moot: Non-taken positions are displayed, but their children
+    (arguments and derived issues) are not.
+
+  - Future perspective: With the future perspective, "future"
+    positions are regarded as "taken" for the purposes of traversal.
+
+
+Core IBIS Objects & Operations
+==============================
+
+"+" ==> class method
+"-" ==> instance method
+
+; the issue base is initialized with a root theme
+
+Item
+----
+- addNote( remarks, remarksMimeType )
+- getAsXml( depth, filterReturn, filterDescend )
+
+- setOwner( user )
+- delete()
+        ; shows up as a note in parent item, "deleted <name> <title>"
+- recreate()
+        ; reincarnate a deleted item
+
+Theme (subclass of Item)
+------------------------
+- createSubTheme( [name,] title, remarks, domain )
+- createIssue( [name,] title, remarks, domain )
+
+Issue (subclass of Item)
+------------------------
+- createSubIssue( [name,] title, remarks, domain )
+- createPosition( [name,] title, remarks )
+- setDomain( domain [, owner] )
+- setTarget( target )
+- setWorkflow( status )
+- joinTopic( name )
+- leaveTopic( name )
+
+Position (subclass of Item)
+---------------------------
+- createIssue( [name,] title, remarks, domain )
+- createArgument( type, title, remarks )
+  type = { supporting, objecting }
+
+  ; note that arguments can't be given names.  An argument's
+  ; name is <positionname>.<id> where <id> is scoped within the position
+
+- setState( state [, remarks] )
+  state = { undecided,
+            taken,
+            declined }
+
+- setTarget( targetRelease [, remarks] )
+
+- setWorkflow( status [, remarks] )
+  status = { open,
+             review,            ; state assigned; pending review
+             promote,           ; pending promotion to higher-level docs
+             closed,            ; closed
+             re-opened }        ; re-opened
+
+- addPrereq( prereqPosition )           ;
+- addCoreq( coPosition )                ;
+- removePrereq( prereqPosition )        ; 
+- removeCoreq( coPosition )             ;
+
+SupportingArgument (subclass of Item)
+-------------------------------------
+- createIssue( [name,] title, remarks, domain )
+
+ObjectingArgument (subclass of Item)
+------------------------------------
+- createIssue( [name,] title, remarks, domain )
+
+Topic
+-----
++ create( [name], title )
+
+IBIS Supporting Objects & Operations
+====================================
+
+User                            ; a user of the system
+------
+
+- setAddress( emailAddress )
+- setArea( areaName )
+- setLogin( loginId )
+- setName( fullName )
+- setSuperUser( suFlag )
+
+- undo( [xactionId] )           ; undo a recent transaction
+- delete()
+- recreate()
+
+Notify                          ; a request to notify a user
+------
+
++ create( user,
+          interest,             ; named group of events to watch
+          domain )              ; domain over which interest applies
+
+- delete()
+
+
+Client                          ; client access to the server ("Host")
+------
+
+Access                          ; access control lists
+------
+
+Domain                          ; a domain of interest or impact ("Component")
+------
+
+
+IBIS Workflow Integration
+=========================
+
+Release                         ; a cluster of requirements
+
+Approval                        ; approver opinions
+
+Approver                        ; approvers for a release
+
+Size                            ; position sizing records
+
+
+IBIS Test Integration
+=====================
+
+Environment                     ; test environment
+
+Test                            ; test results
+
+
+
+IBIS/SourceBase Integration
+===========================
+
+ChangeRequest                   ; ("Defect" or "Feature")
+
+File
+
+Snapshot                        ; ("Level")
+
+FileSystem                      ; ("Release")
+
+FileChanges                     ; ("Track")
+
+CheckOff                        ; ("Verify")

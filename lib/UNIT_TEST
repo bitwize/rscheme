@@ -1,0 +1,40 @@
+;;;@title Baseline Test Suite #1
+;;;@tag test-baseline-1
+;;;@note <h3>Building A Circular List</h3>
+(define a (cons 1 '()))
+(set-cdr! a a)
+a
+;;;@note <p>The output width from the REPL can be
+;;;@note controlled, as well.</p>
+;;;@reprompt
+,(width 100)
+a
+(display "Hello, world\n")
+;;;@note <h3>Dynamic C Glue</h3>
+;;;@reprompt
+(define-glue (beast)
+{
+  REG0 = int2fx( 666 );
+  RETURN1();
+})
+(beast)
+;;;@note <p>Here is a test of non-REPL <i>input/output</i></p>
+;;;@reprompt
+(read-line
+)
+This is a test
+(read)
+(1
+ 2)
+;;;@note[[
+<h3>Looking at Running Threads</h3>
+<p>The <span class="tc_stdin">,tl</span> REPL command shows the 
+list of threads in the system.  This is a somewhat atypical listing
+because the <b>main</b> thread is sleeping.  That's because
+this test case is being run in a separate thread and the main
+thread is in loop, thread-sleep'ing most of the time, and waiting 
+for this test case's
+thread to finish.</p>
+]]
+;;;@reprompt
+,tl

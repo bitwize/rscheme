@@ -1,0 +1,79 @@
+<!-- -*- mode: sgml; mode: auto-fill; fill-column: 60 -*-  -->
+
+<chapter> <title>Scripts and Macros</title>
+
+<para>
+In addition to being designed to be internally extensible he
+&dv; system supports two basic user-extensibility metaphors,
+scripts and macros.  Scripts are first-class graphical
+objects, and are a means of extending the set of built-in
+objects (&ie;, if you need a new kind of rectangle, you can
+create a script to define it).  Macros are reusable,
+possibly parameterized, units of user interaction.  Macros
+don't define new graphical objects, they only reuse existing
+ones.
+
+<para>
+A script is also called a shader, in honor of RenderMan.
+
+<sect1> <title>Explosion<title>
+<para>
+A script can be <emphasis>exploded</emphasis> into its
+constituent (next level down) graphical elements.  This
+operation is essentially an evaluation, or execution, of the
+script, with the output being captured for
+
+<para>
+If a script invokes another script, exploding the outer
+script will leave the inner script in place.  This is
+because the system does not normally distinguish between
+graphical elements built using scripts and graphical
+elements that are built in.
+
+<para>
+Invoking a script and immediately exploding it is morally
+equivalent to a macro.
+
+<sect1> <title>Batch Mode</title>
+<para>
+&dv; can be used in batch mode to process pictures, create
+new pictures, including using macros to do so, and export
+pictures.  It is often used this way as part of a document
+build process, to produce EPS files from higher-level
+descriptions which are defined textually using macros.
+
+<sect1> <title>Standard Scripts</title>
+<para>
+&dv; comes with a library of standard scripts for common
+purposes.
+
+<sect2> <title>Arrows</title>
+<para>
+
+(arrow path #key start-symbol start-local 
+                 joint-symbol join-local 
+                 end-symbol end-local)
+
+where start-symbol, joint-symbol, and end-symbol are
+responsible for drawing the graphics at the respective
+locations.  The <replaceable>*-local</replaceable>
+procedures are responsible for setting up the coordinate
+system in which to draw the respective symbols.
+
+<para>
+
+The standard library includes three local coordinate procedures:
+<literal>center</literal> causes the symbol to be centered
+on the end point, <literal>abut</literal> causes the symbol
+to have one edge on the end point, and
+<literal>setback</literal> causes the symbol to have one
+edge on the edge of the stroked line(s) which the end point
+intersects, if any.  See <xref linkend="x.fig.abuts">.
+</para>
+
+<figure id="x.fig.abuts">
+  <title>Symbol Offset Types</title>
+  <graphic fileref="abuts" format="eps"></graphic>
+</figure>
+
+(arrow end-symbol: arrow1 end-local: setback)

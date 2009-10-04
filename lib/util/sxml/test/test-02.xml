@@ -1,0 +1,25 @@
+<?xml version='1.0'?>
+
+<!DOCTYPE foo [
+
+<!ENTITY lt "&#38;#60;">
+<!ENTITY gt "&#62;">
+<!ENTITY amp "&#38;#38;">
+<!ENTITY apos "&#39;">
+<!ENTITY quot "&#34;">
+
+<!ENTITY ha "ha <i>foo</i> ha">
+<!ENTITY more SYSTEM "test-02b.xml">
+]>
+
+<a:foo xmlns:a="http://abc/">
+hello (&ha;)
+<blech xmlns="http://whatever/">
+hello less&lt;&more;&gt;
+</blech>
+<lt value="&lt;"/>
+<gt value="&gt;"/>
+<amp value='&amp;'/>
+<apos value='&apos;'/>
+<quot value="&quot;"/>
+</a:foo>

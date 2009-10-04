@@ -1,0 +1,48 @@
+#! /bin/bash
+set -e
+
+if test "$#" = 0 -o "$1" = "-h"
+then me=$0
+     echo "usage: ${me##*/} [-yCR{,CR}*] DIR" >&2
+     exit 1
+fi
+
+case "$1" in
+  -y*) a="$1"
+       why="--request ${a#-y}"
+       shift;
+       ;;
+    *) why=""
+       ;;
+esac
+
+lst=""
+leafs=""
+parent=""
+
+top=${SB_TOP%/}
+
+for d in "$@"
+do if ! test -d $d ; then mkdir $1 ; fi
+
+   here=$(cd $d ; pwd)
+   here=${here#$top}
+   p=${here%/*}
+   p=${p:-/}
+   if test -z "$parent"
+   then parent="$p"
+   else if test "$p" = "$parent"
+	then :
+	else echo "$d: multiple parent directories not allowed"
+	fi
+   fi
+   lst="$lst $here"
+   leafs="$leafs ${d##*/}"
+done
+
+set $lst
+
+set -x
+sb --dir $parent --lock
+sb --dir --create $@ --remarks "new directory" $why
+sb --dir $parent --checkin --remarks "mkdir$leafs" $why

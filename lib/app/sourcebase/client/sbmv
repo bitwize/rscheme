@@ -1,0 +1,27 @@
+#! /bin/bash
+set -e
+
+if test "$#" = 0 -o "$1" = "-h"
+then me=$0
+     echo "usage: ${me##*/} [-yCR{,CR}*] DIR" >&2
+     exit 1
+fi
+
+here=$(pwd)
+top=${SB_TOP%/}
+here=${here#$top}
+here=${here:-/}
+
+case "$1" in
+  -y*) a="$1"
+       why="--request ${a#-y}"
+       shift;
+       ;;
+  *)   why=""
+       ;;
+esac
+
+set -x
+sb --dir $here --lock
+sb --file $1 --rename --to $2 --remarks "rename $1 to $2" $why
+sb --dir $here --checkin --remarks "mkfile $*" $why

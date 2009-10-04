@@ -1,0 +1,58 @@
+#! /bin/bash
+set -e
+set -x
+
+if test "$#" = 0 -o "$1" = "-h"
+then me=$0
+     echo "usage: ${me##*/} [-yCR{,CR}*] FILE" >&2
+     echo "       ${me##*/} [-yCR{,CR}*] -r DIR" >&2
+     exit 1
+fi
+
+here=$(pwd)
+top=${SB_TOP%/}
+here=${here#$top}
+here=${here:-/}
+
+case "$1" in
+  -y*) a="$1"
+       why="--request ${a#-y}"
+       shift;
+       ;;
+  *)   why=""
+       a=""
+       ;;
+esac
+
+acceptable() {
+  case "$1" in
+    CVS) return 1 ;;
+    .*) return 1 ;;
+    *~) return 1 ;;
+    *) return 0 ;;
+  esac
+}
+
+if test "$1" = "-r"
+then lst=""
+     shift
+     for x in $@
+     do if acceptable $x
+        then if test -d $x
+             then echo "recursively: $x"
+                  sbmkdir $a $x
+                  (cd $x ; sbcreat $a -r *)
+             else lst="$lst $x"
+             fi
+        fi
+     done
+     if test -z "$lst"
+     then exit 0
+     fi
+     set $lst
+fi
+
+set -x
+sb --dir $here --lock
+sb --file --create $@ --remarks "initial checkin" $why
+sb --dir $here --checkin --remarks "mkfile $*" $why

@@ -1,0 +1,2 @@
+#!/bin/sh
+sb --report locked-files --where user = "$SB_LOGIN"

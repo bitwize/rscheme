@@ -1,0 +1,7 @@
+This is a new implementation of libgd adaption by RScheme.
+
+The old (very old!) implementation is in the packages/x11 module.
+
+This version is oriented towards the libgd 2.0 interface,
+although it is intended to work with the 1.8.4 implementation
+that is installed with RedHat 7.3.

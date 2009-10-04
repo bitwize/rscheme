@@ -1,0 +1,114 @@
+<!-- -*- mode: sgml; mode: auto-fill; fill-column: 60 -*-  -->
+
+<chapter> <title>Load, Save, and Undo</title>
+
+<para>
+The native persistent storage mechanism for dV files is RScheme's
+rstore facility.  This facility provides several features which
+are useful for this application:
+
+<itemizedlist>
+  <listitem><formalpara><title>Object store</title>
+             <para>The reposistory is an object store, so the
+                   interal objects of dV can be stored directly
+                   into the repository without a separate serialization
+                   process.
+  <listitem><formalpara><title>On-demand loading</title>
+            <para>Pages are read from the repository on-demand,
+                  so that a very large document need only be
+                  read as needed (&eg;, if you are viewing only
+                  a few pages at a time, we can handle documents
+                  with literally thousands of pages and millions
+                  of objects.)
+  <listitem><formalpara><title>Atomic writes</title>
+            <para>Changes are committed to the repository either
+                  completely or not at all, so you will never get
+                  a corrupted file on disk due to a partial write
+                  or system crash.
+  <listitem><formalpara><title>Intermediate snapshots</title>
+            <para>The repository supports multiple snapshots,
+                  which dV uses for implementing undo and redo
+                  without any extra work on the part of the object
+                  model.  In fact, we can even implement multiple levels
+                  of <quote>Revert to Saved</quote>, even across application
+                  invocations, providing the
+                  user with a simple and effective mental model of
+                  reversion.
+</itemizedlist>
+
+<para>
+Each open document may have an underlying file.  If it does,
+this underlying file is the RStore repository for committed changes
+(&ie;, saved versions of the document.)
+
+<para>
+Each open document also has a pair of temporary volumes,
+analagous to the <filename>/var/tmp</filename> files used by
+<application>vi</application>.  Intermediate changes are
+committed to these temporary volumes.  The system
+always maintains the requested level of undo support by
+having enough intermediate snapshots in the temporary
+volumes.
+
+<para>
+The <quote>memory status</quote>
+(<function>show-memory-status</function>) window can be used
+to monitor the consumption of backing storage and RAM, since
+features always come with a cost.
+
+<para>
+The user can also explicitly garbage collect their files,
+which (necessarily) truncates their ability to undo changes.
+
+<note><para>It would be nice to, and I think we can,
+maintain a certain level of revert-to-saved even after
+compaction/garbage collection.</para></note>
+
+<sect1><title>New</title>
+<para>
+When a new buffer is created, dV uses a temporary file as
+the document file.  However, dV records that it is a new
+file so that <function>save-file</function> will prompt for
+a file name.  Hence, even though there is a volume 0, it
+never gets any data committed to it!
+
+<para>
+As usual, intermediate snapshots (to support undo) are
+stored in the temporary volumes, v1 and v2.
+
+<sect1><title>Save As File</title>
+<para>
+The semantics of <function>save-as-file</function> are that
+of a copy plus a save.  The state of the undo and
+revert-to-saved stack is not supposed to change (except that
+a new saved snapshot is created in the new file).  In order
+to achieve this, the document file is copied in its entirety
+to the new document file and the new file replaces the old
+document file as volume 0.
+
+<para>
+Note that there is the potential of copying large amounts of
+data which is no longer actively accessible because it is
+beyond the requested level of file reversions.  The current
+approach is simply an implementation convenience.  But we
+know that since we don't guarantee more file reversions than
+requested, we can always truncate older levels during the
+save-as process.
+
+<para>
+If the given file already exists and the overwrite flag is
+not set, a &lt;file-exists&gt; condition is signalled.  If the
+handler returns, the effect is as if the overwrite flag were set.
+
+<sect1><title>Save File</title>
+<para>
+The trick with <function>save-file</function> is preserving
+the undo history past the save point while at the same time
+making the document file self-contained.  This is done by
+linking the document file's commit record to the previous
+commit record in the document file, and creating an equivalent
+commit record in the temporary file points to the previous state.
+
+<sect1><title>Load File</title>
+<para>
+Map it in and go!

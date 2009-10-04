@@ -1,0 +1,81 @@
+(define-module app.sourcebase (unquote)
+  (unquote
+   (use usual-inlines 
+        rs.lang.eval
+        rs.db.lss)
+   (load "sourcebase.scm")
+   ;;
+   (export server-daemon
+	   set-logical-log!
+	   set-network-log!
+           set-auto-commit!
+           make-database
+	   database-connect
+	   <snapshot>
+	   <file-space>
+	   versioned-object
+           commit-sourcebase
+           ;;
+           string->user
+           string->group
+           string->filesystem
+           string->snapshot
+           string->changereq
+           string->content
+           content->string
+           ;;
+           string->fs-path
+           steps->fs-path
+           fs-parent-path
+           fs-tail-path
+           fs-append-path
+           $root-path
+           ;;
+           make-filesystem
+           make-shared-filesystem
+           set-filesystem-policy
+           ;;
+           make-file
+           node-unlock
+           node-lock
+           file-delta
+           
+           make-change-request
+           request-change-comment
+           change-request-no-comment
+           change-request-change-title
+           change-request-change-summary
+           change-request-set-property
+           change-request-add-comment
+           change-request-work-complete
+           fs-change-complete
+           request-is-duplicate
+           ;;
+           link-node
+           diverge-node
+           diverge-fs
+           cross-link-node
+           cross-link-node-rec
+           unlink-node
+           rename-node
+           make-directory
+           directory-delta
+           node-modify                  ;?
+           ;;
+           ;;
+           make-group
+           make-user
+           make-current-snapshot
+           make-empty-snapshot
+           make-based-snapshot
+           ;;
+           snapshot-commit
+           snapshot-extend
+           snapshot-retract
+           ;;
+           modification-time
+           version-tag
+           contents
+           permissions
+	   )))
+

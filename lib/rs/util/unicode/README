@@ -1,0 +1,6 @@
+unicode.txt is the Unicode character database, as downloaded from
+
+  <ftp://ftp.unicode.org/Public/UNIDATA/UnicodeData-Latest.txt>
+
+on 1998-10-17, with the #\C-M characters (aka #\CR or ^M) removed.
+

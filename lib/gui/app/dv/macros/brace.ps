@@ -1,0 +1,37 @@
+
+gsave
+
+/rgrab 4 def
+/rtic 3 def
+/lgrab 1 def
+
+/brace {
+ gsave
+  1 setlinejoin
+  1 setlinecap
+
+  /w exch def
+  w neg lgrab rgrab add neg moveto
+  0 lgrab rlineto
+  rgrab w sub rgrab neg                 % x y
+  rgrab                                 % x y radius
+  180 90 arcn
+  rtic neg 0 lineto
+  rtic neg rtic dup 270 360 arc
+  rtic dup dup 180 270 arc
+  w rgrab sub 0 lineto
+  w rgrab sub rgrab neg rgrab           % x y radius
+  90 0 arcn
+  0 lgrab neg rlineto
+  stroke
+ grestore
+} def
+
+10 10 translate
+10 10 scale
+
+45 20 translate
+
+40 brace
+
+grestore

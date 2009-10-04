@@ -1,0 +1,854 @@
+#! /usr/bin/perl
+
+$w = 1;
+
+while (<>) {
+  if (m/^\((.*)\).*s/) {
+      $str = $1;
+      $str =~ s/\\\(/\(/g;
+      $str =~ s/\\\)/\)/g;
+      $str =~ s/\\036/-/g;
+      $str =~ s/\\037/--/g;
+    print "$str";
+      $w += length($str);
+      if ($w > 80)
+      {
+	  print "\n";
+	  $w = 1;
+      }
+  }
+}
+
+{chapter}X11 interface
+{ch.front}
+The &rs; X11 interface is based on the Common Lisp X interface (CLX).
+The principle difference is the adjustment of the syntax and
+semantics to match RScheme's lexical and object system conventions.
+For example, keywords have a colon suffix in &rs;
+
+Otherwise, this chapter assumes a basic understanding of window systems.
+
+{section}X windows
+
+The X Window System was developed at the Massachusetts Institute
+ofSystem Technology (MIT) and first released in 1985. Since then, the
+X Window System has become an industry-standard product available on
+virtually every type of bit-mapped workstation. The current version of
+X, Version 11, has been implemented for several different computer
+architectures, for a wide variety of display hardware, and also for
+many different operating systems. X Version 11 represents the
+fulfillment of the original design goals proposed by MIT, as follows:
+
+{list}
+
+{item} Portable -- Support virtually any bitmap display and any
+interactive input device (including keyboards, mice, tablets,
+joysticks, and touch screens).  Make it easy to implement the window
+system on different operating systems.
+
+{item} Device-Independent Applications -- Avoid rewriting,
+recompiling, or even relink-ing in order to use different
+display/input hardware. Make it easy for an application to work on both
+monochrome and color hardware.
+
+{item} Network Transparent -- Let an application run on one computer
+while using another computer's display, even if the other computer
+has a different operating system or hardware architecture.
+
+{item} Multitasking -- Support multiple applications being displayed
+simultaneously.
+
+{item} No User Interface Policy -- Since no one agrees on what
+constitutes the best user interface, make it possible for a broad
+range of user interface styles (or policies) to be implemented,
+external to the window system and to the application programs.
+
+{item} Cheap Windows -- Windows should be abundant, and
+ubiquitous. Provide overlapping windows and a simple mechanism for
+window hierarchy.
+
+{item} High-Performance Graphics -- Provide powerful interfaces
+for synthesizing 2-D images (geometric primitives, high-quality text
+with multiple typefaces, andscanned
+images).
+
+{item} Extensible -- Include a mechanism for adding new
+capabilities. Allow separate sites to develop independent extensions
+without becoming incompatible with re-mote applications.Introduction
+to CLX
+
+{/list}
+
+Some of these goals lead directly to the basic X architecture -- the
+client-server model.The basic window system is implemented by the X
+server program. An application program (the client) sends window
+system requests to the X server through a reliable two-way
+byte-stream. In general, the server and the client can be executing on
+separate host computers, inwhich case the byte-stream is implemented
+via some network protocol (TCP, DECnet, Chaosnet, and so forth).
+
+The X server, which is connected to several client programs running
+concurrently, executes client requests in round-robin fashion. The
+server is responsible for drawing client graphics on the display
+screen and for making sure that graphics output to a window stays
+inside its boundary.  The other primary job of the X server is to
+channel input from the keyboard, pointer, andother input devices back
+to the appropriate client programs. Input arrives at the
+clientasynchronously in the form of input events representing up/down
+transitions of keys or pointer buttons, changes in the pointer
+position, and so on. In some cases, a request generates a return
+value (or reply) from the server, which is another kind of client
+input.  Replies and input events are received via the same byte-stream
+connecting the client with the server.
+
+{subsection}Windows
+
+The X Window System
+supports one or more screens containing overlapping windows and
+subwindows. A screen is a physical monitor and hardware, which can be
+either color or black and white. There can be multiple screens per
+display workstation. A single server can provide display services for
+any number of screens. A set of screens for a single user with one
+keyboard and one mouse is called a display.All windows in an X server
+are arranged in a strict hierarchy. At the top of the hierarchy are the
+root windows, which cover each of the display screens. Each root window
+is either partially or completely covered by child windows. All
+windows, except for root windows, have parents. Any window can in turn
+have its own children. In this way, an application program can create a
+window tree of arbitrary depth on each screen.
+A
+child window can be larger than its parent. That is, part or all of
+the child window can extend beyond the boundaries of the parent.
+However, all output to a window is clipped by the boundaries of its
+parent window. If several children of a window have overlapping
+locations, one of the children is considered to be on top of/or raised
+over the others, obscuring them. Window output to areas that are
+covered by other windows is suppressed. A window has a border that is
+zero or more pixels in width and can be any pattern (pixmap) or solid
+color. A window usually has a background pattern that is drawn by the X
+server. Each window has its own coordinate system. Child windows
+obscure their parents unless the child windows have no background.
+Graphics operations in the parent window are usually clipped by the
+children.X also provides objects called pixmaps
+for off-screen storage of graphics. Single-planepixmaps (that is, of
+depth 1) are sometimes referred to as bitmaps. Both pixmaps and windows
+can be used interchangeably in most graphics functions. Pixmaps are
+also
+used in various graphics operations to define patterns, or tiles.
+Windows and pixmaps together are referred to as drawables.
+
+{subsection}Input Events
+The X input mechanism is conceptually simple yet quite
+powerful. Most events are attached to a particular window (that is,
+contain an identifier for the window receiving the event). A client
+program can receive multiple window input streams, all multiplexed
+over the single byte-stream connection to the server.
+
+{section}Introduction to CLX
+
+{subsection}Programmer's Reference
+Clients can tailor their input by
+expressing interest in only certain event types. The server uses
+special event types to send important messages to the client. For
+example, the client can elect to receive an :enter-notify event when
+the pointer cursor moves into a certain window. Another vital message
+from the server is an :exposure event. This is a signal to the client
+indicating that at least some portion of the window has suddenly be-
+come visible (perhaps the user moved another window which had been
+overlapping it).  The client is then responsible for doing what is
+necessary to redisplay the window's image. Client programs must be
+prepared to regenerate the contents of windows in this way on
+demand.Input is also subject to policy decisions about which client
+window receives keyboard and pointer events. Since the pointer is free
+to roam between windows, just clicking on a window is often enough to
+send a pointer event to that window. Keyboard events, however, must
+go to a keyboard focus window which has to be designated in some other
+way.  Usually, the arbiter of such input management policy is a program
+called the window manager. The window manager gives the human user a
+way to make a window the keyboard focus, to manage the layout of
+windows on the screen, to represent windows with icons, and so forth.
+In fact, the window manager client determines most of the so-called
+look and feel of the X Window System.
+
+{subsection}A Quick Tour
+
+The X Window System
+is defined by the X Window System Protocol of CLX Specification, a
+detailed description of the encoding and the meaning of requests and
+events sent between a client and a server. This standard protocol does
+not depend on any particular programming language. As a result, each
+programming language must define its own functional interface for using
+the X protocol. The standard X interface used by Common Lisp
+programmers is called CLX. CLX is a set of data types, functions, and
+macros which allow a Common Lisp client program to interact with an X
+server to send requests and to receive input events and replies.For the
+most part, CLX functions are closely tied to
+the underlying requests in the X protocol. Many CLX functions simply
+add requests to an output buffer. These requests laterexecute
+asynchronously on the X display server. However, some functions of CLX
+lie outside the scope of the protocol -- for example, reading events and
+managing a clientside event queue. CLX is also responsible for
+important batching and caching tasks that minimize network
+communication.  The following paragraphs show an example of a CLX client
+program. All CLX
+functions and macros are shown in upper case. Note that some of the
+terms used are unique to X, while other terms that are common to other
+window systems have different meanings in X. It may be helpful to refer
+to the glossary when you are uncertain of a term's meaning in the
+context of the X Window System.
+
+{subsection}A Simple Menu
+The example client
+program creates and displays
+ a simple pop-up menu consist-ing of a column of strings--a title
+ string followed by selectable menu item strings. The implementation
+uses one window to represent the entire menu, plus a set of subwin-
+dows, one for each menu item. Here is the definition of a structure
+which represents such a menu.Introduction to CLX1-4CLX Programmer's
+Reference(defstruct (menu)\177A simple menu of text strings." (title
+\177Choose an item:")item-alist              ;((item-window
+item-string))
+windowgcontextwidthtitle-widthitem-widthitem-height(geometry-changed-p
+t)) ;nil if unchanged
+ since displayed The window slot will contain the window object that
+ represents the menu. The item-alist represents the relationship
+between the menu items and their associated subwindows. Each entry in
+item-alist is a list whose first element is a (sub)window object and
+whose second element is the corresponding item string. A window object
+is an instance of a CLX-defined data type which represents X windows. A
+window object actually carries two pieces of information: an X window
+ID integer and a display object. A display is another CLX-defined data
+type that represents a connection to a specific X display server. The
+gcontext slot contains an instance of a CLX data type known as a
+graphics context. A graphics context is a set of display attribute
+values, such as foreground color, fill style, line style, text font,
+and so forth. Each X graphics request (and hence each CLX graphics
+function call) must supply a graphics context to use in displaying the
+request.  The menu's gcontext will thus hold all of the attribute
+values used during menu display.  Introduction to CLX1-5CLX
+Programmer's ReferenceThe first thing to do is make an
+ instance of a menu object:(defun create-menu (parent-window text-color
+ background-color text-font)(make-menu;; Create menu graphics
+context:gcontext (CREATE-GCONTEXT :drawable
+   parent-window:foreground text-color:background
+   background-color:font       text-font) ;; Create menu
+window:window   (CREATE-WINDOW:parent       parent-window:class
+  :input-output:x            0                 ;temporary
+  value:y            0                 ;temporary value :width
+16                ;temporary value:height       16
+;temporary value :border-width 2:border       text-color:background
+background-color:save-under
+   :on:override-redirect :on          ;override window mgr when
+   positioning:event-mask (MAKE-EVENT-MASK :leave-window
+   :exposure))))create-window is one of the most important CLX
+   functions, since it creates and returns a window object. Several of
+its options are shown here. The default window class is :in-put-output,
+but X provides for :input-only windows, too. Every window must have a
+parent window, except for a system-defined root window, which
+represents an entire display screen. The :event-mask keyword value, a
+CLX event-mask data type, saysthat
+ an input event will be received for the menu window when the window is
+ exposedand also when the pointer cursor leaves the window. The window
+ border is a patternfilled or (as in this case) a solid-colored
+boundary which is maintained automatically by the X server; a client
+cannot draw in a window's border, since all graphics requests are
+relative to the origin (upper-left corner) of the window's interior and
+are clipped by the server to this inside region. Turning on the
+:save-under option is a hint to the X server that, when this window is
+made visible, it may be more efficient to save the pixels it
+ ob-scures, rather than require several client programs to refresh
+ their windows when the pop-up menu disappears. This is a way to work
+around X's client-managed refresh policy when only a small amount of
+screen space is needed temporarily. Why is :override-redirect
+ turned on for the menu window? This is actually a little un-usual,
+ because it prevents any window manager client from redirecting the
+position ofthe menu when it is popped up. Remember that the window
+manager
+ represents the us-er's policy for controlling the positions of his
+ windows, so this kind of redirection is ordinarily correct. However,
+in this case, as a favor to the user, the menu avoids redirection in
+order to pop up the menu at a very specific location; that is, under
+the pointer cursor.  What about the item subwindows? The
+menu-set-item-list function in the following example creates them
+whenever the menu's item list is changed. The upper-left x and
+ ycoordinates and the width and height are not important yet, because
+ they are computed just before the menu is displayed. This function
+also calls create-window, demonstrating the equal treatment of parent
+and children windows in the X window hierarchy.  Introduction to
+CLX1-6CLX Programmer's Reference(defun menu-set-item-list (menu &rest
+item-strings) ;; Assume the new items will change the menu's width and
+height(setf (menu-geometry-changed-p menu)
+ t);; Destroy any existing item windows(dolist (item (menu-item-alist
+ menu))  (DESTROY-WINDOW (first item))) ;; Add (item-window
+item-string) elements to item-alist(setf (menu-item-alist menu) (let
+(alist)  (dolist (item item-strings (nreverse alist))    (push (list
+(CREATE-WINDOW
+  :parent     (menu-window menu)  :x          0         ;temporary
+  value  :y          0         ;temporary value :width      16
+  ;temporary value  :height     16        ;temporary value :background
+  (GCONTEXT-BACKGROUND (menu-gcontext menu))  :event-mask
+  (MAKE-EVENT-MASK :enter-window    :leave-window    :button-press
+ :button-release))item) alist))))) Displaying1.3.2The
+menu-recompute-geometry function (shown in the followingthe Menu
+example) handles the job of calculating the size of the menu, based on
+its current item list and its current text font. CLX provides a way to
+inquire the geometrical properties of
+ afont object (for example, its ascent and descent from the baseline)
+ and also a text-ex-tents function. text-extents returns the geometry
+of a given string as displayed in a given font. Notice the use of the
+with-state macro when setting a window's geometry attributes. CLX
+strives to preserve the familiar setf style of accessing individual
+window attributes, even though an attribute access actually involves
+sending a request to a (possibly remote) server and/or waiting for a
+reply. with-state tells CLX to batch together all read and write
+accesses to a given window, using a local cache to minimize the number
+of server requests. This CLX feature can result in a dramatic
+improvement in client performance without burdening the programmer
+interface.menu-recompute-geometry
+ causes all the item subwindows to become mapped. Map-ping a window
+ means attempting to make it visible on the screen. However, a subwin-
+dow will not actually be visible until it and all of its ancestors are
+mapped. Even then, another window might be covering up the
+subwindow.Introduction to CLX1-7CLX Programmer's Reference (defun
+menu-recompute-geometry (menu)  (when (menu-geometry-changed-p menu)
+(let* ((menu-font
+ (GCONTEXT-FONT (menu-gcontext menu)))          (title-width
+ (TEXT-EXTENTS menu-font (menu-title menu)))
+	  (item-height (+ (FONT-ASCENT
+	  menu-font)                          (FONT-DESCENT menu-font)
+			  *menu-item-margin*))          (item-width
+			  0)          (items       (menu-item-alist
+			  menu))
+	  menu-width)     ;; Find max item string width     (setf
+	  item-width (+ *menu-item-margin*              (dolist
+    (next-item items item-width)
+	(setf item-width (max
+	item-width                                       (TEXT-EXTENTS
+	menu-font (second next-item))))))) ;; Compute final menu width,
+     taking margins into account     (setf menu-width (max title-width
+     (+ item-width *menu-item-margin*))) (let ((window  (menu-window
+     menu)))    ;; Update width and height of menu window (WITH-STATE
+     (window)       (setf (DRAWABLE-WIDTH  window) menu-width
+ (DRAWABLE-HEIGHT window) (* (1+ (length items)) item-height)))   ;;
+ Update width, height, position of item windows   (let ((item-left
+ (round (- menu-width item-width) 2))           (next-item-top (-
+ item-height (round *menu-item-margin* 2))))
+       (dolist (next-item items)         (let ((window (first
+       next-item)))           (WITH-STATE (window)
+	     (setf (DRAWABLE-HEIGHT window)
+	     item-height                   (DRAWABLE-WIDTH  window)
+	     item-width
+		   (DRAWABLE-X      window) item-left
+		   (DRAWABLE-Y      window) next-item-top)))
+	 (incf next-item-top item-height))))     ;; Map all item
+	 windows     (MAP-SUBWINDOWS (menu-window menu)) ;; Save item
+     geometry     (setf (menu-item-width menu)
+     item-width           (menu-item-height menu)
+       item-height           (menu-width menu)
+       menu-width           (menu-title-width menu)
+       title-width           (menu-geometry-changed-p menu) nil))))Of
+       course, the sample client must know how to draw/redraw the menu
+ and its items, sothe function menu-refresh is defined next to handle
+ that task (shown in the following example). Note that the location of
+window output is given relative to the window origin. Windows and
+subwindows have different coordinate systems. The location of the
+origin (upper-left corner) of a subwindow's coordinate system is given
+with respect to its parent window's coordinate system. Negative
+coordinates are valid, although only output to the +x/+y quadrant of a
+window's coordinate system will ever be visible.  Introduction to
+CLX1-8CLX Programmer's Reference(defun menu-refresh (menu) (let*
+((gcontext   (menu-gcontext menu))
+	(baseline-y (FONT-ASCENT (GCONTEXT-FONT gcontext))))   ;; Show
+	title centered in \177reverse-video" (let ((fg
+   (GCONTEXT-BACKGROUND gcontext))         (bg (GCONTEXT-FOREGROUND
+   gcontext)))
+     (WITH-GCONTEXT (gcontext :foreground fg :background bg)
+     (DRAW-IMAGE-GLYPHS
+	 (menu-window menu)         gcontext         (round (-
+	 (menu-width menu)
+		   (menu-title-width menu)) 2)  ;start x
+		   baseline-y                             ;start y
+	 (menu-title menu))))   ;; Show each menu item (position is
+	 relative to item window) (let ((box-margin (round
+   *menu-item-margin*  2)))     (dolist (item (menu-item-alist menu))
+       (DRAW-IMAGE-GLYPHS         (first item) gcontext
+       box-margin                             ;start x
+	 (+ baseline-y box-margin)              ;start y
+	 (second item))))))
+with-gcontext is a CLX macro that allows you temporarily to modify a
+graphics context within the dynamic scope of the macro body.
+draw-image-glyphs is a CLX text drawing function which produces a
+terminal-like rendering: foreground character on a background block.
+(More sophisticated text rendering functions are also available.) The
+strange use of glyphs instead of string here actually highlights an
+important fact: X and Common Lisp have totally different concepts of a
+character. A Common Lisp character is an object whose implementation
+can comprehend a vast universe of text complexities (typefaces, type
+styles, international character sets, symbols, and so forth). However,
+to X, a string is just a sequence of integer indexes into the array of
+bitmaps represented by a CLX font object. In general,
+draw-image-glyphs, text-extents, and other CLX text functions accept a
+:translate keyword argument. Its value is a function which translates
+the characters of a string argument into the appropriate font-and-index
+pairs needed by CLX. This example relies upon the default translation
+function, which simply uses char-code to compute an index into the
+current font.Menu Input1.3.3Now that a menu can be displayed, the
+sample client program
+ must define howthe menu will process user input. The menu-choose
+ function (shown in the following example) has the classic structure of
+an X client program. First, do some initialization (for example,
+present the menu at a given location). Then, enter an input event
+loop.  Read an input event, process it, and repeat the loop until a
+termination event is received.  The event-case macro continues reading
+an event from the menu window's display ob- ject until one of its
+clauses returns non-nil. These clauses specify the action to be taken
+for each event type and also bind values from the event report to local
+variables, such as the event-window receiving the event. Notice that
+the :force-output-p option is en- abled, causing event-case to begin by
+sending any client requests which CLX has not yet output to the server.
+To improve performance, CLX quietly queues up requests and peri-
+odically sends them off in a batch. However, in an interactive feedback
+loop such as this, it is important to keep the display crisply
+up-to-date.Introduction to CLX1-9CLX Programmer's Reference (defun
+menu-choose (menu x y)  ;; Display the menu so that first item is at
+x,y.
+  (menu-present menu x y)   (let ((items (menu-item-alist
+  menu))         (mw    (menu-window menu))
+	 selected-item)       ;; Event processing loop    (do ()
+	 (selected-item) (EVENT-CASE ((DRAWABLE-DISPLAY mw)
+      :force-output-p t)        (:exposure          (count)
+	  ;; Discard all but final :exposure then display the
+	  menu          (when (zerop count) (menu-refresh menu))
+	  t)        (:button-release          (event-window)
+	  ;;Select an item (setf selected-item (second (assoc
+	  event-window items)))          t) (:enter-notify
+     (window)          ;;Highlight an item
+     (menu-highlight-item menu (find window items :key
+ #'first))          t)        (:leave-notify          (window
+ kind)          (if (eql mw window)
+	      ;; Quit if pointer moved out of main menu
+	      window              (setf selected-item (when (eq kind
+	      :ancestor) :none)) ;; Otherwise, unhighlight the item
+	      window left              (menu-unhighlight-item menu
+	      (find window items :key #'first))) t)
+	    (otherwise            ()            ;;Ignore and discard
+	    any other event t)))        ;; Erase the menu
+	    (UNMAP-WINDOW mw)        ;; Return selected item string, if
+	    any (unless (eq selected-item :none) selected-item)))
+	The event loop in menu-choose demonstrates an idiom used in all
+ X programs: the con-tents of a window are displayed (in this case, by
+ calling menu-refresh) only when an:exposure event is received,
+signaling that the server has actually made the window viewable. The
+handling of :exposure in menu-choose also implements a little trick
+ forimproving efficiency. In general, when a window is exposed after
+ being previously ob-scured (perhaps only partially), the server is
+ free to send several :exposure events, onefor each rectangular tile of
+ the exposed region. For small windows like this menu, it is not worth
+the trouble to redraw the image one tile at a time. So the code above
+just ig- nores all but the last tile exposure and redraws everything in
+one call to menu-refresh
+.Introduction to CLX1-10CLX Programmer's ReferenceThe Main1.3.4After
+all the preceding build-up and the other functions referenced
+ Program(but not shown here) have been implemented, the code for the
+ main client program is very small.(defun just-say-lisp (host &optional
+(font-name \177fg-16"))  (let* ((display
+  (OPEN-DISPLAY host))         (screen    (first (DISPLAY-ROOTS
+  display)))         (fg-color  (SCREEN-BLACK-PIXEL screen))
+	 (bg-color  (SCREEN-WHITE-PIXEL screen))         (nice-font
+	 (OPEN-FONT display font-name)) ;; Create a menu as a child of
+	 the root window.         (a-menu    (create-menu (SCREEN-ROOT
+	 screen)
+				 fg-color bg-color nice-font)))
+				 (setf (menu-title a-menu) \177Please
+				 pick your favorite language:")
+    (menu-set-item-list a-menu \177Fortran" \177APL" \177Forth"
+    \177Lisp")    ;; Bedevil the user until he picks a nice programming
+    language (unwind-protect        (loop          ;; Determine the
+    current root window position of the pointer
+	  (multiple-value-bind (x y) (QUERY-POINTER (SCREEN-ROOT
+	  screen))           (let ((choice (menu-choose a-menu x y)))
+	     (when (string-equal \177Lisp" choice)
+	     (return)))))      (CLOSE-DISPLAY display))))
+Note that the main program event loop lies in the body of an
+unwind-protect form.
+ Thisis a good programming technique because, without this protection,
+ an unexpected error could cause the program to terminate without
+freeing the server resources it has created.  Server resources are CLX
+objects which refer to objects actually stored on the X server.
+Examples of these are window, font, pixmap, cursor, colormap, and
+gcontext objects.  These server resources are created and destroyed by
+user requests. Server resources cre- ated by a client are also
+destroyed when its display connection is closed. If client re- sources
+are repeatedly created without being destroyed, then the server will
+eventually run out of memory and fail.Most server resources are
+potentially sharable between applications. In fact, windows are
+manipulated explicitly by window manager programs. Fonts and cursors
+are typi- cally shared automatically since the X server loads and
+unloads font storage as needed.  gcontext objects are not ordinarily
+shared between client applications.Debugging 1.3.5Typically, most CLX
+programs do not need to control the bufferingWith CLXof
+ output requests directly. However, CLX programmers need to be aware of
+ the asyn- chronous nature of client-server communication. It may be
+convenient to control the CLX output buffer more directly, especially
+during debugging.A client that wants a request to execute immediately
+ instead of asynchronously can fol-low it with a call to
+ display-force-output. This function blocks (does not return) until
+allpreviously buffered output requests have been sent. Otherwise, the
+output buffer is al- ways flushed by a call to any function which
+returns a value from the server or which waits for input (for example,
+get-property). Certain output requests can cause input events to be
+sent. For example, map-window can cause :exposure events to be sent.
+Synchronizing output with the resulting input can be done with the
+display-finish-out- put function. This function blocks until all
+previously buffered output has been sent and all resulting input events
+have been received.Introduction to CLX1-11CLX Programmer's Reference
+Functions that return information from the server block until an
+explicit reply is received or an error occurs. If a nonblocking call
+results in an error, the error is generally not re- ported until later.
+All errors (synchronous and asynchronous) are processed by calling an
+error handler defined for the display. If the handler is a sequence it
+is expected to con- tain handler functions specific to each error. The
+error code is used to index the se- quence, fetching the appropriate
+handler. Any results returned by the handler are ignored since it is
+assumed that the handler either takes care of the error completely, or
+else signals.Naming and1.4Throughout CLX, a number of conventions for
+naming and syntax of Argumentthe CLX functions have been followed.
+These conventions are intended toConventions make the syntax of the
+functions more predictable. The major naming conventions are as
+follows:
+ \267To better differentiate the CLX symbols from other symbols, they
+ have all been placed in the package XLIB. External symbols have been
+explicitly exported. \267 The display argument, where used, is always
+first in the argument list. \267All server resource objects, where
+used, occur at the
+ beginning of the argument list,immediately after the display variable.
+ \267When a graphics context (gcontext) is present together with
+ another type of serverresource (most commonly, a drawable), the
+ graphics context occurs in the argu-ment list after the other server
+ resource.  Drawables out rank all other server re-sources.\267Source
+ arguments always precede the destination arguments in the argument
+ list.  \267The x argument always precedes the y argument in the
+argument list. \267The width argument always precedes the height
+argument in the argument list. \267Where
+ the x, y, width and height arguments are used together, the x and y
+ argumentsalways precede the width and height arguments. \267Where a
+ mask is accompanied with a structure, the mask always precedes the
+struc-ture in the argument list. Programming 1.5The major programming
+considerations are as follows: Considerations\267Keyboards
+ are the greatest variable between different manufacturer's
+ worksta-tions. If you want your program to be portable, you should be
+ particularly conserva- tive here. \267Many display systems have
+limited amounts of off-screen memory. If you can, you should minimize
+use of pixmaps and backing store. \267The user should have control of
+his screen real-estate. Therefore, you should
+ writeyour applications to react to window management, rather than
+ presume control of the entire screen. What you do inside of your top
+level window, however, is up to your application. Introduction to
+CLX1-12CLX Programmer's Reference\267Coordinates
+ and sizes in X are actually 16-bit quantities. They usually are
+ declaredas an int16 in the functions. Values larger than 16 bits can
+ be truncated silently.Sizes (width and height) are unsigned
+ quantities. \267The types color, colormap, cursor, display, font,
+ gcontext , pixmap, screen, andwindow are defined solely by a
+functional interface. Even though they are treated like structures in
+this document, it is not specified whether they are implemented as
+structures or classes. Although some interfaces are described as
+functions, they are not required to be defined using defun. (It is a
+requirement that they be functions as opposed to macros or special
+forms.) Data Types1.6The following are some data type definitions
+ that are commonly used inCLX function definitions.alist
+ (key-type-and-name datum-type-and-name ) 'listTypealist defines an
+association list. An association list is a sequence, containing zero or
+more repetitions of the given elements with each of the elements
+expressed as (type name). angle `(number ,(* -2pi) ,(* 2pi))Typeangle
+defines an angle in units of radians and is bounded
+ by (-2p) and (2p). Note that weare explicitly using a different angle
+ representation than what is actually transmitted in the protocol.
+arc-seq '(repeat-seq (int16 x) (int16 y) (card16 width) (card16 height
+) Type(angle angle1) (angle angle2))arc-seq defines a six-tuple
+sequence of the form ( x, y, width, height, angle1, angle2).The points
+x and y are signed, 16-bit quantities with a range from -32,768 to
+32,767. The width and height values are unsigned, 16-bit quantities and
+range from 0 to 65,535.  an-gle1 and angle2 are in units of radians,
+and bounded by (-2p) and (2p). array-index
+ `(integer 0 ,array-dimension-limit)Typearray-index defines a type
+ which is a subtype of the integers and can be used to describe all
+variables that can be array indices. The range is inclusive because
+start and end array index specifiers can be one (1) past the end.
+bit-gravity '(member gravity*)Type A keyword that specifies which
+region of a window should be retained when the window is resized.
+gravity -- One of the
+following::center:north:south:static:east:north-east
+:south-east:west:forget:north-west:south-westIf a window is
+reconfigured without changing its inside width
+ or height, then the con-tents of the window moves with the window and
+ are not lost. Otherwise, the contents of a resized window are either
+moved or lost, depending on its bit-gravity attribute. See
+win-dow-bit-gravity, in paragraph 4.3, Window Attributes, for
+additional information.  bitmap '(array bit (* *))TypeSpecifies a
+two-dimensional array of bits.Introduction to CLX 1-13CLX Programmer's
+Referencebitmap-formatStructureA structure that describes the storage
+format of a bitmap.  The bitmap-format structure contains slots for
+unit, pad, and lsb-first-p. The unit member indicates the unit of
+increments used to maintain the bitmap data. The units available for
+use are 8, 16, or 32 bits. The pad member indicates how many bits are
+needed to pad the left edge of the scan-line. The lsb-first-p member is
+a predicate which indicates the ordering of bits with the bitmap
+unit.unitSlot of bitmap-formatType:
+ (member 8 16 32).The size of a contiguous grouping of bits, which can
+ be 8, 16, or 32. The default is 8.padSlot of bitmap-formatType:
+ (member 8 16 32).The number of bits to left-pad the scan-line, which
+ can be 8, 16, or 32. The default is 8.  lsb-first-pSlot of
+bitmap-formatType: boolean.A predicate indicating whether the least
+significant bit comes
+ first (true) or not (nil).Introduction to CLX1-14CLX Programmer's
+ Referenceboolean '(or nil (not nil))Typeboolean defines a type which
+ is all inclusive. It is used for variables that can take on a true
+(non-nil) or false (nil) value. boole-constant `(member value*)
+Typeboole-constant
+ defines a type that is a set of the values associated with the 16
+ booleanoperation-code constants for the Common Lisp language. It is
+ used for the set of allowedsource and destination combination
+ functions in a graphics context. value -- One of the following:
+boole-1boole-c1boole-nandboole-xorboole-2boole-c2boole-norboole-andboole-clrboole-orc1
+boole-andc1boole-eqvboole-orc2boole-andc2boole-iorboole-setcard8
+'(unsigned-byte
+ 8)TypeAn unsigned integer value that is a maximum of eight bits long.
+ This gives a number ofthis type a range from 0 to 255. card16
+ '(unsigned-byte 16)TypeAn unsigned integer value that is a maximum of
+ 16 bits long. This gives a number of this type a range from 0 to
+65,535. card29 '(unsigned-byte 29)TypeAn unsigned integer value that is
+a maximum of 29 bits long. This gives a number of this type a range
+from 0 to 536,870,911. card32 '(unsigned-byte 32)TypeAn unsigned
+integer value that is a maximum of 32 bits long. This gives a number of
+this type a range from 0 to 4,294,967,295. color '(satisfies
+color-p)TypeA color. See
+ paragraph 9.2, Color Functions, for additional information.colormap
+ '(satisfies colormap-p)TypeA colormap. See paragraph 9.3, Colormap
+ Functions, for additional information.  cursor '(satisfies
+cursor-p)TypeA cursor. See Section 10, Cursors, for additional
+information.  device-event-mask '(or mask32 (list
+device-event-mask-class))TypeProvides a way to specify a set of bits
+for an event bitmask. Two ways of specifying the bits are allowed: by
+setting the event bits in a 32 bit mask, or by listing the keyword
+names of the device related event bits in a
+list.device-event-mask-class '(member
+ event*)TypeA keyword name, for a device related event, that
+ corresponds to a particular bit in an event bitmask. The set of names
+is a subset of the names in the type event-mask-class
+.event -- One of the following:Introduction to CLX1-15CLX Programmer's
+Reference
+:button-1-motion:button-motion:button-2-motion:button-press:button-3-motion:key-press
+:button-4-motion:key-release:button-5-motion:pointer-motiondisplay
+'(satisfies display-p )TypeA connection to an X server. See Section 2,
+Displays, for additional information.  drawable '(or window
+pixmap)TypeBoth windows and pixmaps can be used as sources and
+destinations
+ in graphics opera-tions. windows and pixmaps together are known as
+ drawables. However, an :input-only window cannot be used as a source
+or destination in a graphics operation.  draw-direction '(member
+:left-to-right :right-to-left)TypeDefines a list of rotation directions
+for drawing arcs
+ and fonts. draw-direction can havethe values of :left-to-right or
+ :right-to-left
+. error-key '(member error*)TypeDefines a list of all predefined
+errors. All errors (synchronous and asynchronous) are
+processed by calling an error handler in the display. The handler is
+called with the dis- play as the first argument and the error-key as
+its second argument. error -- One of the following:
+:access:drawable:implementation:value:alloc:font:length:window:atom:gcontext:match
+:colormap:id-choice:name:cursor:illegal-request:pixmapevent-key
+'(member event-type *) TypeDefines a list that specifies all predefined
+event-types. Clients are informed of informa- tion asynchronously by
+means of events. These events can be either asynchronously generated
+from devices or generated as side effects of client requests.
+event-type
+ -- One of the
+ following::button-press:exposure:motion-notify:button-release:focus-in
+ :no-exposure
+ :circulate-notify:focus-out:property-notify:circulate-request:graphics-exposure
+:reparent-notify:client-message:gravity-notify:resize-request:colormap-notify:keymap-notify
+:selection-clear:configure-notify :key-press
+:selection-notify:configure-request :key-release:selection-request
+:create-notify:leave-notify:unmap-notify:destroy-notify
+:map-notify:visibility-notify:enter-notify:map-request event-mask '(or
+mask32 (list
+ event-mask-class))TypeProvides a way to specify a set of bits for an
+ event bitmask. Two ways of specifying the bits are allowed: by setting
+the event bits in a 32 bit mask, or by listing the keyword names of the
+event bits in a list.Introduction to CLX1-16CLX Programmer's Reference
+event-mask-class '(member event*)TypeThe elements of the type
+event-mask-class are keyword names
+ that correspond to a par-ticular bit in an event bitmask.event -- One
+ of the following:
+:button-1-motion:enter-window:pointer-motion-hint:button-2-motion:exposure:property-change
+:button-3-motion:focus-change:resize-redirect:button-4-motion:key-press:structure-notify
+:button-5-motion:key-release:substructure-notify:button-motion:keymap-state:substructure-redirect
+:button-press:leave-window:visibility-change:button-release:owner-grab-button:colormap-change
+:pointer-motionmake-event-keys event-maskFunctionReturns:
+event-keywords -- Type list.Returns a list of event-mask-class keyword
+names for the event bits that are set in the specified event mask.
+event-mask -- An event mask (type mask32).make-event-mask &rest
+keysFunctionReturns:   event-mask -- Type mask32.Constructs an event
+mask from a
+ set of event-mask-class keyword names.keys -- event-mask-class
+ keywords.font '( satisfies font-p)TypeA text font. See Section 8,
+Fonts and Characters, for additional information.  fontable '(or
+stringable font)TypeA fontable is either a font object or the name of
+one of the fonts in the font database.  font-props 'listTypeA list that
+contains alternating keywords and integers. gcontext '(satisfies
+gcontext-p)TypeA graphics context. See Section 5, Graphics Contexts,
+for additional
+ information.gcontext-key '(member type*)TypeA list of predefined types
+ for use in gcontext processing. Various information for graph-ics
+output is stored in a graphics context (GC or GContext), such as
+foreground pixel, background pixel, line width, clipping region, and so
+forth. type -- One of the following:  Introduction to CLX1-17CLX
+Programmer's Reference:arc-mode:exposures:line-width
+:background:fill-rule:plane-mask:cap-style:fill-style
+:stipple:clip-mask :font:subwindow-mode
+:clip-x:foreground:tile:clip-y:function:ts-x:dash-offset
+:join-style:ts-y:dashes :line-stylegrab-status '(member
+grab-type*)TypeThere are two kinds of grabs: active and passive. An
+active grab occurs when a singleclient grabs the keyboard and/or
+pointer explicitly. Clients can also grab a particular keyboard key or
+pointer button in a window. The grab activates when the key or button
+is actually pressed, and is called a passive grab. Passive grabs can be
+very convenient for implementing reliable pop-up menus.  grab-type --
+One of the following::already-grabbed
+:frozen:invalid-time:not-viewable:successimage-depth '(integer 0
+32)TypeUsed in determining the
+ depth of a pixmap, window, or image. The value specifies thenumber of
+ bits deep that a given pixel has within a given pixmap, window, or
+ image. index-size '(member :default 8 16)TypeUsed to control the
+ element size of the destination buffer given to the translate function
+when drawing glyphs. If :default is specified, the size is based on the
+current font, if known; otherwise, 16 is used.int8 '(signed-byte
+8)TypeA signed integer value that is a
+ maximum of eight bits long. A number of this type canhave a range from
+ -128 to 127.  int16 '(signed-byte 16)TypeA signed integer value that
+is a maximum of 16 bits long. A number of this type can have a range
+from -32,768 to 32,767. int32 '(signed-byte 32)TypeA signed integer
+value that is a maximum of 32 bits long. A number of this type can have
+a range from -2,147,483,648 to 2,147,483,647. keysym 'card32TypeUsed as
+an encoding of a symbol on a keycap on a keyboard. It is an unsigned
+integer value represented in a maximum of 32 bits long. A keysym type
+can have a range from 0 to 4,294,967,295. mask16 ' card16TypeA
+positional bitmask that contains 16 boolean flags.  Introduction to
+CLX1-18CLX Programmer's Referencemask32 ' card32TypeA positional
+bitmask that
+ contains 32 boolean flags. modifier-key '(member modifier*)TypeA
+ keyword identifying one of the modifier keys on the keyboard device.
+modifier -- One of the
+following::shift:mod-2:lock:mod-3:control:mod-4:mod-1:mod-5
+modifier-mask '(or (member :any) mask16 (list modifier-key))TypeA
+bitmask or list of keywords that specifies a set of modifier keys. The
+keyword :any isequivalent to any subset of modifier key.pixarray '(or
+(array pixel (* *)) Type        (array card16 (* *))        (array
+card8 (* *))        (array (unsigned-byte 4 ) (* *))        (array bit
+(* *)))Specifies a two-dimensional array of pixels.  pixel
+'(unsigned-byte 32)TypeAn unsigned integer value that is a maximum of
+32 bits long. This gives a pixel type a value range from 0 to
+4,294,967,295. Useful values are dependent on the class of color- map
+being used. pixmap '(satisfies pixmap-p)TypeA pixmap. See paragraph
+4.8, Pixmaps, for additional information.  pixmap-formatStructureA
+structure that describes the storage format of a pixmap.  The
+pixmap-format structure contains slots for depth, bits-per-pixel, and
+scanline- pad. The depth member indicates the number of bit planes in
+the pixmap. The bits-per- pixel member indicates the number of bits
+used to represent a single pixel. For X, a pixel can be 1, 4, 8, 16,
+24, or 32 bits wide. As for bitmap-format, the scanline-pad member
+indicates how many pixels are needed to pad the left edge of the
+scan-line.depth Slot of pixmap-formatType: image-depth.The number of
+bit planes in the pixmap.bits-per-pixel Slot of pixmap-formatType:
+(member 1 4 8 16 24 32).The number of consecutive bits used to encode
+ a single pixel. The defaultis 8.Introduction to CLX1-19CLX
+ Programmer's Reference scanline-padSlot of pixmap-formatType: (member
+8 16 32).The number of bits to left-pad the scan-line, which can be 8,
+16, or 32. The default is 8.  point-seq '(repeat-seq (int16 x) (int16
+y))TypeThe point-seq type is used to define sequences of ( x,y) pairs
+of points. The paired valuesare 16-bit, signed integer quantities. This
+gives the points in this type a range from -32,768 to 32,767.
+pointer-event-mask '(or mask32 (list pointer-event-mask-class
+))TypeProvides a way to specify a set of bits for an event bitmask. Two
+ways of specifying the bits are allowed: by setting the event bits in a
+32 bit mask, or by listing the keyword names of the pointer related
+event bits in a list.pointer-event-mask-class '(member event*)TypeA
+keyword name, for a pointer related event, that corresponds to a
+particular
+ bit in anevent bitmask. The set of names is a subset of the names in
+ the type event-mask-class
+.event -- One of the
+following::button-1-motion:button-motion:leave-window:button-2-motion
+:button-press:pointer-motion:button-3-motion:button-release:pointer-motion-hint:button-4-motion
+:enter-window:button-5-motion:keymap-staterect-seq '(repeat-seq (int16
+x) (int16
+ y) (card16 width) (card16 height))Typerect-seq defines a four-tuple
+ sequence of the form ( x, y, width, height). The points x andy are
+signed, 16-bit quantities with a range from -32,768 to 32,767. The
+width and heightvalues are unsigned, 16-bit quantities and range from 0
+to 65,535.  repeat-seq (&rest elts) 'sequenceTypeA subtype used to
+define repeating sequences.  Introduction to CLX1-20CLX Programmer's
+Referenceresource-id 'card29TypeA numeric identifier that is assigned
+by the server to a server resource object.  rgb-val '(float 0.0
+1.0)TypeAn rgb-val is a floating-point value between 0 and 1 that
+specifies a saturation for a red, green, or blue additive primary. The
+0 value indicates no saturation and 1 indicates full saturation. screen
+'(satisfies screen-p)TypeA display screen. See Section 3, Screens, for
+further information.  seg-seq '(repeat-seq (int16 x1) (int16 y1) (int16
+x2) (int16 y2))TypeDefines sequences of ( x1, y1, x2, y2) sets of
+points. The point values are 16-bit, signedinteger quantities. This
+gives the points in this type
+ a range from -32,768 to 32,767. state-mask-key '(or modifier-key
+ (member button *)TypeA keyword identifying one of the display modifier
+keys or pointer buttons whose state is reported in device events.button
+-- One of the following::button-1:button-4:button-2
+:button-5:button-3make-state-keys state-maskFunctionReturns:
+state-keywords -- Type list.Returns a list of state-mask-key symbols
+corresponding to the state-mask. A symbol belongs to the returned list
+if, and only if, the corresponding state-mask bit is 1.  state-mask --
+A 16-bit mask of type mask16.make-state-mask &rest
+keysFunctionReturns:
+   mask -- Type mask16.Returns a 16-bit mask representing the given
+   state-mask-key symbols. The returnedmask contains a 1 bit for each
+ keyword.keys -- A list of state-mask-key symbols.stringable '(or
+ string symbol)TypeUsed for naming something. This type can be either a
+ string or a symbol whose symbol-name is used as the string containing
+the name. The case of the characters in the string is ignored when
+comparing stringables. Introduction to CLX1-21CLX Programmer's
+Reference timestamp '(or null card32)TypeAn encoding of a time. nil
+stands for the current time.  visual-infoStructureA structure that
+represents a visual type. The elements of this structure are id, class,
+red-mask, green-mask, blue-mask, bits-per-rgb, and colormap-entries.id
+Slot of visual-infoType: card29.A unique identification
+number.classSlot of visual-info Type: (member :direct-color :gray-scale
+:pseudo-color :static-color        :static-gray
+ :true-color).The class of the visual type.red-mask, green-mask,
+ blue-maskSlots of visual-infoType: pixel.The red-mask, green-mask, and
+blue-mask elements are only meaningful for the :di-rect-color and
+:true-color classes. Each mask has one contiguous set of bits with no
+intersections.bits-per-rgbSlot of visual-infoType: card8.Specifies the
+log base 2 of the approximate number of distinct color values
+(individu- ally) of red, green, and blue. Actual RGB values are
+unsigned 16-bit numbers.colormap-entries Slot of visual-infoType:
+card16.Defines the number of available colormap entries in a newly
+created colormap. For :di-rect-color and :true-color, this is the size
+of an individual pixel subfield.  Introduction to CLX1-22CLX
+Programmer's Referencewin-gravity '(member gravity*)Type A keyword that
+specifies how to reposition a window when its parent is resized.gravity
+ -- One of the
+ following::center:north-west:static:east:south:unmap:north:south-east
+:west:north-east:south-westIf a parent window is reconfigured without
+changing its inside width or height, then all child windows move with
+the parent and are not changed. Otherwise, each child of the resized
+parent is moved, depending on the child's gravity attribute. See
+window-grav- ity, in paragraph 4.3, Window Attributes, for additional
+information.window '(satisfies
+ window-p)TypeA window. See Section 4, Windows and Pixmaps, for
+ additional information.  xatom '(or string symbol)TypeA name that has
+been assigned a corresponding unique ID by the server.  xatoms are
+usedto identify properties, selections, and types defined in the X
+server. An
+ xatom can beeither a string or symbol whose symbol-name is used as the
+ xatom name. The case of the characters in the string are significant
+when comparing xatoms.

@@ -1,0 +1,5 @@
+
+Main sslmgr : server.c ;
+
+ObjectCcFlags server.c : -g -Wall -I/usr/kerberos/include ;
+LINKFLAGS on sslmgr = -g -lssl -lcap ;

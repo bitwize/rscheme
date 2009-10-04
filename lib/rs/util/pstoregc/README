@@ -1,0 +1,100 @@
+
+                            How To Use The
+                   On-Line Persistent Object Store
+                   Compactor and Garbage Collector
+
+                              2000-12-03
+                            Donovan Kolbly
+
+                      /-----------------------\
+                     (  P R E L I M I N A R Y  )
+                      \-----------------------/
+
+
+1. Install rs-0.7.3.2-b1 or later
+
+2. Build rs.util.pstoregc
+
+      tar xvzf rs_util_pstoregc.tar.gz
+      cd rs/util/pstoregc
+      make
+
+   (make sure `fshell' is in your path, and it includes rsc)
+
+   !WARNING! There is a lot of extra junk still in this directory;
+             intermediate implementations, bad ideas, etc.
+
+3. In your application, import `rs.util.pstoregc'
+
+4. Use lss-open with a vector argument to open the underlying
+   storage area, and open the pstore using `open-pstore-on-lss',
+   and call `init-compaction' (from rs.util.pstoregc) with
+   three arguments:
+        1. the <lss>
+        2. the <persistent-store>
+        3. the name of a location to put the garbage
+           collector state file
+
+   e.g.,
+
+(define (pstore-open-mind mind-file-name . create) ; EXPORT
+  (let* ((v (vector (string-append mind-file-name ".v0")
+                   (string-append mind-file-name ".v1")))
+         (s (stat (vector-ref v 0)))
+         (lss (if s
+                  (lss-open v)
+                  (if (null? create)
+                      #f
+                      (lss-create v))))
+         (ps (and lss (open-pstore-on-lss lss))))
+    ;;
+    (if (not s)
+        (commit ps ((car create))))
+    (init-compaction lss ps (string-append mind-file-name ".gc"))
+    ps))
+
+5. Whenever the application commits, call `did-commit' from
+   rs.util.pstoregc.
+
+   This is how the garbage collector/scanner paces itself to
+   application behavior.
+
+   In the current implementation, the compaction process is
+   completely synchronous and takes place within a call to
+   `did-commit'.  In the future, this will be done incrementally
+   so that there are no long pauses in application execution.
+   (The capability is there now, but the implementation of the
+   asynchronous application-paced operation was beyond me for the
+   current time.).
+
+   The (object-level) garbage collector (scanner) runs as a separate
+   process (`gcmain') using a snapshot of a state of the store taken just after
+   a record-level (LSS) compaction is done.  This external process
+   may be invoked several times to make progress in the scan before
+   it completes.  Once it completes, the list of white ("dead") objects
+   is read in to the application and the space deallocated (i.e.,
+   made available for subsequent allocation).
+
+   It is possible to invoke gcmain yourself, though it operates in
+   this case completely as a scanner (i.e., there is no way to get the
+   list of dead objects back into the application), but this is useful
+   as a diagnostic.
+
+   e.g.,
+
+        gcmain -b /tmp/me.gc -i /tmp/me.mm.v0 /tmp/me.mm.v1
+
+**NOTE** I implemented and quickly tested large object scanning, but I
+have not tried it in nunu.  However, the database still builds from
+scratch to completion (note, when it builds, a leftover GC scanner process
+spews output asynchronously after the build finishes)
+
+**NOTE-2**  Although large-object scanning is implemented, the space used
+by dead large objects is not yet being reused.  This will be addressed
+sometime soon...
+
+**NOTE-3**  This is very early, alpha-quality code.  Many holes may
+remain, and some things are known to not work (e.g., persistent-addr-vec's
+are not implemented, application-defined classes are not implemented,
+backward compatability and repository migration has not been addressed,
+etc...)

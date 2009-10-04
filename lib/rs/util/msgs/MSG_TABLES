@@ -1,0 +1,80 @@
+
+Standard System Message Tables
+==============================
+
+110  rs          RScheme Core Runtime System
+120  sys         RScheme Base System
+
+                 120-1xx corelib
+                 120-2xx lowscm
+
+21  rs.compiler RScheme Compiler
+23  rs.xp2      XP/2 Compiler
+		 23-1xx  scanner
+		23-2xx  extensible parser
+		23-3xx  java
+		23-4xx  dylan
+
+4XX  standard MR modules
+
+411  rs.util.charset
+412  rs.util.collection
+413  rs.util.msgs
+414  rs.util.properties
+
+415  rs.backend.c
+416  rs.util.pack
+
+421  rs.io.textport
+422  rs.io.scanner
+423  rs.io.parser
+
+431  rs.io.here-strings
+432  rs.io.conditional-read
+
+441  rs.net.html
+442  rs.net.http
+443  rs.net.nvt
+444  rs.net.telnet
+445  rs.net.smtp
+
+451  util.paste
+452  util.pretty-print
+
+461  rs.db.dbm
+462  rs.db.lss
+463  rs.db.rstore
+
+5XX  standard applications
+
+542  rs.net.httpd
+543  rs.net.pserver
+544  rs.net.popd
+
+551  inet.email
+
+591  www.framework
+592  axgrind
+593  aux.scripts
+
+6XX  standard graphics & GUIs
+
+601  graphics.geometry
+602  graphics.afm
+603  graphics.tiff
+604  graphics.charpath
+
+611  gui.x
+612  gui.util.x
+621  gui.rstep.x
+
+7XX  ** applications (1/2) **
+701  app.dv
+702  app.fontview
+703  -- hexgame --
+704  app.ibis.backend ("ibis")
+705  app.dv (client side)
+
+8XX  ** applications (2/2) **
+800  user (default user table)
+

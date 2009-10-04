@@ -1,0 +1,22 @@
+
+void FNAME(pack,u32)( obj bvec, UINT_32 offset, obj value )
+{
+  UINT_32 v = basic_uint32( value );
+  BVEC_SLOT(UINT_32) = CNV(v);
+}
+
+void FNAME(pack,s32)( obj bvec, UINT_32 offset, obj value )
+{
+  INT_32 v = basic_raw_int( value );
+  BVEC_SLOT(INT_32) = CNV(v);
+}
+
+obj FNAME(unpack,u32)( obj bvec, UINT_32 offset )
+{
+  return uint32_to_basic( CNV(BVEC_SLOT(UINT_32)) );
+}
+
+obj FNAME(unpack,s32)( obj bvec, UINT_32 offset )
+{
+  return int32_to_basic( CNV(BVEC_SLOT(INT_32)) );
+}

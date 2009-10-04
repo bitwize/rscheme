@@ -1,0 +1,15 @@
+<?xml version='1.0'?>
+
+<!DOCTYPE foo [
+<!ENTITY ha "<a>b</a>">
+<!ENTITY he "&#60;foo">
+<!ELEMENT foo (#PCDATA)>
+<!ATTLIST foo 
+          bar CDATA #REQUIRED
+          baz CDATA #REQUIRED>
+]>
+
+<foo bar="a(&ha;)"
+     baz="b(&he;&#10;&#92;012)">
+hello
+</foo>

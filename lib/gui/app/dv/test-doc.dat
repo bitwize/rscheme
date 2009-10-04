@@ -1,0 +1,6 @@
+;;; this is an Ardvarki document -*-scheme-*-
+
+(document
+ views: (vector
+	 (view frame: (rect 50 50 180 300))
+	 (view frame: (rect 200 70 250 250))))

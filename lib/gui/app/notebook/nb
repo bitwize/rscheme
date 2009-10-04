@@ -1,0 +1,22 @@
+#! /u/donovan/bin/rsq -*-scheme-*-
+
+,(use gui.rstep.x)
+,(use graphics.geometry)
+,(use graphics.image)
+
+(define *c* (open-client))
+
+(load "cells.scm")
+(load "bookview.scm")
+
+
+(define (t)
+  (let ((w (make-window frame: (make-rect 20 20 520 630)
+			title: "Untitled-1"
+			client: *c*)))
+    (make-view class: <notebook-view>
+	       frame: (make-rect 10 0 510 620)
+	       resize-flags: #o22
+	       parent: (content-view w)
+	       root-cell-view: (make <cell-view>))
+    w))

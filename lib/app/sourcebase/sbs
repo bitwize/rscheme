@@ -1,0 +1,15 @@
+#! /u/donovan/bin/rsf
+
+(load "sourcebase.scm")
+
+(define *built* (time))
+
+(define (main args)
+  (format #t "SourceBase (~a, ~a)\n" 
+	  $application-version
+	  (time->string *built* "%Y-%m-%d %H:%M"))
+  (with-module
+      repl
+    (with-module
+	mlink
+      (run-repl args (get-module 'user)))))

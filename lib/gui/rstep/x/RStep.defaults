@@ -1,0 +1,26 @@
+;/RStep-defaults -*-Scheme-*-
+
+(
+ (window.background "gray75")
+ (window.foreground "black")
+ ;;
+ (scroller.dark   "black")
+ (scroller.shadow "rgbi:0.3/0.3/0.333")
+ (scroller.mid    "rgbi:0.5/0.5/0.5")
+ (scroller.base   "rgbi:0.6/0.6/0.667")
+ (scroller.light  "white")
+ (scroller.shades #(scroller.dark       ; 0
+		    scroller.shadow     ; 1
+		    scroller.mid        ; 2
+		    scroller.base       ; 3
+		    scroller.light))    ; 4
+ ;;
+ (button.shades #(button.dark
+		  button.shadow
+		  window.background
+		  button.hilite))
+ (button.hilite "white")
+ (button.shadow "gray37")
+ (application.font "-adobe-helvetica-medium-r-normal--12-*-*-*-*-*-*-*")
+ (button.dark "black")
+)

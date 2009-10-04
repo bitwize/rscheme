@@ -1,0 +1,5 @@
+(load "boardsim.scm")
+(load "compile.scm")
+(load "game.scm")
+(load "moves.scm")
+(load "print.scm")

@@ -1,0 +1,9 @@
+<?xml version='1.0'?>
+
+<!DOCTYPE foo [
+<!ENTITY ha "ha ha ha">
+]>
+
+<foo>
+hello (&ha;)
+</foo>

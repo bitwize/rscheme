@@ -1,0 +1,182 @@
+A Tiny User's Guide
+===================
+
+Click to select objects.  
+Shift-Click multiple selection has initial support, but
+operating on collective selections isn't functional.
+
+Drag objects to move them.  Drag from a handle to
+reshape an object.
+
+Drags snap to handles and control points ("geometry").
+
+Meta-1 selects the "select" tool (the default)
+Meta-2 selects the "drawbox" tool (for drawing boxes)
+
+Meta-i opens an inspection window for the selected object
+(but it's contents are static -- not updated dynamically)
+
+Meta-x allows you to give a command by name, e.g., `fit-to-window'
+which is also bound to `C-x C-f'.
+
+Undo is not implemented et.
+
+Print (`M-x print-view') renders to a PostScript file in /tmp.
+
+TODO - above comments are out of date and need to be reviewed
+
+All key bindings
+================
+
+(these tables are generated using keylist.scm)
+
+Global Keys
+-----------
+(print-keymap *global-keymap*)
++=========+==========================+
+| Key Seq | Binding                  |
++=========+==========================+
+| M-n       open-new-doc             |
+| M-t       open-test-doc            |
+| M-x       execute-extended-command |
+| can ack   load-file                |  #\can == #\C-x
+| can dc3   save-file                |
+| can etx   exit-client-with-review  |
+| can vt    close-view-with-review   |
++====================================+
+
+Graphic Keys
+------------
+(print-keymap *graphic-keymap*)
++=========+=================+
+| Key Seq | Binding         |
++=========+=================+
+| M-1       select-mode     |
+| M-2       draw-box-mode   |
+| M-3       draw-line-mode  |
+| M-4       pen-mode        |
+| M-[       zoom-in         |
+| M-]       zoom-out        |
+| M-down    translate-down  |
+| M-left    translate-left  |
+| M-q       inspect         |
+| M-right   translate-right |
+| M-up      translate-up    |
+| a         place-text-mode |
+| em        paste           |  #\C-y
+| etb       cut             |  #\C-w
++===========================+
+
+Text Keys
+---------
+(print-keymap *text-keymap*)
+
++===========+==================+
+| Key Seq   | Binding          |
++===========+==================+
+| !           insert-char-self |
+| "           insert-char-self |
+| #           insert-char-self |
+| $           insert-char-self |
+| %           insert-char-self |
+| &           insert-char-self |
+| '           insert-char-self |
+| (           insert-char-self |
+| )           insert-char-self |
+| *           insert-char-self |
+| +           insert-char-self |
+| ,           insert-char-self |
+| -           insert-char-self |
+| .           insert-char-self |
+| /           insert-char-self |
+| 0           insert-char-self |
+| 1           insert-char-self |
+| 2           insert-char-self |
+| 3           insert-char-self |
+| 4           insert-char-self |
+| 5           insert-char-self |
+| 6           insert-char-self |
+| 7           insert-char-self |
+| 8           insert-char-self |
+| 9           insert-char-self |
+| :           insert-char-self |
+| ;           insert-char-self |
+| <           insert-char-self |
+| =           insert-char-self |
+| >           insert-char-self |
+| ?           insert-char-self |
+| @           insert-char-self |
+| A           insert-char-self |
+| B           insert-char-self |
+| C           insert-char-self |
+| D           insert-char-self |
+| E           insert-char-self |
+| F           insert-char-self |
+| G           insert-char-self |
+| H           insert-char-self |
+| I           insert-char-self |
+| J           insert-char-self |
+| K           insert-char-self |
+| L           insert-char-self |
+| M           insert-char-self |
+| N           insert-char-self |
+| O           insert-char-self |
+| P           insert-char-self |
+| Q           insert-char-self |
+| R           insert-char-self |
+| S           insert-char-self |
+| T           insert-char-self |
+| U           insert-char-self |
+| V           insert-char-self |
+| W           insert-char-self |
+| X           insert-char-self |
+| Y           insert-char-self |
+| Z           insert-char-self |
+| [           insert-char-self |
+| \           insert-char-self |
+| ]           insert-char-self |
+| ^           insert-char-self |
+| _           insert-char-self |
+| `           insert-char-self |
+| a           insert-char-self |
+| ack         goto-next        |
+| b           insert-char-self |
+| backspace   delete-prev-char |
+| bs          delete-prev-char |
+| c           insert-char-self |
+| cr          finish           |
+| d           insert-char-self |
+| del         delete-prev-char |
+| delete      delete-prev-char |
+| e           insert-char-self |
+| enq         goto-eol         |
+| f           insert-char-self |
+| g           insert-char-self |
+| h           insert-char-self |
+| i           insert-char-self |
+| j           insert-char-self |
+| k           insert-char-self |
+| l           insert-char-self |
+| m           insert-char-self |
+| n           insert-char-self |
+| o           insert-char-self |
+| p           insert-char-self |
+| q           insert-char-self |
+| r           insert-char-self |
+| return      finish           |
+| s           insert-char-self |
+| soh         goto-sol         |
+| space       insert-char-self |
+| stx         goto-prev        |
+| t           insert-char-self |
+| u           insert-char-self |
+| v           insert-char-self |
+| w           insert-char-self |
+| x           insert-char-self |
+| y           insert-char-self |
+| z           insert-char-self |
+| {           insert-char-self |
+| |           insert-char-self |
+| }           insert-char-self |
+| ~           insert-char-self |
++==============================+

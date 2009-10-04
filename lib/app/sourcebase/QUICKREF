@@ -1,0 +1,256 @@
+
+Filesystem Operations
+=====================
+sb --filesystem --create --name <name> --owner <owner> --group <group>
+sb --filesystem <fs>... --policy [want-snapshot][require-reasons]... --on|--off
+sb --filesystem <fs>... --inspect
+
+Group Operations
+================
+sb --Group --create --name <name> --parent <group>... --owner <owner>
+
+User Operations
+===============
+sb --user --create --name <login> --fullname <name> --email <addr>
+sb --user <user>...
+sb --user <user>... --modify --site [--add <site>...] [--remove <site>...]
+
+Snapshot Operations
+===================
+# note: a snapshot must be `--based' in order to use `--extend'
+#  (but what's the policy `want-snapshot' issue?)
+#  (how do you clean up fschanges in `integration' w/o a snapshot
+#   to extend?)
+
+sb [--filespace <fs>] --snap --create <name> [--based <basename> | --current]
+sb [--filespace <fs>] --snap <snapshot> --extend --request <cr>...
+sb [--filespace <fs>] --snap <snapshot> --commit
+
+
+File Operations
+===============
+
+
+sb --file <path> --inspect
+sb --file --create <path>... --request <cr>... --remarks <cmts>
+	  [--stdin] [--binary] --group <group>
+sb --file <path>... --checkin --request <cr>... --other-fs <fs>...
+sb --file <path>... --delete --request <cr>... [--verbose]
+sb --file <path>... --diverge
+sb --file <path1>... --rename --to <path2>... --request <cr>... [--verbose]
+
+sb --file <path>... --checkout [--lock]
+sb --file <path>... --unlock
+
+
+# the <path1>... and <path2>... files are pairwise renamed
+#  ie, sb --file A B C --rename --to D E F
+# means rename A -> D, B -> E, C -> F
+
+sb --file <file1>... --link \
+   --to <file2>... --to-filespace <fs> [--request <cr>...]
+
+# note that <file1>... refers to the refers to the TARGET, where the old
+#                      files are
+#       and <file2>... (and <fs>) are the DESTINATION,
+#                      where the new files will be
+# the destination _directory_ must be locked, and `--request' must
+# be specified if the destination FS requires it
+
+sb --file [<dir>...] --tar [--keep-mode] [--stdout] --def <key>=<val> ...
+
+
+`--top' and `--pwd'
+===================
+In general, the file subcommand of the client uses `--top FSTOP' and
+`--pwd CWD' to determine the path within the managed filesystem to a
+given file.  For security reasons, the client will only allow access
+to file objects below FSTOP; in fact, the server specifies file names
+relative to FSTOP, and "." and ".." references are prohibited by the
+client.  The CWD tells where the current process is executing from,
+with the FSTOP already removed, and hence represents a directory in
+the target (managed) filesystem.
+
+Hence, you can say, e.g.,
+
+        sb --pwd / --file --filespace x --inspect a/b/c.c
+
+to inspect something in filespace x with path /a/b/c.c
+
+
+Directory Operations
+====================
+sb --dir <dir>... --lock
+sb --dir --create <path>... --request <cr>...
+sb --dir <dir>... --checkin --request <cr>... --remarks <cmt>...
+
+sb --dir <dir1>... --link --to-filespace <fs> --to <path2>... --request <cr>... --remarks <cmt>...
+
+
+Reports
+=======
+
+
+sb --report user|changereq|filesystem|snap|group (*)
+sb --report active-fs-changes|{open,fixing,researching}-changereqs (*)
+sb --report integrations (*)
+
+(*) Common `--report' options:
+
+       --format <field> ...
+       --where <slot> = <value>
+       --where property.<prop> = <value>
+
+In a `--where' clause, valid slot names depend on the type of
+object being reported.
+
+(Note 1. Expressions come in as lists of words; the entire expression
+         should therefore _not_ be quoted!)
+
+ Report           Type                     Slot           Type
++---------------+-----------------------+------------------------------------+
+| integrations  | <integration-request> |  file-system   <file-system>       |
+|               |                       |  owner         <user>              |
+|               |                       |  base-request  <change-request>    |
+|               |                       |  in-snapshot?  <boolean>           |
++---------------+-----------------------+------------------------------------+
+| changereq     | <change-request>      |  state         <symbol>            |
++---------------+-----------------------+------------------------------------+
+
+Likewise with a `--format' clause.  The default format for `--report'
+is a single-line entry.  Otherwise, slots or fields may be listed.
+A field is an accessor method like `cr' or `state'
+
+
+Examples
+--------
+
+  sb --report integrations --where in-snapshot? = false
+
+reports all the CRs which are awaiting integration into a snapshot
+
+  sb --report changereq --where state = fixing
+
+reports all the CRs which are in the fixing state
+
+Change Requests
+===============
+sb --changereq <cr>... [--format '(raw field...)']
+sb --changereq --group <group> \
+    --title <title> --summary <summ>... --remarks <rem>... \
+    [--severity <sev>]
+
+sb --changereq <cr> --research
+sb --changereq <cr> --fixing
+sb --changereq <cr> --done [--with <fs>]
+sb --changereq <cr> --ok
+sb --changereq <cr> --comment --remarks <rem>...
+
+sb --changereq <cr> --modify [--title <newtitle>] \
+                             [--summary <newsummary>] \
+                             [--property {K1 V1} ...]
+
+Change Request Lifecycle
+========================
+
++------+  research   +-------------+  fixing   +--------+  done
+| open |------------>| researching |---------->| fixing |--------\
++------+             +-------------+           +--------+        |
+                                                                 |
+                                                                 |
+                                                                 /
+         --------------------------------------------------------
+        /
+       |
+       v
+ +-----------+      +-----------+  ok   +--------+
+ | integrate |----->| check-off |------>| closed |
+ +-----------+      +-----------+       +--------+
+
+
+
+Appendix A -- cloning a filesystem
+==================================
+
+Things aren't all that smooth at the moment...
+
+   sb --filesystem --create --name pkg-0.7 --owner donovan --group packages
+   sb --filesystem pkg-0.7 --policy want-snapshot require-reasons --on
+
+   <create a CR>
+
+   sb --link --filespace pkg-0.6 --dir /packages 
+             --to-filespace pkg-0.7 --to /packages
+             --remarks "Link in filespace" --request <CR>
+
+   <diverge the FS immediately; 
+    things may not go well for you otherwise>
+
+tsunami:rsfam> ./sbserver  rsfam.scm
+SourceBase (0.6.7, 2000-10-28 19:11)
+top[0]=>(rsfam)
++API database-connect /u/rscheme/rsfam/rsfam.vol2 update
+----------------------------------------
+Connected to database: rsfam
+  created 1996.05.22 14:24:07
+  application version 0.6.0
+  structure version 6
+----------------------------------------
+value := #[<application> #[<application>]]
+top[1]=>(define newfs (string->filesystem "pkg-0.7"))
+value := newfs
+top[2]=>(define oldfs (string->filesystem "pkg-0.6"))
+value := oldfs
+top[3]=>(string->changereq "846")
+value := #[<change-request> id: 846]
+top[4]=>(list %)
+value := (#[<change-request> id: 846])
+top[5]=>(define rl %)
+value := rl
+top[6]=>(diverge-fs newfs oldfs rl)
++API diverge-fs pkg-0.7 pkg-0.6 (846)
+type check failed: expected a <user>, saw: #f
+  in: reasons->fs-changes
+break[0]=>,top
+top[7]=>(define u (string->user "donovan"))
+value := u
+top[8]=>(fluid-let ((*user* u)) (diverge-fs newfs oldfs rl))
++API diverge-fs pkg-0.7 pkg-0.6 (846)
+...
+      =>(commit *pstore*)
+      =>,exit
+    
+    <check in all the directories that were left locked>
+
+
+Reverting to a Previous Commit Point
+====================================
+    startup
+    =>(revert-database "PATH" TAG)
+    =>(commit *pstore*)
+
+Ideally, 
+
+  (1) make a backup copy before reverting the database, and/or
+
+  (2) after reverting the database, but BEFORE committing it, start
+      the server by calling (server-daemon PORT) and then poke around
+      using the client to make sure the state is as desired.  When
+      done poking around, issue "sb --sync" to explicitly commit the
+      database.
+
+
+File Key Expansions (standard)
+==============================
+
+  Key   Description                                     Example
+  ---   -----------------------------------------       -------------
+  2005-02-18   Modification date (YYYY-MM-DD by default)       2003-08-13
+  15:57:54   Modification time (HH:MM:SS)                    14:32:02
+  app/sourcebase/QUICKREF   File path                                       foo/bar.c
+  1.5   File version                                    1.2
+  lib-1   Filespace                                       quux
+  library   Group                                           world
+
+Typical:  app/sourcebase/QUICKREF (1.5 ; 2005-02-18 15:57:54)
+

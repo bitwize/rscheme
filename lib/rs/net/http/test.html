@@ -1,0 +1,41 @@
+<html>
+<title>Add Repository User</title>
+<h1>Add Repository User</h1>
+
+<hr>
+
+<form method=POST action="http://www.rscheme.org/cgi-bin/rsdbq">
+<input type=hidden name="operation" value="make">
+<input type=hidden name="class" value="<user>">
+Login: <input name="login" size=16 value="donovan"><br>
+Full Name: <input name="fullname" size=64><p>
+E-mail: <input name="email" size=64><p>
+
+<INPUT TYPE=submit VALUE="Add">
+<INPUT TYPE=reset VALUE="Reset">
+
+</form>
+
+<hr>
+
+<form method=POST action="http://www.rscheme.org/cgi-bin/rsdbq">
+<input type=hidden name="operation" value="make">
+<input type=hidden name="class" value="<module>">
+
+<p>Module:      <input name="mname" size=32 value="com.util.*">
+<p>Author:<br>  <input name="author" size=16 value="donovan">
+<p>Summary:<br> <input name="summary" size=60>
+
+<p>Description:<br> <textarea name="description" rows=10 cols=55></textarea>
+
+<p>The initial version of this module should have be deposited on the
+ftp server, in the <code>/pub/incoming</code> directory.  Enter the
+name of the file in that directory:<br>
+<input name="incomingfile" size=40>
+
+<p><INPUT TYPE=submit VALUE="Add">
+<INPUT TYPE=reset VALUE="Reset">
+
+</form>
+
+</html>

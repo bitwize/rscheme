@@ -1,0 +1,18 @@
+SubDir TOP ubf ;
+
+Library libubf : ubf.c ubfsymtab.c hash.c ;
+
+# There is a bug in:
+#   gcc version 3.3 20030304 (Apple Computer, Inc. build 1495)
+# that prevents it from compiling ubf.c with default optimization
+
+
+# Also note that /usr/bin/jam on MacOS is too heavily modified 
+# for this OPTIM setting to take effect.  I use boost-jam 3.1.9
+if $(OS) = "MACOSX" {
+  OPTIM on [ FGristFiles ubf.o ] = ;
+}
+
+ObjectCcFlags ubf.c ubfsymtab.c hash.c : -g -Wall ;
+
+# ObjectCcFlags ubf.c : -g -Wall $(OFLAGS) ;

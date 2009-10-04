@@ -1,0 +1,30 @@
+<form method="post" action="%(issue)s?post=1">
+
+Title: (<b><font color="red">Note:</font></b> Editing the title is not implemented) <br>
+<textarea name="title" rows=2 cols=55>%(title)s</textarea><br>
+
+Description:  (<b><font color="red">Note:</font></b> Editing the desc is not implemented)<br>
+<textarea name="desc" rows=12 cols=55>%(desc)s</textarea><br>
+
+Owner: <input name="owner" size=12 value="%(owner)s"><br>
+Disposition: <select name="disp">
+<option %(is_undecided)s value="undecided">Undecided
+<option %(is_taken)s value="taken">Taken
+<option %(is_declined)s value="declined">Declined
+<option %(is_future)s value="future">Future
+</select>
+<input type=hidden name="disp_orig" value="%(disp)s">
+<input type=hidden name="title_hash" value="%(title_hash)s">
+<input type=hidden name="desc_hash" value="%(desc_hash)s">
+
+<input type="submit" value="Commit">
+</form>
+
+<hr>
+<form method="post" action="%(issue)s?post=note">
+
+Note:<br>
+<textarea name="title" rows=10 cols=55></textarea><br>
+
+<input type="submit" value="Add">
+</form>

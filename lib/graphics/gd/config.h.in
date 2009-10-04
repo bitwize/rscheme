@@ -1,0 +1,3 @@
+/* -*-c-*- */
+
+#define LIBGD_IOCTX_HAS_FREE    (0)

@@ -1,0 +1,5 @@
+The major content of this module is in ref.scm, which is 
+Copyright (C) 1998 by Olin Shivers.  See the header of that file.
+
+ref.scm was downloaded from 
+  <http://srfi.schemers.org/srfi-1/srfi-1-reference.scm>

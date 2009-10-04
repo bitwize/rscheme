@@ -1,0 +1,179 @@
+<!-- -*- mode: sgml; mode: auto-fill; fill-column: 60 -*-  -->
+
+<chapter> <title>Objects</title>
+
+<para>
+The &dv; system makes heavy use of the RScheme object system.
+
+<sect1><title>Core Objects</title>
+<para>
+This section describes the objects which the core dV system
+manipulates.  These objects interact more-or-less tightly
+with each other and the framework.  Most of the non-core
+work is done by extending the leaf-object class.
+
+<sect2><title>dv-object</title>
+<para>
+The base class of (most) objects that are part of the
+persistent object graph.  Includes a general-purpose
+property list, and defines a concept of creation time and
+modification time.
+
+<sect2><title>view</title>
+<para>
+A view onto the document.  Used to elaborate windows when the
+document is opened.
+<para>
+A view includes a window frame, references a particular
+page of the document, and has a particular transformation matrix.
+
+<sect2><title>document</title>
+<para>
+The document itself.  The root object of the persistent
+object store.
+
+<sect2><title>graphic-object</title>
+<para>
+An abstract class for elements on a page.
+
+<sect2><title>group</title>
+<para>
+A sequence (ordered collection) of graphic objects.
+A group may contain other groups.
+
+<sect2><title>root-group</title>
+<para>
+A collection of graphics objects for a page.
+The root-group is the only thing on a page.  Each page has
+exactly one root group.
+
+<sect2><title>layer-group</title>
+<para>
+A layer-group is the next level below the root-group, and is
+a named object used for logically grouping different layers of a drawing.
+A blank page has only one layer-group, and it is called
+"drawing".
+
+<para>
+The user can add new layer-groups, rearrange their order,
+and change their properties.
+
+<para>
+There is a separate concept of <quote>virtual layers</quote>
+which is applied to other objects.  The general notion is
+that a layer is a way of controlling visibility and printing
+attributes.  The concept of controlling these attributes
+should not be conflated with the stacking order (z-order)
+concept.  (Of course, <quote>layer</quote> definitely
+suggests <quote>stacking order</quote>.  We need a better
+term for the broader concept of attribute control, such as
+<quote>tag</quote>.)
+
+<para>
+Layer attributes are:
+<itemizedlist>
+  <listitem><formalpara><title>Editable</title>
+            <para>Whether or not objects in the layer can be
+            selected or manipulated directly by the user.
+  <listitem><formalpara><title>Geoemetry</title>
+            <para>Whether objects in the layer constitute
+            geometry which should be magnetized.
+  <listitem><formalpara><title>Visible</title>
+            <para>Whether objects in the layer are visible.
+            Options are yes, no, and gray (meaning that they
+            are visible, but drawn entirely in a gray shade.)
+  <listitem><formalpara><title>Printing</title>
+            <para>Whether objects in the layer print.
+</itemizedlist>
+
+<note><para>Layers are not implemented yet</para></note>
+
+<sect2><title>user-group</title>
+<para>
+A collection of graphic objects created by the user using
+(usually) an explicit <quote>Group</quote> command.
+
+<sect2><title>leaf-object</title>
+<para>
+A leaf object is a graphical object which is not a group.
+In other words, it can contribute marks to a page.  It is a
+leaf in the sense of grouping.
+
+<para>
+Note that a script object is a leaf object, and hence can be
+the target of an Explode command.  In this case, the leaf
+object is transformed into a group object, and the
+association with the script object is lost.  This behavior
+is analagous to the process of converting a text object to 
+outlines.
+
+<sect2><title>page</title>
+<para>
+A page of the document.  When a page is created, it is
+<emphasis>modelled</emphasis> using a particular page model.
+
+<sect2><title>page-model</title>
+<para>
+A model for pages.
+
+<note><para>This concept is taken from DSSSL, and is
+similar to the concept of master pages as in FrameMaker.</para></note>
+
+<sect2><title>style</title>
+<para>
+A set of characteristics (attributes mapped to values)
+organized into an inheritance tree.
+
+<note><para>This concept is similar to the attribute
+            inheritance and style abstraction concept in DSSSL.</para></note>
+
+<sect1><title>Standard Objects</title>
+<para>
+This section describes the standard extensions to the core
+facilities.
+
+<sect2><title>box-graphic</title>
+<para>
+A rectangular (in object space) box.
+When exploded, turns into a path-graphic.
+
+<sect2><title>line-graphic</title>
+<para>
+A straight line.  For a more advanced form, see path-graphic.
+When exploded, turns into a path-graphic.
+
+<sect2><title>text-graphic</title>
+<para>
+A line of text.
+When exploded, turns into a sequence of single-character
+text-graphic objects unless it already is a single
+character, in which case it turns into a path-graphic which
+is the glyph's outline.
+
+<sect2><title>path-graphic</title>
+<para>
+An arbitrary path, including multiple subpaths with corner,
+curve, and smooth control points.
+
+<para>
+A path-graphic object consists of a sequence of subpaths.  A
+subpath consists of a sequence of path-points.  A path-point
+has a position, an in-handle, and an out-handle.  The
+handles are offsets relative to the point position.  The
+path-point also has a constraint, which is either 
+<literal role="symbol">smooth</literal>,
+<literal role="symbol">curve</literal>, or 
+<literal role="symbol">corner</literal>.
+
+<formalpara><title>smooth</title>
+<para>The in-handle and out-handle are inverses; that is,
+the control points are collinear with the position point, the same
+distance from the position point, and on opposite sides.
+
+<formalpara><title>curve</title>
+<para>The in-handle and out-handle are collinear with the
+position point.
+
+<formalpara><title>corner</title>
+<para>The in-handle and out-handle are independent of each
+other.

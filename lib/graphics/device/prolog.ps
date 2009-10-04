@@ -1,0 +1,144 @@
+
+/patterndict 20 dict def
+
+patterndict begin
+
+% red polka dots
+
+/redpolka <<
+    /PaintType 1
+    /PatternType 1
+    /TilingType 1
+    /BBox [-10 -10 10 10]
+    /XStep 20
+    /YStep 30
+    /PaintProc {
+        pop
+        5 0 moveto 0 0 5 0 360 arc closepath
+        1 0 0 setrgbcolor
+        fill
+    }
+>> matrix makepattern def
+
+% CrossHatch
+
+/crosshatch <<
+    /PaintType 2
+    /PatternType 1
+    /TilingType 1
+    /BBox [0 0 10 10]
+    /XStep 10
+    /YStep 10
+    /PaintProc {
+        pop
+        gsave
+        0.5 setlinewidth
+        -10 -5 moveto 25 25 rlineto stroke
+        -5 -5 moveto 25 25 rlineto stroke
+        0 -5 moveto 25 25 rlineto stroke
+        5 -5 moveto 25 25 rlineto stroke
+        10 -5 moveto 25 25 rlineto stroke
+
+        -5 -5 moveto -25 25 rlineto stroke
+        0 -5 moveto -25 25 rlineto stroke
+        5 -5 moveto -25 25 rlineto stroke
+        10 -5 moveto -25 25 rlineto stroke
+        15 -5 moveto -25 25 rlineto stroke
+        20 -5 moveto -25 25 rlineto stroke
+        25 -5 moveto -25 25 rlineto stroke
+
+        grestore
+    }
+>> matrix makepattern def
+
+% NE diagonal lines
+
+/neshading <<
+    /PaintType 2
+    /PatternType 1
+    /TilingType 1
+    /BBox [0 0 10 10]
+    /XStep 10
+    /YStep 10
+    /PaintProc {
+        pop
+        gsave
+        0.5 setlinewidth
+        -10 -5 moveto 25 25 rlineto stroke
+        -5 -5 moveto 25 25 rlineto stroke
+        0 -5 moveto 25 25 rlineto stroke
+        5 -5 moveto 25 25 rlineto stroke
+        10 -5 moveto 25 25 rlineto stroke
+        grestore
+    }
+>> matrix makepattern def
+
+% NW diagonal lines
+
+/nwshading <<
+    /PaintType 2
+    /PatternType 1
+    /TilingType 1
+    /BBox [0 0 10 10]
+    /XStep 10
+    /YStep 10
+    /PaintProc {
+        pop
+        gsave
+        0.5 setlinewidth
+        -5 -5 moveto -25 25 rlineto stroke
+        0 -5 moveto -25 25 rlineto stroke
+        5 -5 moveto -25 25 rlineto stroke
+        10 -5 moveto -25 25 rlineto stroke
+        15 -5 moveto -25 25 rlineto stroke
+        20 -5 moveto -25 25 rlineto stroke
+        25 -5 moveto -25 25 rlineto stroke
+        grestore
+    }
+>> matrix makepattern def
+
+/WavyProc {
+    /width get setlinewidth
+    -2 -6 translate
+    7 {
+        0 0 moveto
+        5.72958 1.8  9.93887 3  15 3 curveto
+        20.0611 3  24.2704 1.8  30 0 curveto
+        35.7296 -1.8  39.9389 -3  45 -3 curveto
+        50.0611 -3  54.2704 -1.8  60 0 curveto
+        65.7296 1.8  69.9389 3  75 3 curveto
+        80.0611 3  84.2704 1.8  90 0 curveto
+        95.7296 -1.8  99.9389 -3  105 -3 curveto
+        110.061 -3  114.27 -1.8  120 0 curveto
+        125.73 1.8  129.939 3  135 3 curveto
+        140.061 3  144.27 1.8  150 0 curveto
+        155.73 -1.8  159.939 -3  165 -3 curveto
+        170.061 -3  174.27 -1.8  180 0 curveto
+        stroke
+        0 3 translate } repeat
+} def
+
+/wavy0 <<
+    /PaintType 2
+    /PatternType 1
+    /TilingType 1
+    /BBox [0 0 60 9]
+    /XStep 60
+    /YStep 9
+    /width 0.25
+    /PaintProc currentdict /WavyProc get
+>> matrix makepattern def
+
+/wavy1 <<
+    /PaintType 2
+    /PatternType 1
+    /TilingType 1
+    /BBox [0 0 60 9]
+    /XStep 60
+    /YStep 9
+    /width 0.5
+    /PaintProc currentdict /WavyProc get
+>> matrix makepattern def
+
+end     % patterndict
+

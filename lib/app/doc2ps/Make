@@ -1,0 +1,18 @@
+#! /bin/bash
+
+set -e
+
+inst=$(rsx --install)
+outdir=${inst}/resource
+if test -w ${outdir}
+then :
+else outdir=/tmp
+fi
+
+${inst}/bin/fshell \
+  -q --in usual-inlines exec.scm \
+  -c ${outdir}/doc2ps.fas
+
+echo "Generated: ${outdir}/doc2ps.fas"
+
+makex ${outdir}/doc2ps.fas ${inst}/bin/fshell

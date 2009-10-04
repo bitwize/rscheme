@@ -1,0 +1,11 @@
+#!/bin/sh
+
+cd /opt/rs-dns-0.1
+
+if [ "$1" = '-d' ]
+then
+  /opt/rs/bin/fshell all.scm \
+    -e '(thread-resume (make-thread server-start "server-start"))'
+else
+  /opt/rs/bin/fshell all.scm -e '(server-start)'
+fi

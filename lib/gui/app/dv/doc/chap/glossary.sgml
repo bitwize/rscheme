@@ -1,0 +1,16 @@
+<!-- -*- mode: sgml; mode: auto-fill; fill-column: 60 -*-  -->
+
+<glossary>
+  <title>Glossary Of Terms</title>
+
+<glossentry>
+ <glossterm>view extent</glossterm>
+ <glossdef>
+   <para>The maximum extent of viewable area.  Characterized
+   by a margin (<varname>view-extent-margin</varname>)
+   around the page box.
+ </glossdef>
+</glossentry>
+
+
+</glossary>

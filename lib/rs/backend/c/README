@@ -1,0 +1,56 @@
+How to Use Dynamic Glue (and compiling to C)
+============================================
+
+This iteration of rs.backend.c depends on
+(roughly) 0.7.3.1-b19u and later.  
+
+To use:
+
+Presume `mrs' is linked to a fshell executable, and
+the module repository has been installed (ie, you
+were in ../../.. and ran `make install'.  Actually,
+I think if your RS_MODULE_PATH includes  .../dev, 
+this will work on the basic fshell -- it'll load-on-
+demand the MR modules it needs)
+
+Presume you're in the directory with this README
+(ie, .../dev/rs/backend/c/)
+
+--NOTE--
+note that we are elaborating the module definition
+but NOT importing -- there is no need to reference its
+exports unless you are doing special things like flushing
+code or want to use `cload'
+
+  % mrs -q module.scm
+  top[0]=>(define-glue (bob) { REG0 = int2fx(666); RETURN1(); })
+  value := bob
+  top[1]=>(bob)
+                     <--- here is where the C file gets written out (*)
+  value := 666
+
+(* -- the C file is written, compiled, and dynamically linked lazily.
+The first time you invoke a procedure whose code is in limbo, all the
+deferred code is generated, compiled, and linked in, so there may
+be a slight delay.  Also, any errors compiling C will be deferred until
+that point, so don't be overconfident that your glue code got loaded!)
+
+  top[2]=>(cload "foo.scm")     ;; load `foo.scm', but compiling to C
+
+The default code generation policy is to compile everything
+to bytecodes except for glue (where there is no choice).  The
+policy can be switched to generate C code by default, or "mostly"
+by default.  `cload' is like `load' but changes the default to
+be to generate C code.
+
+--NOTE--  
+I don't use cload, so it may be broken at the moment, or not do
+the right thing.  Let me know if you want to use it and its broken
+(<mailto:donovan@rscheme.org>)
+
+--NOTE--
+Merely loading this module creates some dynamic glue
+as part of its bootstrapping the lazy code generator.
+Hence, it is not included in the module repository
+build by default (until CR 777 can be addressed, wherupon
+we can include it in the MR build).

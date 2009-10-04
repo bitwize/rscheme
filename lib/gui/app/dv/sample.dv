@@ -1,0 +1,34 @@
+;;;  -*-Scheme-*-
+;;;
+;;;  sample.dv: a sample (and my, in fact) dv startup file 
+;;;
+;;;  (my ~/.dvrc is linked to this file)
+;;;
+
+(define-module-extend gui.app.dv ()
+#|
+,(use gui.app.dv)
+,(use graphics.geometry)
+|#
+
+(define-interactive (plop-obj in (at <point>) (label <string>))
+  (interactive (owner)
+	       (click "Where?")
+	       (minibuffer <string> "Label: "))
+  (let* ((view (underlying-object in))
+	 (du (point->size
+	      (transform at 
+			 (invert-transform (view-ctm view)))))
+	 (group (page-contents (view-page view))))
+    (dm 900 "plop at ~s: ~s" du label)
+    ;
+    (for-each
+     (lambda (d)
+       (paste-from-extern d group du))
+     `((box origin-x: 0 origin-y: -70 width: 100 height: 70)
+       (line start-x: 0 start-y: -30 end-x: 100 end-y: -30)
+       (line start-x: 0 start-y: -50 end-x: 100 end-y: -50)
+       (text origin-x: 0 origin-y: 3
+	     str: ,label
+	     font: (font "Times" "Bold Italic" 12))))))
+)

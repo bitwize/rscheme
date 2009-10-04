@@ -1,0 +1,30 @@
+Things To Do
+------------
+
+* Edit Title/Description [ok]
+* Delete
+* Reparent issues
+* History [mostly]
+* Notes [ok]
+* Comments on changes [ok]
+* Notification
+* XML output
+** XSLT-generated web pages  [ok, mostly]
+** Full data dump in XML
+** Full data import from XML
+
+* `--width' for report formatting
+* `--where' expression language for reports
+
+* Think about transaction-level `--undo'
+
+* Keyword indexes
+
+* Figure out how to handle MIME types for notes
+  (e.g., text/plain vs. text/docbook vs., e.g., text/html)
+
+* Export in Zac's DTD
+* Add topics
+
+
+* Unify (reuse) notification e-mail formatting and "print history"

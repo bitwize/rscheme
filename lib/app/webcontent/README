@@ -1,0 +1,13 @@
+
+
+(1) First Time (Re-)Initialization
+
+rsf -q datamodel.scm -e '(init-repository "/tmp/i.rep")' -exit
+
+rsf -q datamodel.scm sample.scm -e '(begin (access "/tmp/i.rep") (reload))' -exit
+
+
+
+(2) Startup Server
+
+rsf -q datamodel.scm sample.scm webside.scm -e '(opengo "/tmp/i.rep")'

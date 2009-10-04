@@ -1,0 +1,94 @@
+;;;@title SRFI Test Cases - Part 1
+;;;@tag srfis-1
+;;;@note <srfi name="0"/>
+(cond-expand
+ ((and srfi-1 srfi-10)
+  (display "both\n"))
+ ((or srfi-1 srfi-10)
+  (display "one-or-the-other\n"))
+ (else
+  (display "neither\n")))
+(cond-expand
+ (os.linux
+  (display "Linux!\n")))
+;;;@note <srfi name="6" cr="903" since="v0.7.3.3-b1"/>
+#|@note[[
+<p><b>Note:</b> RScheme returns two values from <code>read</code>;
+the datum read and the line number (starting at 1) on which
+the datum started.
+</p>]]|#
+;;;@reprompt
+(define p (open-input-string "(a b c) 34"))
+(input-port? p)
+(read p)
+(read p)
+(eof-object? (peek-char p))
+;;;@note <h3>Another Example</h3>
+;;;@reprompt
+(let ((p (open-output-string)))
+  (write 'a p)
+  (write '(b c) p)
+  (get-output-string p))
+;;;@note <srfi name="28" cr="954" since="v0.7.3.3-b14u"/>
+;;;@reprompt
+(format "Hello, ~a" "World!")
+(format "Something is ~s" '(one "two" 3))
+;;;@note <srfi name="10" cr="953" since="v0.7.3.3-b14u"/>
+;;;@note <p>First, let's define some of kind of application object</p>
+(define-class <my-thing> (<object>)
+  foo
+  bar)
+(define (my-thing-ctor foo bar)
+  (make <my-thing>
+        foo: foo
+        bar: bar))
+;;;@note <p>Let's define a print representation that is
+;;;@note the same as the read representation.  That's the
+;;;@note usual thing in Scheme, but since we are extending
+;;;@note the reader, we have to extend the writer, too</p>
+;;;@reprompt
+(define-method write-object ((self <my-thing>) port)
+  (format port "#,(my-thing ~s ~s)" (foo self) (bar self)))
+(define-reader-ctor 'my-thing my-thing-ctor)
+;;;@note <p>We now have a new kind of thing that can be read and
+;;;@note written.</p>
+'(this is quoted #,(my-thing 1 2) ha)
+;;;@note <srfi name="30"/>
+;;;@note <p>This has been in forever, since Dylan has it.</p>
+(define (hello)
+  #| This is a comment
+     what do you think?
+  |#
+  '(hello there))
+(define (hi)
+  #| You can even nest them
+     #| here is an inner comment |#
+     which is handy when commenting
+     out large blocks of code
+  |#
+  'hi)
+;;;@note <srfi name="9" in="library" style="native"/>
+;;;@note <p>RScheme has it's own built-in object system, but
+;;;@note it's fairly easy to provide SRFI-9 interfaces so people
+;;;@note can write portable code.  For efficiency and style,
+;;;@note we implemented SRFI-9 in terms of RScheme's object system
+;;;@note instead of just grabbing the reference implementation.</p>
+;;;@reprompt
+,(use srfi.9)
+(define-record-type point (make-point x y) is-point?
+   (x get-x)
+   (y get-y))
+(define p (make-point 3 4))
+p
+(is-point? p)
+(list (get-x p) (get-y p))
+;;;@note <p>In RScheme, the name of the record type defined 
+;;;@note using SRFI-9's <code>define-record-type</code> is bound
+;;;@note to a variable whose value is a class object, just as if
+;;;@note <code>define-class</code> were used.  (However, it is
+;;;@note of a distinguished metaclass, 
+;;;@note <code>&lt;&lt;record-type&gt;&gt;</code>)  This allows
+;;;@note you to use RScheme's reflection facilities.</p>
+;;;@reprompt
+point
+(instance? p point)

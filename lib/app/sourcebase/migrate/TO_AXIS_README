@@ -1,0 +1,293 @@
+SOURCEBASE SIDE REPAIR
+======================
+
+lssctl -z zlib-fast -cp /u/rscheme/rsfam/rsfam.vol2 /tmp/foo1
+lssctl -ob /tmp/foo1 100 -.
+lssctl -cxb /tmp/foo1.0 /tmp/foo1 100 -.
+
+rsf -q sourcebase.scm rsfam.scm migrate/to-axis-{topo,repairs}.scm
+
+(rsfam)
+(repair-branches)
+(commit *pstore*)               ; 102
+(set! *new-state-map* (build-new-state-map))
+(scan-transitions)
+
+(fixup-all-crs)
+(fixup-all-node-ids)
+(commit *pstore*)               ; 103
+
+
+SOURCEBASE SIDE EXPORT
+======================
+
+rsf -q sourcebase.scm rsfam.scm migrate/major3.scm -e '(go00)' -exit
+sort -t\| -k2 /tmp/replay.unsort \
+  | sed 's/|sysadm|/|admin|/' \
+  | sed 's/|?|/|donovan|/' > /tmp/replay.dat
+
+
+AXIS SIDE IMPORT
+================
+
+rm -rf .test
+rm -f /u/donovan/p/sf/library/dev/app/sourcebase/migrate/to-axis/replay.meta
+mkdir .test
+
+rsf -qimage .build/boot.fas \
+    -Dinitial.user=admin \
+    -Dinitial.password=bar \
+    -Ddata.root=/u/donovan/p/axis/src/.test/rscheme \
+    -Ddata.title="RScheme" \
+    -Ddata.sql.external \
+    -Ddata.sql.database=axis_test1 \
+    -Dserver.http.port=7998 \
+    -Dserver.cli.port=7997 \
+    -Dserver.console.port=7999 \
+    -Dsmtp.relay=localhost --new .test/rscheme.cfg
+
+# first to initialize the meta file
+./incremental-replay
+
+# then to crunch the replay file
+rm /tmp/rscheme-migration.llog
+REPLAY_EXPORT=/tmp/rscheme-migration.llog ./incremental-replay
+
+
+rsf -qimage .build/boot.fas --replay .test/rscheme.cfg -Z
+
+rsf -qimage .build/boot.fas --replay quick.cfg -Z
+
+...
+to reload it all from the rscheme-migration.llog:
+
+rsf -qimage .build/boot.fas --replay .test/rscheme.cfg $PWD/rscheme-migration.llog -q
+
+...
+
+axisd \
+    -Dinitial.user=admin \
+    -Ddata.root=/opt/axis/rscheme \
+    -Ddata.title="RScheme" \
+    -Ddata.sql.external \
+    -Ddata.sql.database=axis_rs \
+    -Dserver.http.port=7400 \
+    -Dserver.cli.port=7401 \
+    -Dserver.console.port=7402 \
+    -Dsmtp.relay=aurora.xynthesis.com --new RScheme.cfg
+
+---PASSED---
+./rs-snap-compare.sh pkg-0.6    0
+./rs-snap-compare.sh rs-0.5     4
+./rs-snap-compare.sh rs-0.6     0.98
+./rs-snap-compare.sh rs-0.6     0.99
+./rs-snap-compare.sh rs-0.6     1.0
+./rs-snap-compare.sh rs-0.6     1.1
+./rs-snap-compare.sh pkg-0.6    1.1
+./rs-snap-compare.sh rs-0.6     1.2
+./rs-snap-compare.sh pkg-0.6    1.3
+./rs-snap-compare.sh rs-0.6     1.3
+./rs-snap-compare.sh rs-0.6          1.4
+./rs-snap-compare.sh pkg-0.6         1.4
+./rs-snap-compare.sh rs-0.6          1.5
+./rs-snap-compare.sh pkg-0.6         1.5
+./rs-snap-compare.sh rs-0.6          1.6
+./rs-snap-compare.sh pkg-0.6         1.6
+./rs-snap-compare.sh pkg-0.6         1.6.8
+./rs-snap-compare.sh rs-0.6          1.6.8
+./rs-snap-compare.sh rs-0.6          1.7
+./rs-snap-compare.sh pkg-0.6         1.7
+./rs-snap-compare.sh rs-0.6          1.8
+./rs-snap-compare.sh pkg-0.6         1.8
+./rs-snap-compare.sh rs-0.6          1.9
+
+./rs-snap-compare.sh pkg-0.6         1.9        (*1)
+./rs-snap-compare.sh rs-0.7          0.0
+./rs-snap-compare.sh rs-0.7          0.1
+./rs-snap-compare.sh rs-0.6          2.0
+./rs-snap-compare.sh rs-0.7          0.2
+./rs-snap-compare.sh rs-0.6          2.1
+./rs-snap-compare.sh rs-0.7          0.4
+./rs-snap-compare.sh pkg-0.6         2.2
+./rs-snap-compare.sh rs-0.7          0.5
+./rs-snap-compare.sh rs-0.7          0.6
+./rs-snap-compare.sh pkg-0.6         2.3
+./rs-snap-compare.sh rs-0.7          0.3
+./rs-snap-compare.sh rs-0.7          0.7        (*2)
+./rs-snap-compare.sh rs-0.7          0.8
+
+./rs-snap-compare.sh pkg-0.6         2.0        (*1)
+./rs-snap-compare.sh pkg-0.6         2.1        (*1)
+
+./rs-snap-compare.sh pkg-0.6         2.4
+./rs-snap-compare.sh rs-0.7          0.9
+./rs-snap-compare.sh pkg-0.6         2.5
+./rs-snap-compare.sh pg95.1          0
+./rs-snap-compare.sh pg95.1          1.0
+./rs-snap-compare.sh rs-0.7          1.0
+
+./rs-snap-compare.sh pkg-0.6         3.0
+./rs-snap-compare.sh rs-0.7          2.0
+./rs-snap-compare.sh pkg-0.6         4.0
+./rs-snap-compare.sh doc-util-1      0.7.2
+./rs-snap-compare.sh doc-tech-1      0.7.2
+./rs-snap-compare.sh doc-user-1      0.7.2
+./rs-snap-compare.sh pkg-0.6         5.0
+./rs-snap-compare.sh threads.1       1.0
+./rs-snap-compare.sh pg95.1          1.1
+./rs-snap-compare.sh doc-util-1      0.7.3
+./rs-snap-compare.sh doc-tech-1      0.7.3
+./rs-snap-compare.sh doc-user-1      0.7.3
+./rs-snap-compare.sh rs-0.7          3.1
+./rs-snap-compare.sh rs-0.7          3.0
+./rs-snap-compare.sh threads.1       1.1
+./rs-snap-compare.sh pkg-0.6         5.1
+./rs-snap-compare.sh pg95.1          1.2
+./rs-snap-compare.sh rs-0.7          1.1
+./rs-snap-compare.sh doc-2           1.0
+./rs-snap-compare.sh lss-3           1.0
+./rs-snap-compare.sh lss-3           1.1
+
+----IN PROGRESS----
+
+
+
+---PENDING---
+
+
+
+./rs-snap-compare.sh rs-0.7          3.2
+./rs-snap-compare.sh threads.1       1.2
+./rs-snap-compare.sh doc-2           1.1
+./rs-snap-compare.sh pg95.1          1.3
+./rs-snap-compare.sh lss-3           2.0
+./rs-snap-compare.sh pkg-0.6         5.2
+./rs-snap-compare.sh doc-2           1.2
+./rs-snap-compare.sh lss-3           2.1
+./rs-snap-compare.sh rs-0.7          3.3
+./rs-snap-compare.sh threads.1       1.3
+./rs-snap-compare.sh pkg-0.6         5.3
+
+
+(*1)  This snapshot is corrupt in SourceBase, generating the
+      following error:
+
+        star:sb> sb --ls / --filespace 'pkg-0.6^1.9' --pwd /
+        dlcsl-sl-s -          packages        13 Jun 11 07:30 /packages ^1.3
+
+        star:sb> sb --ls /packages --filespace 'pkg-0.6^1.9' --pwd /
+        SRV-002 Internal error...
+        error: 2034: id not in pkg-0.6#1.9 map
+
+(*2) this snapshot appears fine, although I cannot get
+     SourceBase to deliver the entire contents via tarball
+     w/o getting an unexpected EOF error.  The /tmp/temp.*.tar.gz
+     file is corrupt, too.  However, checking out the one messed-up
+     file (compiler/boot/makeinit.scm) using '--file --checkout'
+     works and then the diff is clean.
+
+     If I run SourceBase using the latest RScheme, the tar extract
+     works fine.  I think this was a buffer-flushing problem, in this
+     case to the gzip subprocess.
+     
+
+
+ax product --create RScheme -m"The RScheme Implementation"
+
+ax build --create 0.7.3.3-b0 -p RScheme --description "Initial build"
+ax build --extend b0 -p 0.7.3.3 -f rs-0.7 -s 3.3
+
+_______________________________ the following is pre-major3 ___________________
+
+SOURCEBASE SIDE EXPORT
+======================
+
+rsf -q sourcebase.scm rsfam.scm migrate/to-axis-topo.scm migrate/node-script.scm
+
+(rsfam)
+(init-special-audits)
+(export-to-axis)        ; [~11 sec]
+(load "migrate/disco.scm")                   ; <-- discovered deps, as found
+(load "migrate/more-disco.scm")              ; <-- discovered deps, as found
+
+(keep-checking)                 ; ignore TIME; takes ~5 hours & emits 1114 recs
+(keep-checking #t)              ; take TIME into account; emits 3 records
+
+;(add-discovered-dependencies)
+;(build-remap-table)
+(check-exports)
+
+(print-exports)
+(save-short-data-backing "/tmp/shortback.sto")
+
+
+
+=== Manually edit 15,647 records in /tmp/exports.dat to make sense ===
+
+(load-short-data-backing "/tmp/shortback.sto")
+
+(short-script->xaction-file "/tmp/exports.dat" "/tmp/t1.xml")
+(short-script->xaction-file "cm/x01.dat" "/tmp/x01.xml")
+
+(short-script->xaction-file "/tmp/exports.dat" "/tmp/t1.xml" 
+                            first: "A000.00"
+                            last: "A030.00")
+
+(short-script->xaction-file "/tmp/exports.dat" "/tmp/t1.xml" first: "A000.00" last: "B700.00")
+
+rsf -q sourcebase.scm rsfam.scm migrate/to-axis.scm -e '(rsfam)' -e '(export-to-axis)' -exit
+
+AXIS SIDE IMPORT
+================
+
+./load-rscheme.sh
+
+
+
+*NOTE*
+
+
+_2_to-axis-topo.scm is before we changed it so that the dependencies
+go like this:
+
+    1.2 --> 1.1 --> [NODE] --> [CONTAINER]
+
+instead of like:
+
+          [NODE] --> 1.1 --> [CONTAINER]
+                      ^
+                      |
+                      |
+                     1.2
+
+
+NOTES
+-----
+create table rscript (
+  seqid   char(10),
+  tid     char(13),
+  who     varchar(8),
+  when    timestamp WITH TIME ZONE,
+  what    char(8),
+  subject varchar(100),
+  details varchar(100),
+  contd   char(1)
+);
+
+    <axis:add-comment>				cr note
+    <axis:complete-fileset-changes>		cr done
+    <axis:create-change-request>		cr opencr
+    <axis:create-directory>			d  mkdir
+    <axis:create-domain>			ad mkdom
+    <axis:create-file>				f  creat
+    <axis:create-fileset>			fs mkfs
+    <axis:create-user>				ad mkuser
+    <axis:delete-directory>			d  rmdir
+    <axis:delete-file>				f  rm
+    <axis:link-directory>			d  lndir
+    <axis:link-file>				d  ln
+    <axis:lock-file>				f  edit
+    <axis:modify-change-request>		cr chcr
+    <axis:rename-node>				fd mv
+    <axis:request-comment>			cr rfc
+

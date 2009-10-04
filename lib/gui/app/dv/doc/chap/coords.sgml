@@ -1,0 +1,90 @@
+<!-- -*- mode: sgml; mode: auto-fill; fill-column: 60 -*-  -->
+
+<chapter> <title>Coordinate Systems</title>
+
+<para>
+There are many different coordinate systems in play in a
+given dV document.
+
+<sect1><title>Coordinate System Math</title>
+<para>
+This section is a refresher on coordinate systems,
+transforms, and composition.
+<para>
+The thing to remember is that <function>concatenate-transform</function>
+operates in reverse.  That is, if transformation matrix P
+converts from system A to B, and matrix Q converts from B to
+C, then Q.P converts from A to C.
+
+<equation>
+        (point+ a b) = (transform a (translate Identity b))
+</equation>
+
+<equation>
+        (transform (transform p A) B) = (transform p (concat B A))
+</equation>
+
+<!-- insert Equation here -->
+
+<sect1><title>User</title>
+<para>
+The user coordinate system is the PostScript page coordinate
+system.  Its origin is the lower left of the page, and it
+increases x to the right and y up.
+<para>
+User coordinates are the <emphasis>canonical</emphasis>
+system for a given page.
+
+<sect1><title>Device Sheet</title>
+<para>
+The device sheet coordinates are that of the
+content X-window, except translated so that the origin
+coincides with user coordinates.  In X coordinates, x
+increases across and y down.
+
+<para>
+Device sheet coordinates are fixed for a given
+view rotation and scale, because those are infrequently
+changed (compared to translation, which changes by
+scrolling the view). This allows points translated into
+device sheet coordinates to be
+cached for artwork and handles.
+
+<para>
+The view extent is obtained by adding an outset (negative
+inset) of view-extent-margin to the page frame, transforming
+that rectangle into device sheet coordinates, and taking the
+bounding box of the transformed rectangle.
+
+<sect1><title>Device</title>
+<para>
+Device coordinates are that of the content X-window.  Device
+coordinates differ from device sheet coordinates only by a
+translation which corresponds to the setting of the
+scrollbars.
+
+<para>
+If the view extent is smaller in some dimension that the
+content window, then the corresponding scrollbar is disabled
+and the effect is one of centering.
+
+<sect1><title>Object</title>
+<para>
+The object coordinate system is what the object's geometry itself uses
+(after any general transformation applied to the object
+itself, and certainly any transformation applied to parent groups).
+Note that painting takes place in the user coordinate
+system, so things like stroke widths are always measured in
+user coordinates.
+
+<para>
+The <function>u-&gt;object-tm</function> procedure computes the
+tranform matrix from user coordinates to object coorindates,
+taking into account parent groups and any object-specific
+general transformation.
+
+<figure id=x.fig.coords>
+  <title>Coordinate Systems.  U=user, D=device, O=object.</title>
+<graphic entityref="fig.usercoord1" scale=100>
+</figure>
+

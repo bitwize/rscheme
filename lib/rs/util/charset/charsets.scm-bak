@@ -1,0 +1,241 @@
+;,(use tables sort)
+
+;;
+
+(define-class <char-set> (<table>)
+  (cache type: <vector>)
+  (full-table type: <byte-vector>))
+
+(define-class <char-table> (<char-set>)
+  (values-table type: <vector> init-value: '#()))
+
+(define (make-char-set)
+  (make <char-set>
+	cache: (make-vector 64)
+	full-table: (bvec-alloc <byte-vector> 0)))
+
+(define (make-char-table)
+  (make <char-table>
+	cache: (make-vector 64)
+	full-table: (bvec-alloc <byte-vector> 0)))
+
+;;
+
+(define (kvp-sequence (self <char-set>) ks)
+  (list->vector
+   (map cons
+	(vector->list (vector-map char->integer ks))
+	(vector->list (value-sequence self)))))
+
+(define (char-set-insert! (self <char-set>) (key <char>) val)
+  (set-from-elemv! 
+   self 
+   (vector-append (vector (cons (char->integer key) val))
+		  (kvp-sequence self (key-sequence self)))))
+
+(define (char-set-remove! (self <char-set>) (key <char>))
+  (let* ((ks (key-sequence self))
+	 (i (vmemq key ks)))
+    (if i
+	(set-from-elemv!
+	 self
+	 (let ((w (kvp-sequence self ks)))
+	   (vector-append
+	    (vector-slice w 0 i)
+	    (vector-slice w (+ i 1)))))
+	#f)))
+
+(define (set-from-elemv! (self <char-set>) (elemv <vector>))
+  (set-cache! self (make-vector 64))
+  (let ((n (vector-length elemv))
+	(elemv (sort elemv
+		     (lambda ((a <pair> :trust-me)
+			      (b <pair> :trust-me))
+		       (fixnum<? (car a) (car b))))))
+    (let loop ((i 0)
+	       (r '())
+	       (m 0))
+      (if (< i n)
+	  (let ((code (car (vector-ref elemv i)))
+		(val (cdr (vector-ref elemv i))))
+	    (let eq-loop ((j 1))
+	      (if (and (< (+ j i) n)
+		       (eq? (car (vector-ref elemv (+ j i))) (+ code j))
+		       (eq? (cdr (vector-ref elemv (+ j i))) val))
+		  (eq-loop (+ j 1))
+		  (loop (+ i j) 
+			(cons (vector code j val) r)
+			(+ m 1)))))
+	  (let ((ft (bvec-alloc <byte-vector> (* m 4)))
+		(vv (make-vector m)))
+	    (let loop ((i m)
+		       (r r))
+	      (if (eq? i 0)
+		  (begin
+		    (set-full-table! self ft)
+		    vv)
+		  (let ((i (- i 1))
+			(e (car r)))
+		    (bvec-write-unsigned-16 ft (* i 4) (vector-ref e 0))
+		    (bvec-write-unsigned-16 ft (+ 2 (* i 4)) (vector-ref e 1))
+		    (vector-set! vv i (vector-ref e 2))
+		    (loop i (cdr r))))))))))
+
+(define-method values-table ((self <char-set>))
+  (make-vector (quotient (bvec-length (full-table self)) 4) #t))
+
+(define-method table-size ((self <char-set>))
+  (let (((ft <byte-vector>) (full-table self)))
+    (let loop ((n 0)
+	       (i 0))
+      (if (< i (bvec-length ft))
+	  (loop (+ n (bvec-read-unsigned-16 ft (+ i 2)))
+		(+ i 4))
+	  n))))
+
+(define-method key-sequence ((self <char-set>))
+  (let ((ft (full-table self))
+	(vt (values-table self))
+	(r (make-vector (table-size self))))
+    (let loop ((i 0)
+	       (k 0)
+	       (vti 0))
+      (if (< i (bvec-length ft))
+	  (let ((code (bvec-read-unsigned-16 ft i))
+		(n (bvec-read-unsigned-16 ft (+ i 2)))
+		(v (vector-ref vt vti)))
+	    (for-each (lambda (j)
+			(vector-set! r (+ j k) (integer->char (+ j code))))
+		      (range n))
+	    (loop (+ i 4) (+ k n) (+ vti 1)))
+	  r))))
+
+(define-method value-sequence ((self <char-set>))
+  (make-vector (table-size self) #t))
+
+(define-method value-sequence ((self <char-table>))
+  (let ((ft (full-table self))
+	(vt (values-table self))
+	(r (make-vector (table-size self))))
+    (let loop ((i 0)
+	       (k 0)
+	       (vti 0))
+      (if (< i (bvec-length ft))
+	  (let ((code (bvec-read-unsigned-16 ft i))
+		(n (bvec-read-unsigned-16 ft (+ i 2)))
+		(v (vector-ref vt vti)))
+	    (for-each (lambda (j)
+			(vector-set! r (+ j k) v))
+		      (range n))
+	    (loop (+ i 4) (+ k n) (+ vti 1)))
+	  r))))
+      
+
+(define (char-set-lookup (self <char-set>) (key <char>))
+  (let ((x (bitwise-and (integer->hash (char->integer key)) #b111110))
+	(c (cache self)))
+    (if (eq? (vector-ref c x) key)
+	(vector-ref c (add1 x))
+	(let ((v (char-set-full-lookup self key)))
+	  (vector-set! c x key)
+	  (vector-set! c (add1 x) v)
+	  v))))
+
+(define-method char-set-full-lookup ((self <char-set>) (key <char>))
+  (and (char-set-find-index self key) #t))
+
+(define-method char-set-full-lookup ((self <char-table>) (key <char>))
+  (let ((i (char-set-find-index self key)))
+    (and i
+	 (vector-ref (values-table self) i))))
+
+(define (char-set-find-index (self <char-set>) (key <char>))
+  (letrec ((key-code (char->integer key))
+	   (tbl (full-table self))
+	   (search (lambda (start end)
+		     (let* (((i <fixnum>) (div2 (+ start end)))
+			    ((v <fixnum>) (bvec-read-unsigned-16
+					   tbl
+					   (fixnum* i 4))))
+		       (if (fixnum>? v key-code)
+			   (if (eq? i end)
+			       #f
+			       (search start i))
+			   (if (fixnum<? key-code
+					 (+ v (bvec-read-unsigned-16
+					       tbl
+					       (+ (fixnum* i 4) 2))))
+			       i
+			       (if (eq? i start)
+				   #f
+				   (search i end))))))))
+    (if (eq? (bvec-length tbl) 0)
+	#f
+	(search 0 (quotient (bvec-length tbl) 4)))))
+
+;;;
+
+(define-method table-insert! ((self <char-set>) (key <char>) (val <boolean>))
+  (if val
+      (char-set-insert! self key val)
+      (char-set-remove! self key))
+  (values))
+
+(define-method table-insert! ((self <char-table>) (key <char>) val)
+  (set-values-table! self (char-set-insert! self key val))
+  (values))
+
+(define-method table-remove! ((self <char-set>) (key <char>))
+  (char-set-remove! self key)
+  (values))
+
+(define-method table-lookup ((self <char-set>) (key <char>))
+  (char-set-lookup self key))
+
+(define (char-set-union . sets)
+  (let ((t (make-char-set)))
+    (for-each
+     (lambda (set)
+       (vector-for-each 
+	(lambda (ch)
+	  (table-insert! t ch #t))
+	(key-sequence set)))
+     sets)
+    t))
+
+(define-method members->char-set ((self <string>))
+  (members->char-set (string->list self)))
+
+(define-method members->char-set ((self <vector>))
+  (members->char-set (vector->list self)))
+
+(define-method members->char-set ((self <list>))
+  (let ((t (make-char-set)))
+   (for-each
+     (lambda (ch)
+       (table-insert! t ch #t))
+     self)
+    t))
+
+#|
+;;;
+
+(define (t info)
+  (let ((b (bvec-alloc <byte-vector> (* 4 (length info)))))
+    (for-each (lambda (i r)
+		(bvec-write-unsigned-16 b (* i 4) (car r))
+		(bvec-write-unsigned-16 b (+ 2 (* i 4)) (cadr r))
+		0)
+	      (range (length info))
+	      info)
+    (make <char-set>
+	  cache: (make-vector 64)
+	  full-table: b)))
+
+(define x (t '((48 10)
+	       (65 5)
+	       (97 5))))
+
+(define (p x i)
+  (char-set-find-index x (integer->char i)))
+|#

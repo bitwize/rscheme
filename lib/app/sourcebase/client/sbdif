@@ -1,0 +1,98 @@
+#!/bin/sh
+#
+#  usage:  sbdif [-b] file...
+#
+flags=""
+
+diff_flags=""
+x_flags=""
+y_flags=""
+
+if test "$1" = "--summary"
+then summary_mode=true
+     shift
+fi
+
+if test "$1" = "-v"
+then x_flags="--version $2"
+     shift 2
+fi
+
+if test "$1" = "-vs"
+then x_flags="--version $2"
+     y_flags="--version $3"
+     shift 3
+fi
+
+if test "$1" = "-b"
+then diff_flags="$diff_flags $1"
+     shift
+fi
+
+if test "$1" = "-c"
+then diff_flags="$diff_flags $1"
+     shift
+fi
+
+find_top() {
+   p="$1"
+   if test -f $p
+   then p=${p%/*}
+   fi
+   case "$p" in
+     /*) ;;
+     *) p=$PWD/$p
+   esac
+   fullp="$p"
+
+   while ! test -f $p/.top
+   do p1="${p%/*}"
+      if test "$p" = "$p1"
+      then echo Top not found
+           exit 1
+      fi
+      p=$p1
+   done
+   export SB_TOP=$p
+   . $p/.top $fullp
+}
+
+strip_top () {
+   while test $# -gt 0
+   do a=$1
+      echo ${a#$SB_TOP}
+      shift
+   done
+}
+
+find_top $1
+
+diff1() {
+  if test -n "$summary_mode"
+  then diff --changed-group-format='c %dn
+' --old-group-format='o %dn
+' --new-group-format='n %dN
+' --unchanged-group-format='u %dn
+' - "$1" | perl -e '$n{"c"} = 0; $n{"o"} = 0; $n{"n"} = 0; $n{"u"} = 0; $s=0;
+                    while (<>) { if (m/([conu]) (\d+)/) { $n{$1}+=$2;$s+=$2} }
+		    $nn=$n{"n"}; $oo=$n{"o"}; $cc=$n{"c"};
+                    print "+$nn -$oo delta $cc / $s\n";
+                    if (($nn + $oo + $cc) == 0) {exit(3);}'
+  else diff $diff_flags -c - "$1"
+  fi
+  rc=$?
+  return $rc
+}
+
+for i in $(strip_top "$@")
+do if test -z "$y_flags"
+   then
+    sb --file $i --checkout --stdout --nokeys $x_flags | diff1 $i
+    rc=$?
+   else
+     sb --file $i --checkout --stdout --nokeys $y_flags > .temp.$$
+     sb --file $i --checkout --stdout --nokeys $x_flags | diff1 .temp.$$
+   fi
+done
+rm -f .temp.$$
+exit $rc

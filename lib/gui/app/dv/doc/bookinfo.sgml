@@ -1,0 +1,20 @@
+     <BookInfo>
+
+       <title/dV/
+       <copyright>
+         <year/2000/
+	 <holder/Donovan Kolbly/
+       </copyright>
+       <authorGroup>
+         <author><firstName/Donovan/ <surname/Kolbly/
+	 </author>
+       </authorGroup>
+       <pubdate/December, 2000/
+       <abstract>
+          <title/Abstract/
+	  <para>Describes the internal structure and design
+                of the graphical editing system
+                built using RScheme called <quote>dV</quote>.</para>
+       </abstract>
+
+     </BookInfo>

@@ -1,0 +1,19 @@
+<form method="post" action="%(parent_id)s?post=1&fup=%(followup)s">
+
+Title:<br>
+<textarea name="title" rows=2 cols=55></textarea><br>
+
+Description:<br>
+<textarea name="desc" rows=12 cols=55></textarea><br>
+
+Owner: <input name="owner" size=12 value="%(owner)s"><br>
+Disposition: <select name="disp">
+<option SELECTED value="undecided">Undecided
+<option value="taken">Taken
+<option value="declined">Declined
+<option value="future">Future
+</select>
+
+<input type="submit" value="Submit">
+</form>
+

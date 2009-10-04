@@ -1,0 +1,7 @@
+History
+=======
+
+1997-09-26	converted to module using `define-module', 
+		seperated out from rest of parser
+
+1996-11-27	initial implementation as part of RS 0.9 parser

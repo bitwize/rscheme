@@ -1,0 +1,629 @@
+#! /usr/bin/env python2
+
+import os, anydbm, stat, struct, re, os.path, sys, string, time
+import ConfigParser
+import gettext, getopt
+from cStringIO import StringIO
+import tempfile, copy
+
+gettext.bindtextdomain( "Sb", "./locale" )      # c.f. pygettext.py
+gettext.textdomain( "Sb" )
+_ = gettext.gettext
+
+def openIndex( ctx ):
+    return anydbm.open( ctx.top + "/.sb/index", flag='c' )
+
+RECURSIVE_EXCLUDE = map( re.compile,
+                         [ r'CVS',
+                           r'[.].*',
+                           r'.*~',
+                           r'.*#' ] )
+
+def includeQ( path ):
+    for p in RECURSIVE_EXCLUDE:
+        if p.match( path ):
+            return 0
+    return 1
+
+class ChangeSet:
+    def __init__( self ):
+        self.added = []
+        self.deleted = []
+        self.changed = []
+        self.unchanged = []
+        
+    def appendAdded( self, item ):
+        self.added.append( item )
+
+    def appendDeleted( self, item ):
+        self.deleted.append( item )
+
+    def appendChanged( self, item ):
+        self.changed.append( item )
+
+    def appendUnchanged( self, item ):
+        self.unchanged.append( item )
+
+    def summarize( self ):
+        print "%d added" % len(self.added)
+        for i in self.added:
+            print "    %s" % i
+        print "%d deleted" % len(self.deleted)
+        for i in self.deleted:
+            print "    %s" % i
+        print "%d changed" % len(self.changed)
+        for i in self.changed:
+            print "    %s" % i
+        print "%d unchanged" % len(self.unchanged)
+
+    def update( self, dict, flag ):
+        f = '+' + flag
+        for i in self.added:
+            dict[i] = f
+
+        f = '-' + flag
+        for i in self.deleted:
+            dict[i] = f
+
+        f = 'x' + flag
+        for i in self.changed:
+            dict[i] = f
+
+        f = '.' + flag
+        for i in self.unchanged:
+            dict[i] = f
+
+                
+def diffList( currentDict, worldGet, worldList ):
+    cs = ChangeSet()
+    visited = {}
+    for path, info in currentDict.items():
+        try:
+            (meta, mtime, size, version, fs) = worldGet( path )
+            if (mtime != info[0]) or (size != info[1]):
+                cs.appendChanged( path )
+                visited[path] = 1
+            else:
+                cs.appendUnchanged( path )
+                visited[path] = 1
+        except KeyError:
+            cs.appendAdded( path )
+            visited[path] = 1
+
+    for path in worldList():
+        if not visited.has_key( path ):
+            cs.appendDeleted( path )
+    return cs
+
+class TransientWorld:
+    def __init__( self ):
+        self.__dirs = {}
+        self.__files = {}
+        
+    def initDir( self, path, sb ):
+        self.__dirs[path] = (sb.st_mtime, sb.st_size)
+
+    def initFile( self, path, sb ):
+        self.__files[path] = (sb.st_mtime, sb.st_size)
+
+    def diffToWorld( self, world ):
+        return (diffList( self.__dirs,
+                          world.getDir,
+                          world.dirList ),
+                diffList( self.__files,
+                          world.getFile,
+                          world.fileList ))
+
+class Entry:
+    def __init__( self, packed=None, statbuf=None ):
+        if packed:
+            (self.meta,
+             self.mtime,
+             self.size,
+             self.version,
+             self.fs) = struct.unpack( "BLL32p32p", packed )
+        elif statbuf:
+            self.meta = 1
+            self.mtime = statbuf.st_mtime
+            self.size = statbuf.st_size
+            self.version = ""
+            self.fs = ""
+
+    def pack( self ):
+        return struct.pack( "BLL32p32p",
+                            self.meta,
+                            self.mtime,
+                            self.size,
+                            self.version,
+                            self.fs )
+
+class World:
+    def __init__( self, ctx ):
+        self.__index = openIndex( ctx )
+
+    def close( self ):
+        self.__index.close()
+        
+    def _packEntry( self, meta, mtime, size, version, fs ):
+        return struct.pack( "BLL32p32p", meta, mtime, size, version, fs )
+
+    def _unpackEntry( self, entry ):
+        return struct.unpack( "BLL32p32p", entry )
+        #return Entry( packed=entry )
+
+    def getDir( self, path ):
+        return self._unpackEntry( self.__index["D#"+path] )
+
+    def getFile( self, path ):
+        return self._unpackEntry( self.__index["F#"+path] )
+
+
+    def allList( self ):
+        tbl = {}
+        for s in self.__index.keys():
+            if s[0:2] == "D#":
+                tbl[s[2:]] = 'd'
+            elif s[0:2] == "F#":
+                tbl[s[2:]] = 'f'
+        return tbl
+        
+    def dirList( self ):
+        return map( lambda x: x[2:],
+                    filter( lambda x: x[0:2] == "D#",
+                            self.__index.keys() ) )
+    
+    def fileList( self ):
+        return map( lambda x: x[2:],
+                    filter( lambda x: x[0:2] == "F#",
+                            self.__index.keys() ) )
+    
+    def initDir( self, path, sb, fs, ver ):
+        self.__index["D#" + path] = self._packEntry( 1,
+                                                     sb.st_mtime,
+                                                     sb.st_size,
+                                                     ver,
+                                                     fs )
+
+    def initFile( self, path, sb, fs, ver ):
+        self.__index["F#" + path] = self._packEntry( 1,
+                                                     sb.st_mtime,
+                                                     sb.st_size,
+                                                     ver,
+                                                     fs )
+
+def scan( ctx, dir ):
+    for entry in os.listdir( dir ):
+        if includeQ(entry):
+            f = "%s/%s" % ( dir, entry )
+            sb = os.lstat( f )
+            m = sb.st_mode
+            if stat.S_ISLNK( m ):
+                continue
+
+            if stat.S_ISDIR( m ):
+                ctx.initDir( f, sb )
+                scan( ctx, f )
+            elif stat.S_ISREG( m ):
+                ctx.initFile( f, sb )
+
+def check( top ):
+    t = TransientWorld()
+    scan( t, top )
+    # Check for new stuff
+    # Check for deleted stuff
+    # Check for changed stuff
+    (ddiff,fdiff) = t.diffToWorld( World() )
+
+    #print "DIRECTORIES"
+    #ddiff.summarize()
+
+    #print
+    print "FILES"
+    fdiff.summarize()
+
+def init( top ):
+    w = World()
+    scan( w, top )
+    w.close()
+
+def findtop():
+    pwd = os.path.abspath("")
+    top = pwd
+    while 1:
+        isf = os.path.isdir( top + "/.sb" )
+        if isf:
+            return (top, pwd[len(top)+1:])
+        n = os.path.split( top )[0]
+        if n == top:
+            return (None,None)
+        top = n
+
+def fatal( rc, msg ):
+    sys.stderr.write( "%s: %s" % (ME, msg) )
+    sys.exit( rc )
+
+ME='Sb'
+
+class Context:
+
+    def strip_pwd( self, target ):
+        t = os.path.abspath( target )
+        p = self.pwd + '/'
+        
+        if t[0:len(p)] == p:
+            return t[len(p):]
+        else:
+            raise "%s: not under pwd %r" % (t, p)
+        
+    def strip_top( self, target ):
+        t = os.path.abspath( target )
+        
+        if t[0:len(self.top)] == self.top:
+            return t[len(self.top):]
+        else:
+            raise "%s: not under top %r" % (t, self.top)
+
+def sb_locks( ctx, env, argv ):
+    login = env['SB_LOGIN']
+    os.execvpe( 'sb', ['sb', '--report', 'locked-files',
+                       '--where', 'user', '=', login],
+                env )
+
+def sb_diff( ctx, env, argv ):
+    (options, targets) = getopt.getopt( argv, "r:bcs" )
+
+    rev = []
+    flags = ['--checkout', '--stdout', '--nokeys']
+    diff_flags = []
+    summary_mode = 0
+    for opt, arg in options:
+        if opt == '-r':
+            if len( rev ) > 1:
+                raise "Too many '-r' args"
+            rev.append( arg )
+        elif opt == '-b':
+            diff_flags.append( '-b' )
+        elif opt == '-c':
+            diff_flags.append( '-c' )
+        elif opt == '-s':
+            summary_mode = 1
+
+    diff_cmd = 'diff %s' % (string.join( diff_flags, ' ' ))
+    
+    for t in targets:
+        t2 = ctx.strip_top( t )
+        print "********** %s **********" % t2
+        
+        ff = ['--file', t2]
+        src1 = None
+        if len(rev) < 2:
+            if rev:
+                ff.append( '--version' )
+                ff.append( rev[0] )
+            src2 = sb_read( flags + ff, env )
+        else:
+            src1 = sb_read( flags + ff + ['--version', rev[0]], env )
+            src2 = sb_read( flags + ff + ['--version', rev[1]], env )
+
+        if src1:
+            file1 = tempfile.mktemp('sbdiff')
+            open( file1, 'w' ).write( src1 )
+        else:
+            file1 = ctx.strip_pwd( t )
+
+        dpipe = os.popen( "%s - %s" % (diff_cmd, file1), 'w' )
+        dpipe.write( src2 )
+        dpipe.close()
+
+def sb_read( argv, env ):
+    (r,w) = os.pipe()
+    pid = os.fork()
+    if pid == 0:
+        os.close( r )
+        os.dup2( w, 1 )
+        os.execvpe( 'sb', ['sb'] + argv, env )
+        os.exit( 5 )
+    os.close( w )
+    buf = StringIO()
+    while 1:
+        n = os.read( r, 8192 )
+        if not n:
+            break
+        buf.write( n )
+    os.close( r )
+    return buf.getvalue()
+
+TAGMAP = { '+f': '?',
+           '-f': 'R',
+           'xf': 'M',
+           '.f': None,
+           '+d': '?',
+           '-d': 'R',
+           'xd': 'M',
+           '.d': None }
+
+
+def sb_list( ctx, env, argv ):
+    w = World( ctx )
+    tbl = w.allList()
+    k = tbl.keys()
+    print "%r" % k
+    k.sort()
+    for path in k:
+        if tbl[path] == 'd':
+            (meta, mtime, size, version, fs) = w.getDir( path )
+        else:
+            (meta, mtime, size, version, fs) = w.getFile( path )
+        print "%s  %s (%s) %r" % (path,
+                                  version,
+                                  time.strftime( '%Y-%m-%d %H:%M:%S %Z',
+                                                 time.localtime( mtime ) ),
+                                  fs)
+
+def sb_check( ctx, env, argv ):
+    w = World( ctx )
+    t = TransientWorld()
+    scan( t, "." )
+
+    (ddiff,fdiff) = t.diffToWorld( w )
+
+    tbl = {}
+    ddiff.update( tbl, 'd' )
+    fdiff.update( tbl, 'f' )
+    k = copy.copy( tbl.keys() )
+    k.sort()
+
+    # XXX this does not accurately skip when subdirectories
+    #     and resumption of parent directories is going on
+    skip = []
+    for i in k:
+        #print "** %r %r" % (tbl[i],i)
+        if skip and i[:len(skip[-1])] == skip[-1]:
+            continue
+
+        t = TAGMAP[ tbl[i] ]
+        if t:
+            print "%s %s" % (t,i)
+        
+        if tbl[i] == '+d':
+            skip.append( i + '/' )
+            #print "(skip %r)" % skip
+
+def sb_reset( ctx, env, argv ):
+    (options, targets) = getopt.getopt( argv, "f:" )
+
+    fs = None
+    for opt, arg in options:
+        if opt == '-f':
+            fs = arg
+    if not fs:
+        raise "Required '-f' argument not supplied"
+
+    w = World( ctx )
+
+    data = sb_read( ['--report', 'file',
+                     '--where', 'filesystem', '=', fs,
+                     '--format', 'type', 'version', 'path'],
+                    env )
+    for info in string.split( data, "\n" ):
+        if info:
+            (type, version, path) = string.split( info, '|' )
+            if path == '/':
+                sb = os.stat( "." )
+                path = "."
+            else:
+                path = "." + path
+                sb = os.stat( path )
+            if type == 'd':
+                w.initDir( path, sb, fs, version )
+                print "%s/ (%s)" % (path, version)
+            else:
+                w.initFile( path, sb, fs, version )
+                print "%s (%s)" % (path, version)
+
+# check in and then check back out
+
+def sb_bounce( ctx, env, argv ):
+    raise "Not implemented"
+    
+def sb_ci( ctx, env, argv ):
+    (options, targets) = getopt.getopt( argv, "m:t:y:" )
+
+    flags = []
+    for opt, arg in options:
+        if opt == '-m':
+            flags.append( '--remarks' )
+            flags.append( arg )
+        elif opt == '-t':
+            flags.append( '--timestamp' )
+            flags.append( string.join( string.split( arg, ' ' ), '_' ) )
+        elif opt == '-y':
+            flags.append( '--request' )
+            for r in string.split( arg, ',' ):
+                flags.append( r )
+    targets = map( ctx.strip_top, targets )
+    os.execvpe( 'sb', ['sb', '--checkin', '--file'] + targets + flags, env )
+             
+def sb_co( ctx, env, argv ):
+    (options, targets) = getopt.getopt( argv, "lk:pr:u" )
+
+    action = '--checkout'
+    flags = []
+    
+    for opt, arg in options:
+        if opt == '-l':
+            flags.append( '--lock' )
+        elif opt == '-k':
+            if arg == 'k':
+                flags.append( '--nokeys' )
+            else:
+                raise "Don't know how to handle %r on '-k'" % arg
+        elif opt == '-p':
+            flags.append( '--stdout' )
+        elif opt == '-r':
+            flags.append( '--version' )
+            flags.append( arg )
+        elif opt == '-u':
+            action = '--unlock'
+
+    targets = map( ctx.strip_top, targets )
+    rollup = flags + ['--file'] + targets + [action]
+
+    os.execvpe( 'sb', ['sb'] + rollup, env )
+
+IMMEDIATE_CMDS = { 'locks': 'locks',
+                   'diff': 'sbdif',
+                   'mkdir': 'sbmkdir',
+                   'create': 'sbcreat',
+                   'note': 'sbnote',
+                   'ci': 'ci',
+                   'co': 'co' }
+
+INLINE_CMDS = { 'co': sb_co,
+                'ci': sb_ci,
+                'locks': sb_locks,
+                'diff': sb_diff,
+                'list': sb_list,
+                'check': sb_check,
+                'bounce': sb_bounce,
+                'reset': sb_reset }
+
+def sb_init( ctx ):
+    server = ctx.environ.get( 'SB_SERVER', None )
+    user = ctx.environ.get( 'SB_LOGIN', ctx.environ['USER'] )
+    group = ctx.environ.get( 'SB_GROUP', None )
+    fs = ctx.environ.get( 'SB_FILESPACE', None )
+    ctx.top = '.'
+    
+    (options, targets) = getopt.getopt( ctx.args, "s:g:f:u:t:" )
+
+    for opt, arg in options:
+        if opt == '-s':
+            server = arg
+        elif opt == '-g':
+            group = arg
+        elif opt == '-f':
+            fs = arg
+        elif opt == '-u':
+            user = arg
+        elif opt == '-t':
+            ctx.top = arg
+
+    if os.path.isdir( ctx.top + '/.sb' ):
+        fatal( 1, _('705-403F Sourcebase directory %s/.sb already exists\n') \
+               % (ctx.top,) )
+        
+    
+    os.mkdir( ctx.top + '/.sb' )
+    f = open( "%s/.sb/config" % ctx.top, 'w' )
+
+    f.write( "[sourcebase]\n" )
+    f.write( "SB_LOGIN=%s\n" % user )
+    f.write( "SB_SERVER=%s\n" % server )
+    f.write( "SB_TOP=%s\n" % os.path.abspath( ctx.top ) )
+    if fs:
+        f.write( "SB_FILESPACE=%s\n" % fs )
+    f.write( "SB_GROUP=%s\n" % (group or 'world') )
+    f.close()
+        
+def main( argv=['Sb'] ):
+    global ME
+    ME = os.path.split( argv[0] )[1]
+
+    ctx = Context()
+    # override environment settings using, e.g., -Eserver=...
+    ctx.override = {}
+    ctx.pwd = os.getcwd()
+    override = ctx.override
+
+    if argv[1] == '-C':
+        target = argv[2]
+        if os.path.isfile( target ):
+            os.chdir( os.path.split( target )[0] )
+        else:
+            os.chdir( target)
+        argv = argv[2:]
+    
+    while argv[1][0:2] == '-E':
+        (k,v) = string.split( argv[1][2:], '=' )
+        k = "SB_" + string.upper( k )
+        override[k] = v
+        argv = argv[1:]
+
+    ctx.command = argv[1]
+    ctx.args = argv[2:]
+
+    ctx.environ = os.environ.copy()
+    
+    if ctx.command == 'init':
+        ctx.environ.update( override )
+        sb_init( ctx )
+
+    (ctx.top, ctx.dir) = findtop()
+    if not ctx.top:
+        fatal( 1, _('705-401F Could not find ".sb" marker\n') )
+
+    if len(argv) < 2:
+        fatal( 1, _('705-402F Missing command (try "%s help")\n') % (ME,) )
+
+
+    if ctx.command == 'help':
+        helpcmd( ctx )
+
+    # found the info dir; see if it's initialized
+    cfgfile = ctx.top + "/.sb/config"
+
+    if not os.path.isfile( cfgfile ):
+        fatal( 1, _('705-404F Missing config file: %s\n') % (cfgfile,) )
+
+    ctx.config = ConfigParser.ConfigParser()
+    ctx.config.read( cfgfile )
+
+    #print "Top: %r" % (ctx.top,)
+    #print "Dir: %r" % (ctx.dir,)
+    #print "Server: %r" % (ctx.config.get( 'sourcebase', 'SB_SERVER' ),)
+
+    # try to find a more specific directory config
+    dlist = ctx.dir.split( "/" )
+    subsect = None
+    
+    while len(dlist) > 0:
+        d = "/".join( dlist + [""] )
+        #print "  (checking %r)" % d
+        if ctx.config.has_section( d ):
+            subsect = d
+            break
+        dlist = dlist[:-1]
+
+    env = ctx.environ
+    env['SB_SERVER'] = ctx.config.get( 'sourcebase', 'SB_SERVER' )
+    env['SB_LOGIN'] = ctx.config.get( 'sourcebase', 'SB_LOGIN' )
+    env['SB_TOP'] = ctx.top
+    env['SB_FILESPACE'] = ctx.config.get( subsect or 'sourcebase',
+                                          'SB_FILESPACE' )
+    env['SB_GROUP'] = ctx.config.get( 'sourcebase', 'SB_GROUP' )
+
+    env.update( override )
+    if INLINE_CMDS.has_key( ctx.command ):
+        INLINE_CMDS[ ctx.command ]( ctx, env, argv[2:] )
+    elif IMMEDIATE_CMDS.has_key( ctx.command ):
+        os.execvpe( IMMEDIATE_CMDS[ctx.command],
+                    [IMMEDIATE_CMDS[ctx.command]] + argv[2:],
+                    env )
+    else:
+        os.execvpe( 'sb', ['sb'] + argv[1:], env )
+
+def helpcmd( c ):
+    print "%s: %s" % (ME, _("705-101N command help"))
+    print
+    kl = IMMEDIATE_CMDS.keys()
+    kl.sort()
+    for d in kl:
+        print "    %s %s" % (ME,d)
+    print " OR"
+    print "    %s <sb option>" % (ME,)
+    sys.exit(0)
+
+if __name__ == '__main__':
+    main( sys.argv )
+

@@ -1,0 +1,11 @@
+
+void FNAME(pack,f32)( obj bvec, UINT_32 offset, obj value )
+{
+  IEEE_32 v = basic_ieee32( value );
+  BVEC_SLOT(IEEE_32) = CNV(v);
+}
+
+obj FNAME(unpack,f32)( obj bvec, UINT_32 offset )
+{
+  return ieee32_to_basic( CNV(BVEC_SLOT(IEEE_32)) );
+}

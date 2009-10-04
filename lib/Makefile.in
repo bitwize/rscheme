@@ -1,0 +1,69 @@
+
+RS=@rs@
+INSTALL_DIR=@install_dir@
+PRODUCT=mrs.fas
+
+PRE_FILES=
+POST_FILES=
+
+MODULE_FILES=load.scm
+
+$(PRODUCT): $(PRE_FILES) $(MODULE_FILES) $(POST_FILES) makex
+	$(RS) -qimage $(INSTALL_DIR)/resource/fshell.orig.fas $(PRE_FILES) $(MODULE_FILES) $(POST_FILES) -c.repl $(PRODUCT)
+	./makex -v $(PRODUCT) `which $(RS)`
+
+makex: makex.c
+	$(CC) makex.c -o makex
+
+install::
+	cp -p mrs.fas $(INSTALL_DIR)/resource/fshell.fas
+
+# remove all the products of install
+
+uninstall::
+	rm -f $(INSTALL_DIR)/resource/fshell.fas
+
+# the `clean' targets do NOT remove installed products
+#
+# remove all the products of building
+clean::
+	rm -f $(PRODUCT)
+
+# remove everything that is not part of the distribution
+distclean:: clean
+	rm -f config.cache config.status config.log modules.dep
+	rm -f Makefile makex
+
+# remove everything that is not part of the source
+srcclean:: distclean
+	rm -f configure Makefile
+
+depend::
+	RS_MODULE_PATH=. $(RS) MM.scm -e '(MM "modules.dep")' \
+			$(PRE_FILES) $(MODULE_FILES) \
+			$(POST_FILES) -exit
+
+#-include modules.dep
+
+dist:: distclean
+	tar czf /tmp/rs_lib.tar.gz .
+
+
+VERSION=0.3.0
+ship::
+	dir=/tmp/t.$$$$ && \
+	mkdir $$dir && \
+	cd $$dir && \
+	cvs -Q -l checkout dev && \
+	(cd dev ; autoconf) && \
+        (cd dev/gui/app/dv ; make about.tiff) && \
+	rm -rf `find . -type d -name CVS -print` && \
+	mv dev mr-$(VERSION) && \
+	tar -czf /u/ftp/priv/mr-$(VERSION).tar.gz mr-$(VERSION) && \
+	cd /tmp && rm -rf $$dir
+
+# we have to uninstall to make sure we don't boot using our own image
+# we have to clean because dependencies might not be up to date
+# and we reinstall, because that's the idea
+
+again:: uninstall clean $(PRODUCT) install

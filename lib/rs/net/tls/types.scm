@@ -1,0 +1,100 @@
+(define *SERVER-HELLO*
+  '(struct
+    (protocol-major type: (uint 1))
+    (protocol-minor type: (uint 1))
+    (random type: (struct
+                   (gmt-unix-time type: (uint 4))
+                   (random-bytes type: (array (28) (uint 1)))))
+    (session-id type: (struct
+                       (length type: (uint 1))
+                       (id type: (array (length) (uint 1)))))
+    (cipher-suite type: (enum (uint 2)
+                              (#x01 TLS_RSA_WITH_NULL_MD5)
+                              (#x02 TLS_RSA_WITH_NULL_SHA)
+                              (#x03 TLS_RSA_EXPORT_WITH_RC4_40_MD5)
+                              (#x04 TLS_RSA_WITH_RC4_128_MD5)
+                              (#x05 TLS_RSA_WITH_RC4_128_SHA)
+                              (#x06 TLS_RSA_EXPORT_WITH_RC2_CBC_40_MD5)
+                              (#x07 TLS_RSA_WITH_IDEA_CBC_SHA)
+                              (#x08 TLS_RSA_EXPORT_WITH_DES40_CBC_SHA)
+                              (#x09 TLS_RSA_WITH_DES_CBC_SHA)
+                              (#x0A TLS_RSA_WITH_3DES_EDE_CBC_SHA)
+                              (#x0B TLS_DH_DSS_EXPORT_WITH_DES40_CBC_SHA)
+                              (#x0C TLS_DH_DSS_WITH_DES_CBC_SHA)
+                              (#x0D TLS_DH_DSS_WITH_3DES_EDE_CBC_SHA)
+                              (#x0E TLS_DH_RSA_EXPORT_WITH_DES40_CBC_SHA)
+                              (#x0F TLS_DH_RSA_WITH_DES_CBC_SHA)
+                              (#x10 TLS_DH_RSA_WITH_3DES_EDE_CBC_SHA)
+                              (#x11 TLS_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA)
+                              (#x12 TLS_DHE_DSS_WITH_DES_CBC_SHA)
+                              (#x13 TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA)
+                              (#x14 TLS_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA)
+                              (#x15 TLS_DHE_RSA_WITH_DES_CBC_SHA)
+                              (#x16 TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA)
+                              (#x17 TLS_DH_anon_EXPORT_WITH_RC4_40_MD5)
+                              (#x18 TLS_DH_anon_WITH_RC4_128_MD5)
+                              (#x19 TLS_DH_anon_EXPORT_WITH_DES40_CBC_SHA)
+                              (#x1A TLS_DH_anon_WITH_DES_CBC_SHA)
+                              (#x1B TLS_DH_anon_WITH_3DES_EDE_CBC_SHA)
+                              (else "CipherSuite-~04x")))
+    (compression-method type: (enum (uint 1) (0 null)))))
+
+(define *CLIENT-HELLO*
+  '(struct
+    (protocol-major type: (uint 1))
+    (protocol-minor type: (uint 1))
+    (random type: (struct
+                   (gmt-unix-time type: (uint 4))
+                   (random-bytes type: (array (28) (uint 1)))))
+    (session-id type: (struct
+                       (length type: (uint 1))
+                       (id type: (array (length) (uint 1)))))
+    (cipher-suites 
+     type: (struct
+            (length type: (uint 2))
+            (cipher-suite 
+             type: (array
+                    ((/ length 2))
+                    (enum (uint 2)
+                          (#x01 TLS_RSA_WITH_NULL_MD5)
+                          (#x02 TLS_RSA_WITH_NULL_SHA)
+                          (#x03 TLS_RSA_EXPORT_WITH_RC4_40_MD5)
+                          (#x04 TLS_RSA_WITH_RC4_128_MD5)
+                          (#x05 TLS_RSA_WITH_RC4_128_SHA)
+                          (#x06 TLS_RSA_EXPORT_WITH_RC2_CBC_40_MD5)
+                          (#x07 TLS_RSA_WITH_IDEA_CBC_SHA)
+                          (#x08 TLS_RSA_EXPORT_WITH_DES40_CBC_SHA)
+                          (#x09 TLS_RSA_WITH_DES_CBC_SHA)
+                          (#x0A TLS_RSA_WITH_3DES_EDE_CBC_SHA)
+                          (#x0B TLS_DH_DSS_EXPORT_WITH_DES40_CBC_SHA)
+                          (#x0C TLS_DH_DSS_WITH_DES_CBC_SHA)
+                          (#x0D TLS_DH_DSS_WITH_3DES_EDE_CBC_SHA)
+                          (#x0E TLS_DH_RSA_EXPORT_WITH_DES40_CBC_SHA)
+                          (#x0F TLS_DH_RSA_WITH_DES_CBC_SHA)
+                          (#x10 TLS_DH_RSA_WITH_3DES_EDE_CBC_SHA)
+                          (#x11 TLS_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA)
+                          (#x12 TLS_DHE_DSS_WITH_DES_CBC_SHA)
+                          (#x13 TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA)
+                          (#x14 TLS_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA)
+                          (#x15 TLS_DHE_RSA_WITH_DES_CBC_SHA)
+                          (#x16 TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA)
+                          (#x17 TLS_DH_anon_EXPORT_WITH_RC4_40_MD5)
+                          (#x18 TLS_DH_anon_WITH_RC4_128_MD5)
+                          (#x19 TLS_DH_anon_EXPORT_WITH_DES40_CBC_SHA)
+                          (#x1A TLS_DH_anon_WITH_DES_CBC_SHA)
+                          (#x1B TLS_DH_anon_WITH_3DES_EDE_CBC_SHA)
+                          (else "CipherSuite-~04x"))))))
+    (compression-methods type: (struct
+                                (length type: (uint 1))
+                                (methods type: (array (length)
+                                                      (enum (uint 1)
+                                                            (0 null))))))))
+
+(define *CERTIFICATE*
+  '(struct
+    (length type: (uint 3))
+    (certificate-list 
+     type: (array (length) 
+                  (struct
+                   (length type: (uint 3))
+                   (certificate type: (array (length) (uint 1))))))))

@@ -1,0 +1,106 @@
+/*
+ *    CSS for rscheme.org 
+ */
+
+body {
+  margin: 0;
+  padding: 0;
+  background: white;
+  color: black;
+}
+
+div#main {
+  padding: 4px 6px 4px 6px;
+}
+
+div#nav {
+  padding: 0;
+  background: #ccffcc;
+}
+
+div#nav img {
+  padding: 4px;
+}
+
+div#nav h1 {
+  margin: 0;
+  text-align: center;
+  font: 150% arial, helvetica, sans-serif;
+  font-weight: bold;
+  color: #4473b4;
+  background: #ccffcc;
+}
+
+h2 {
+  font: 100% helvetica, arial, sans-serif;
+  font-weight: bold;
+  color: #4473b4;
+}
+
+p {
+  margin: 2px 10px 10px 10px;
+}
+
+div.notice {
+  font: 80% helvetica, arial, sans-serif;
+  border: 2px solid #008000;
+  padding: 2px;
+  background: #ccffcc;
+  margin: 20px 30px 10px 30px;
+}
+
+div.notice h2 {
+  margin: 0;
+  color: #ff0000;
+}
+
+div.answer {
+  margin: 20px;
+  background: #eeffee;
+}
+
+div#trailer {
+  border-top: 1px solid green;
+  padding: 1px 2px 0px 2px;
+  font: 75% arial, helvetica, sans-serif;
+  color: #80cc80;
+}
+
+table {
+  margin: 0px 16px 10px 16px;
+  padding: 1px 1px 1px 1px;
+}
+
+table tr th {
+  border-bottom: 1px solid #80cc80;
+  color: #4473b4;
+  background: white;
+  font: 80% arial, helvetica, sans-serif;
+  font-weight: bold;
+  text-align: left;
+  vertical-align: baseline;
+}
+
+table tr td {
+  font: 80% arial, helvetica, sans-serif;
+  text-align: left;
+  vertical-align: baseline;
+}
+
+table tr td p {
+  margin: 0;
+}
+
+table.form {
+  margin: 0px 10px 0px 10px;
+  padding: 1px 1px 1px 1px;
+}
+
+table.form tr th {
+  font: 80% arial, helvetica, sans-serif;
+  font-style: italic;
+  text-align: right;
+  color: #4473b4;
+  border-bottom: none;
+  vertical-align: top;
+}

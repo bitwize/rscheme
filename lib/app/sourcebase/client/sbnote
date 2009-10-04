@@ -1,0 +1,28 @@
+#!/bin/bash
+set -e
+if test -z "$SB_LOGIN"
+then export SB_LOGIN=$(id -un)
+fi
+if test -z "$SB_SERVER"
+then export SB_SERVER=$(hostname)
+fi
+
+if tty > /dev/null
+then
+  tmp=/tmp/note.$$
+
+  sb --changereq $1 > $tmp
+  echo "============<add new note here>=============" >> $tmp
+  if vi -c '$' $tmp
+  then grep -A999 "============<add new note here>=============" $tmp \
+       | tail +2 > $tmp.2
+       if test -s $tmp.2
+       then sb --changereq "$@" --comment --remarks - < $tmp.2
+            echo "Note added to change requests: $*"
+       else echo "No note added"
+       fi
+  else echo "No note added"
+  fi
+else
+  sb --changereq "$@" --comment --remarks -
+fi

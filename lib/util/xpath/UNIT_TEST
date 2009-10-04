@@ -1,0 +1,4 @@
+;;;@title RScheme XPath Baseline Tests
+;;;@tag util.xpath-1
+(define x '(*TOP* (doc (@ (foo "bar")) (baz (@ (kind "a")) "123"))))
+(xpath () x "doc/baz[@kind='a']")

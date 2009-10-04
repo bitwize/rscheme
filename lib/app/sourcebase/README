@@ -1,0 +1,208 @@
+
+Development Testing
+===================
+
+$ rs sourcebase.scm
+...
+top[0]=>(open-database "/tmp/sysfam.vol1")              ; or whatever
+top[1]=>(string->filesystem "corp")
+...
+        ;; start a server
+top[n]=>(server-daemon 7999)
+
+
+Accessing dev server
+
+  Sb -Eserver=localhost:7999 ...
+
+Creating a Repository
+=====================
+
+Compiling the Client Tool
+-------------------------
+cd ../library/dev/app/sourcebase/client
+make
+
+Initial Repository Creation
+---------------------------
+RS_MODULE_PATH=.../library/dev
+
+,(use app.sourcebase)
+(make-database "/tmp/sample.sto"
+               "SampleFam"
+               "su.bob"                         ; SourceBase superuser login
+               "Bob Andrews"                    ; superuser fullname
+               "bob@somewhere.com"              ; superuser's email address
+               "bob"                            ; superuser's (unix) name
+               "workstation.somewhere.com")     ; superuser's access host
+(server-daemon 2099)
+
+Note that the superuser's access host must be match how the server
+will reverse-resolve the IP address of the client.  For example, if
+the client will be connecting to localhost (127.0.0.1), then the
+access host also be localhost.
+
+I always create a user different from my usual user id to act as the
+database superuser, with the login name "su." followed by my user id.
+In this example, bob would normally access the database as a normal
+user with login "bob", but for administrative purposes would use the
+"su.bob" login.
+
+Subsequent Server Startup
+-------------------------
+,(use app.sourcebase)
+(database-connect "/tmp/sample.sto" 'update)
+(set-auto-commit! #t)                ; otherwise, changes won't be committed!
+(server-daemon 2099)
+
+Configuring Client Access
+-------------------------
+
+Configure the client to talk to the server.
+
+ (1) Set the SB_SERVER environment variable to point to 
+     server daemon port.  The port defaults to 2059.
+
+     In this example, if the server is running on host
+     "server.somewhere.com", then the client would set
+     SB_SERVER to "server.somewhere.com:2099"
+
+     Alternatively, the '--server' command-line option can be used
+
+ (2) Set the SB_LOGIN variable to the 
+
+     Alternatively, the '--login' command-line option can be used.
+
+
+export SB_SERVER=server.somewhere.com:2099
+export SB_LOGIN=su.bob
+
+Structuring the Repository
+==========================
+
+Setting up Users
+----------------
+
+The first thing to do is create your own normal user account
+
+sb --user --create --name bob --fullname "Bob Andrews" --email bob@somewhere.com
+sb --user bob --modify --site --add bob@localhost
+
+Likewise, set up other users.
+
+From now on, you should be able to access the database using the 'bob'
+login
+
+SB_LOGIN=bob
+
+Setting up Groups
+-----------------
+
+sb --Group --create --name group1 --parent world
+sb --Group --create --name group2 --parent world
+sb --Group --create --name subgroup11 --parent group1
+
+Setting up Filesystems
+----------------------
+
+sb --filesystem --create --name mystuff-1.0 --group group1
+
+Importing Files
+---------------
+
+cd .../somewhere
+export SB_TOP=$PWD
+export SB_FILESPACE=mystuff-1.0
+
+sb --dir / --lock
+sb --file --create hello.c --remarks "Initial checkin" --group group1
+sb --dir / --checkin --remarks "Initial checkin"
+
+NOTE: Unlike most source code control systems, SourceBase versions
+      directories.  Hence, changes to a directory (that is, adding,
+      removing, or renaming a file) require locking the directory and
+      checking it back in when changes are complete.
+
+NOTE: The `creat' script in the client directory can be useful for
+      importing a large number of files at once.  It takes as input a
+      set of files and outputs a shell script which, when executed,
+      will have the effect of adding the given files.  For example,
+
+           creat -m"Initial checkin" `find * -print`
+
+User Interface
+==============
+This is the interface that the user sees; it is provided by
+the SB ``applications''.
+
+Telnet access
+-------------
+
+If so configured, a virtual-FS only form of the sourcebase shell is
+available by telneting to the database host.
+
+CLI
+---
+
+The command-line interface is structured somewhat like the CMVC CLI,
+except that a single function dispatches multiple commands.
+
+   export SB_SERVER=host[:port]
+   export SB_FILESPACE=filesystem
+   sb --filesystem --create ...
+   ...
+
+Application Program Interface
+=============================
+This is the interface that the SB library provides to it's
+applications.
+
+
+Kernel Call Interface
+=====================
+This is the interface that the kernel presents to the API library.
+
+
+Kernel Services
+===============
+These are the functions available within the kernel, specifically
+documented as well understood control points.
+
+Service Areas:
+
+Access Control
+--------------
+This area manages domains.  A domain is a subset of {object X action}
+
+
+Data Module
+-----------
+This module provides the class definitions of objects stored persistently,
+and basic methods on them.  This includes the general-purpose collection
+classes imported from the Collection module.
+
+Collection Module
+-----------------
+This module provides basic collection classes.
+
+
+Blue Sky Ideas
+==============
+VFS
+---
+SB also provides a native filesystem interface on systems that
+have extensible filesystems, such as AIX.  This capability allows
+the database owner to mount SB filesystems and snapshots directly
+into the host's file system.
+
+   mount -o 1.6 -t sb rscheme-0.6 /mnt/rs-0.6-1.6
+
+Shell
+-----
+The shell provides an interactive interface to SB.
+
+   sb sh
+
+the SB shell acts somewhat like the normal shell (ksh), but provides
+virtual direct access to the versioned filesystems of SB as well
+as the user's regular file system.

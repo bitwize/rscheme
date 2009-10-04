@@ -1,0 +1,87 @@
+<!-- -*- mode: sgml; mode: auto-fill; fill-column: 60 -*-  -->
+
+<chapter> <title>Introduction</title>
+
+<para>
+&dv; is a graphics editor application
+for X windows written in &rs;.
+
+<para>
+dV is an experiment in bringing
+the editing and scripting metaphors of GNU Emacs to the
+graphical world, and is an attempt to provide an OpenSource
+implementation of a powerful, flexible graphical editor
+along the lines of Adobe Illustrator or Aldus Virtuoso.
+
+<para>
+In some ways, dV is a showcase application for RScheme.  It
+utilizes significant RScheme features, like the object
+system, the persistent object store, the module library, and
+the X-windows interface.
+
+<sect1><title>The Flavor of GNU Emacs</title>
+
+<para>
+The amazing thing about GNU Emacs is its seamless
+integration between the world of Lisp and the world of text
+editing.  By <quote>seamless</quote> here, I mean that Lisp
+programs can do text editing tasks with as much ease as the
+user would have, and the user can invoke Lisp programs with
+as much ease as other editing tasks.  The Lisp/User
+interaction is a two-way street, both working to accomplish the
+task of text editing.
+
+<para>
+The core principle of &dv; is to try to achieve the same
+harmony, but with graphical editing as the task.
+
+<para>
+One consequence of this core principle is that the main internal
+editing loop has been modelled (to my somewhat limited
+understanding) after the edit loop of Emacs.  
+
+<para>
+That is, user interactions are not (usually) directly
+interpreted by the system; user interactions invoke
+specially designated <quote>interactive</quote> procedures
+which do the requested work, and when all the work has been
+done, the screen is repainted so that the view(s) match the
+internal representation of the state of the document.
+
+<sect1><title>The Flavor of Virtuoso</title>
+<para>
+Virtuoso is a graphics editor for the NeXT which was
+remarkable in its intuitive ease of use, its underlying
+power, and its easy integration with PostScript as a final
+rendering engine.
+
+<para>
+A secondary principle of &dv; is to build the same kind of
+straightforward yet expressive user interface as what
+Virtuoso enjoyed.
+
+<para>
+A corollary to this principle is that &dv; must be able to
+express professional-quality renderings, with the necessary
+tools, flexibility and precision that implies.  For example,
+the OpenSource DIA program lacks the ability to rotate
+objects and ungroup compound objects like boxes.
+
+<para>
+The nice thing about the extensible design is that we don't
+have to <emphasis>implement</emphasis> every little tool or
+trick; we just have to make it possible.  I interpret this
+to mean that &dv; must have a powerful set of core primitive
+objects and an expressive approach to composing objects.
+
+<note><para>There are some operations in the publishing
+world which are available in Adobe Illustrator, FrameMaker,
+and systems in that class that I don't personally
+understand.  Things like <emphasis>trapping</emphasis>
+and <emphasis>knock-outs</emphasis> come to mind; options I see in
+the dialog box and think <quote>Hmm, I wonder what that
+does?</quote>  These sorts of things may wind up with little
+or no support in &dv;.  Hopefully, &dv; will be flexible
+enough that they could be expressed by someone more
+knowledgable about the requirements.
+</note>

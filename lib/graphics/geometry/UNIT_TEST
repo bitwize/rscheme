@@ -1,0 +1,21 @@
+;;;@title Graphics 2-D Geometry; Basic Tests
+;;;@tag graphics.geometry-1
+,(use graphics.geometry)
+;;;@note <h3>Points and Sizes</h3>
+;;;@reprompt
+(define p0 (make-point 1 2))
+(define p1 (make-point 30 4))
+(x p1)
+(y p1)
+(define dp (point- p1 p0))
+(dx dp)
+(dy dp)
+(point+ p1 (make-size 10 10))
+;;;@note <h3>Rectangles</h3>
+;;;@reprompt
+(define r0 (make-rect 0 0 20 10))
+(rect->values r0)
+(size-width r0)
+(size-height r0)
+(origin-x r0)
+(origin-y r0)

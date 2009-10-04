@@ -1,0 +1,24 @@
+
+void FNAME(pack,u16)( obj bvec, UINT_32 offset, obj value )
+{
+  INT_32 v = basic_raw_int( value );
+  if ((v < 0) || (v > 65535)) value_error( bvec, offset, value, "u16" );
+  BVEC_SLOT(UINT_16) = CNV(v);
+}
+
+void FNAME(pack,s16)( obj bvec, UINT_32 offset, obj value )
+{
+  INT_32 v = basic_raw_int( value );
+  if ((v < -32768) || (v > 32767)) value_error( bvec, offset, value, "s16" );
+  BVEC_SLOT(INT_16) = CNV(v);
+}
+
+obj FNAME(unpack,u16)( obj bvec, UINT_32 offset )
+{
+  return int2fx( CNV(BVEC_SLOT(UINT_16)) );
+}
+
+obj FNAME(unpack,s16)( obj bvec, UINT_32 offset )
+{
+  return int2fx( CNV(BVEC_SLOT(INT_16)) );
+}

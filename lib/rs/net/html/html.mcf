@@ -1,0 +1,23 @@
+#|------------------------------------------------------------*-Scheme-*--|
+ | File:    rs/net/html/html.mcf
+ |
+ |          Copyright (C)1997 Donovan Kolbly <d.kolbly@rscheme.org>
+ |          as part of the RScheme project, licensed for free use
+ |
+ | Version: 1.2
+ | Date:    2005-02-18 15:58:20
+ | Build:   v0.7.3.4-b7u, 2007-05-30
+ | Module:  html
+ |
+ | Purpose: MCF for html module
+ `------------------------------------------------------------------------|#
+
+((html
+	"."    ;; what directory to put resulting files in
+	".")   ;; what directory to put image file in
+
+ (open primops *scheme* low-scheme objsys iolib mathlib tables high-scheme)
+ (open corelib)
+ 
+ (files htmlport html)
+ (export :local))

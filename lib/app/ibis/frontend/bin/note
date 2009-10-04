@@ -1,0 +1,9 @@
+#! /bin/sh
+
+if test "$1" = "-p"
+then IBIS_SERVER=localhost:$2
+     export IBIS_SERVER
+     shift 2
+fi
+
+ibis --note "$1" --title untitled --comment -

@@ -1,0 +1,36 @@
+
+<!doctype book PUBLIC "-//OASIS//DTD DocBook V4.1//EN" [
+
+  <!-- for some reason, our `decl.sgml' breaks ISOlat1 -->
+  <!ENTITY % ISOlat1.module "IGNORE">
+
+  <!entity chap.intro SYSTEM "chap/intro.sgml">
+  <!entity chap.coords SYSTEM "chap/coords.sgml">
+  <!entity chap.constrain SYSTEM "chap/constrain.sgml">
+  <!entity chap.objmodel SYSTEM "chap/objmodel.sgml">
+  <!entity chap.undo SYSTEM "chap/undo.sgml">
+  <!entity chap.glossary SYSTEM "chap/glossary.sgml">
+
+  <!entity book.info SYSTEM "bookinfo.sgml">
+
+  <!entity rs "RScheme">
+  <!entity dv "<application>dV</application>">
+  <!entity t "<Literal/#t/">
+  <!entity f "<Literal/#f/">
+  <!entity eg "<ForeignPhrase/e.g./">
+  <!entity ie "<ForeignPhrase/i.e./">
+
+  <!-- Figures -->
+  <!entity fig.usercoord1   SYSTEM "figs/usercoord1"  ndata eps>
+]>
+
+<book>
+ &book.info;
+ &chap.intro;
+
+ &chap.objmodel;
+ &chap.coords;
+ &chap.constrain;
+ &chap.undo;
+ &chap.glossary;
+</book>

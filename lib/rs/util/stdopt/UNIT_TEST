@@ -1,0 +1,87 @@
+;;;@title Command-Line Argument Parsing Test Suite
+;;;@tag rs.util.stdopt-1
+#|@note[[
+
+<p>This is a set of test cases for exercising the command-line
+argument parsing facility, which is located in the
+<code>rs.util.stdopt</code> module.  This module provides two
+levels of option processing:</p>
+<ul>
+  <li><b>for-each-opt</b> provides implements a fairly low-level 
+      iterator over the supplied options, calling a procedure 
+      for each argument found and returning the remaining arguments.
+      </li>
+  <li><b>dispatch-option-patterns</b> provides a higher-level
+      option pattern matching facility, with a built-in help
+      facility.</li>
+</ul>
+
+
+<h2>Low-Level Option Processing</h2>
+
+
+]]|#
+,(use rs.util.stdopt)
+(define *options*
+  '(;; a flag
+    (#\v verbose)
+    (#\p print)
+    (#\c create)
+    ;; an option with one required argument
+    (#\f file 1)))
+(define *opts* (make <opt-spec> options: *options*))
+(define (printopt opt . arg)
+  (if (pair? arg)
+      (format #t "option[~s] value=~s\n" opt (car arg))
+      (format #t "option[~s]\n" opt)))
+(for-each-opt '("-vf/tmp/abc") *opts* printopt)
+(for-each-opt '("-vf/tmp/abc" "foo" "bar") *opts* printopt)
+(for-each-opt '("-v" "-f/tmp/abc" "foo") *opts* printopt)
+(for-each-opt '("-v" "-f" "/tmp/abc" "foo") *opts* printopt)
+;;;@note <p>An error is signalled if invalid options are presented...</p>
+;;;@reprompt
+(for-each-opt '("-v" "-f") *opts* printopt)
+,top
+#|@note[[
+<h2>Pattern-Based Option Processing</h2>
+<p>
+This module also provides a pattern-based option dispatching
+facility, allowing whole command line patterns to be described
+and parsed.  The syntax and flexibility is somewhat limited, but
+covers common cases.
+</p>
+<p>
+In this usage model, the application defines a procedure for
+each pattern of command line usage.  The procedure takes only
+keyword arguments, one keyword for each command-line argument
+that might be supplied in that usage pattern.
+</p>
+]]|#
+;;;@reprompt
+(define (doit #key create file (verbose default: #f))
+  (format #t "do it to ~s~a\n"
+        file
+        (if verbose " (verbosely)" "")))
+(define (doprn #key print file (verbose default: #f))
+  (format #t "print ~s~a\n"
+        file
+        (if verbose " (verbosely)" "")))
+(define *patterns*
+  `(("Print something" ((print) (file (? verbose))) ,doprn)
+    ("Do something" ((create) (file (? verbose))) ,doit)))
+(dispatch-option-patterns '("-cf/tmp/abc") *options* *patterns*)
+(dispatch-option-patterns '("-pf/tmp/abc") *options* *patterns*)
+(dispatch-option-patterns '("-vpf/tmp/abc") *options* *patterns*)
+;;;@note <p>Then, if the actual arguments are incomprehensible, a
+;;;@note built-in usage facility is invoked:</p>
+#|@note[[
+<p><b><i>Note.</i></b> The name of the program as shown in the
+usage message is normally taken by default from the <code>`_'</code>
+environment variable, but it can be changed by setting the
+<code>*program-name*</code> variable in this module:
+</p>]]|#
+;;;@reprompt
+(set! *program-name* "testapp")
+(dispatch-option-patterns '("-p") *options* *patterns*)
+,top
+(dispatch-option-patterns '() *options* *patterns*)

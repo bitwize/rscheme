@@ -1,0 +1,453 @@
+#! /u/donovan/bin/rsq -script
+#! /usr/local/bin/rs -script
+
+(define *verbose* #f)
+
+(define-module-extend paths () 
+  (define (clear-process-dir)
+    (set! *process-dir* #f))
+  (&module (export clear-process-dir)))
+
+,(use tables paths regex syscalls sort)
+
+(define (intern-path (path <string>))
+  (let ((i (intern-path* path)))
+    (if *verbose*
+        (format #t "intern-path ~a => ~a\n" path i))
+    i))
+
+(define (intern-path* (path <string>))
+  (if (and (> (string-length path) 1)
+	   (eq? (string-ref path (sub1 (string-length path))) #\/))
+      (intern-path (substring path 0 (sub1 (string-length path))))
+      (if (string=? path ".")
+	  (process-directory-as-file)
+	  (append-path (process-directory) (string->file path)))))
+
+(define (process-directory-as-file)
+  (bind ((stp (steps (process-directory)))
+	 (rev (reverse stp))
+	 (ign fn ex (split-extn "" (car rev))))
+    (make <file-name>
+	  file-directory: (make <directory-name>
+				rooted-at: $system-root
+				steps: (reverse! (cdr rev)))
+	  filename: fn
+	  extension: ex)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;  (find-top FILE)
+;;;
+;;;  find the ".top" file that's above a given file
+
+(define *top* (string->file ".top"))
+(define *up1* (string->file "../.top"))
+
+#|
+(define (find-top (for <file-name>))
+  (find-top* (append-path (file-directory for) *top*)))
+
+(define (find-top* (for <file-name>))
+  ;(format #t "? ~a\n" for)
+  (if (file-exists? for)
+      (file-directory for)
+      (if (null? (steps (file-directory for)))
+	  #f
+	  (find-top* (append-path (file-directory for) *up1*)))))
+|#
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;  (load-top FILE)
+;;;
+;;;  Get the control content of the ".top" file that's
+;;;  above a given file
+;;;
+;;;  Puts intermediate steps into the cache, too
+
+(define *top-cache* (make-table string=? string->hash))
+
+(define (load-top (for <file-name>))
+  (or (load-top* (append-path (file-directory for) *top*))
+      (error "Could not find top for: ~a" for)))
+
+(define (load-top* (for <file-name>))
+  (let* ((p (pathname->string for))
+	 (ent (table-lookup *top-cache* p)))
+    (if ent
+	ent
+	;; not in the cache
+	(if (null? (steps (file-directory for)))
+	    ;; hit the top (ie, /.top does not exist)
+	    #f
+	    ;; see if its here on disk
+	    (if (os-file-exists? p)
+		(let ((ent (read-top for p)))
+		  (table-insert! *top-cache* p ent)
+		  ent)
+		;; check the in the parent directory
+		(let ((ent (load-top* (append-path (file-directory for) 
+						   *up1*))))
+		  (table-insert! *top-cache* p ent)
+		  ent))))))
+
+(define scm-data-line (reg-expr->proc '(seq "##|" (save (* any)))))
+
+(define env-var-line (reg-expr->proc '(seq "export SB_"
+					   (save (+ (not #\=)))
+					   #\=
+					   (save (* any)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;  (read-top TOPFILE FILESTR)
+;;;
+;;;  read and parse a ".top" file, constructing a procedure
+;;;  which knows how to construct a <path-info> object for
+;;;  a file within a .top's directory tree
+;;;
+
+(define (read-top (path <file-name>) path-as-str)
+  (if *verbose*
+      (format #t "top: ~s\n" path))
+  (bind ((chk env (scan-top path-as-str))
+	 (check-list (map (rcurry com-path-check (file-directory path)) chk))
+	 (env-list (append (map com-env-args env)
+			   (list (list 'top (file-directory path))))))
+    (lambda ((p <file-name>))
+      (if *verbose*
+          (format #t "finding info for: ~a\n" p))
+      (let* ((settings (append (run-through-check-list 
+				check-list
+				(pathname->string p))
+			       env-list))
+	     (top (cadr (assq 'top settings))))
+	(make-path-info p settings top)))))
+
+(define (com-env-args env)
+  (let ((key (string->symbol
+	      (list->string
+	       (map char-downcase
+		    (string->list (car env)))))))
+    (cons key
+	  (if (eq? key 'top)
+	      (map string->dir (cdr env))
+	      (cdr env)))))
+
+(define (run-through-check-list check-list instance)
+  (let loop ((lst check-list))
+    (if (null? lst)
+	'()
+	(or ((car lst) instance)
+	    (loop (cdr lst))))))
+
+(define (glob->reg-expr str)
+  (let ((h (string-split str #\*)))
+   (list 'entire
+    (cons* 'seq (car h) (crack-rest-of-glob (cdr h))))))
+
+(define (crack-rest-of-glob lst)
+  (let loop ((g lst))
+    (if (null? g)
+	'()
+	(if (string=? (car g) "")
+	    (cons '(* any) (loop (cdr g)))
+	    (cons* '(* any)
+		   (car g)
+		   (loop (cdr g)))))))
+
+(define (com-path-check chk topdir)
+  (let ((r (cdr chk)))
+    (if (eq? (car chk) 'else)
+	(lambda (p) r)
+	(let ((proc (reg-expr->proc (glob->reg-expr (car chk)))))
+	  (lambda (p)
+	    (let* ((f (string->file p))
+		   (x (dir-from-to topdir (file-directory f)))
+		   (z (append-path x (string->file (file-within-dir f))))
+		   (z (pathname->string z)))
+	      ;(format #t "~s ? ~s => ~s\n" (car chk) z (proc p))
+	      (if (proc z)
+	  	  r
+		  #f)))))))
+
+(define (scan-top path)
+  (call-with-input-file
+      path
+    (lambda (port)
+      (let loop ((chk '())
+		 (env '()))
+	(let ((ln (read-line port)))
+	  (if (eof-object? ln)
+	      (values (reverse chk) env)
+	      (bind ((s e c (scm-data-line ln)))
+		(if s
+		    (loop (cons (read (open-input-string c)) chk) env)
+		    (bind ((s e v d (env-var-line ln)))
+		      (if s
+			  (loop chk (cons (list v d) env))
+			  (loop chk env)))))))))))
+
+;;;
+;;;  figure out the meta information for the given path
+;;;
+
+(define-class <path-info> (<object>)
+  (sb-path type: <string>)
+  (sb-dir type: <string>)
+  (sb-env type: <list>)
+  node-status)
+
+(define (relativize-to-fs-path (top <directory-name>) (file <file-name>))
+  (make <file-name>
+	file-directory: (make <directory-name>
+			      rooted-at: $system-root
+			      steps: (steps (dir-from-to 
+					     top
+					     (file-directory file))))
+	filename: (filename file)
+	extension: (extension file)))
+
+(define (make-path-info (file <file-name>)
+			(settings <list>)
+			(top <directory-name>))
+  (let ((rel (relativize-to-fs-path top file)))
+    (make <path-info>
+	  sb-path: (pathname->string rel)
+	  sb-dir: (pathname->os-path (file-directory rel))
+	  sb-env: settings
+	  node-status: (stat (pathname->os-path file)))))
+
+(define (get-path-info path)
+  (let ((i (intern-path path)))
+    ((load-top i) i)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;  create various files
+;;;
+;;;  1. locks parent directories
+;;;  2. creates files or directories
+;;;  3. checks in parent directories
+
+(define (do-create-or-del (items <list>) create?)
+  (let ((any-errors? #f))
+    (for-each (lambda (item)
+		(if (not (node-status item))
+		    (begin
+		      (set! any-errors? #t)
+		      (format #t "~a: No such file or directory\n" 
+			      (sb-path item)))))
+	      items)
+    (if any-errors?
+	(error "Could not 'stat' some arguments")
+	(map (rcurry do-create-or-del-in-dir create?)
+	     (collect-common-parents items)))))
+
+(define (do-checkin (items <list>))
+  (format #t "# ~a\n" (sb-dir (car items)))
+  ;(for-each print items)
+  ;;
+  (with-sb-env
+   (sb-env (car items))
+   (lambda ()
+     (for-each (lambda (i)
+	         (with-sb-env
+	          (sb-env i)
+	          (lambda ()
+                    (sb :file checkin: (sb-path i)))))
+	       items))))
+
+(define (do-create-or-del-in-dir (items <list>) create?)
+  (format #t "# ~a\n" (sb-dir (car items)))
+  ;(for-each print items)
+  (with-sb-env
+   (sb-env (car items))
+   (lambda ()
+     (sb dir: (sb-dir (car items)) :lock)
+     (for-each (lambda (i)
+	         (with-sb-env
+	          (sb-env i)
+	          (lambda ()
+		    (if (stat-directory? (node-status i))
+			(if create?
+			    (sb :dir create: (sb-path i))
+			    (sb dir: (sb-path i) :delete))
+			(if create?
+			    (sb :file create: (sb-path i))
+			    (sb file: (sb-path i) :delete))))))
+	       items)
+     (sb dir: (sb-dir (car items))
+         remarks: (format #f "~a ~a" 
+		       (if create? "added" "removed")
+		       (string-join ", "
+				    (map file-within-dir
+					 (map string->file
+					      (map sb-path
+						   items)))))
+         :checkin))))
+
+(define shell-meta (reg-expr->proc '(or #\$ #\# #\' #\"
+					#\! #\space)))
+
+(define (shell-esc str)
+  (if (shell-meta str)
+      (if (string-search str #\')
+	  (string-append "'"
+			 (string-join "'\"'\"'" (string-split str #\'))
+			 "'")
+	  (string-append "'" str "'"))
+      str))
+
+(define-fluid *sb-env* '())
+
+(define (with-sb-env env thunk)
+  ;(format #t "E => ~s\n" env)
+  (fluid-let ((*sb-env* (append env *sb-env*)))
+    (thunk)))
+
+(define *z* #f)
+
+(define (sb . args)
+  (let ((z (open-output-string)))
+    (fluid-let ((*z* z))
+      (format z "sb")
+      (let ((done (make-symbol-table)))
+	(sb/args args done)
+	(sb/env *sb-env* done)
+	(format #t "~a\n" (close-output-port z))))))
+
+(define (sb/arg key values done)
+  (if (not (table-lookup done key))
+      (begin
+	(table-insert! done key values)
+	(sb/arg1 key values))))
+
+(define *allset* (make-table string=? string->hash))
+
+(define (setenv key value)
+  (if (not (string=? value (or (table-lookup *allset* key) " bogus")))
+      (begin
+	(table-insert! *allset* key value)
+	(format #t "export ~a=~a\n" key (shell-esc value)))))
+
+(define (sb/arg1 key values)
+  (case key
+    ((top)
+     (setenv "SB_TOP" (pathname->os-path (car values))))
+    ((server)
+     (setenv "SB_SERVER" (car values)))
+    ((group)
+     (setenv "SB_GROUP" (car values)))
+    ((filespace)
+     (setenv "SB_FILESPACE" (car values)))
+    ((login)
+     (setenv "SB_LOGIN" (car values)))
+    (else
+     (format *z* " --~a" key)
+     (for-each (curry format *z* " ~a") (map shell-esc values)))))
+
+(define (sb/env env done)
+  (for-each
+   (lambda (e)
+     (sb/arg (car e) (cdr e) done))
+   env))
+
+(define (sb/args args done)
+  (let loop ((a args))
+    (if (pair? a)
+	(cond
+	 ((flag? (car a))
+	  (sb/arg (flag->symbol (car a)) '() done)
+	  (loop (cdr a)))
+	 ((keyword? (car a))
+	  (sb/arg (keyword->symbol (car a))
+		  (if (pair? (cadr a))
+		      (cadr a)
+		      (list (cadr a)))
+		  done)
+	  (loop (cddr a)))
+	 (else
+	  (error "invalid sb arg: ~s (not flag or keyword)" (car a)))))))
+
+;;;
+;;;  given a list (i_1 i_2 ... i_n)
+;;;  returns a list ((i_k_11 i_k_12 ... i_k_1n) ...)
+;;;
+;;;  where all the i_k_1j are in the same directory
+;;;  and the common directory i_k_mj is not below that of i_k_nj if n>m
+
+(define (collect-common-parents lst)
+  (let ((tbl (make-table string=? string->hash)))
+    (for-each 
+     (lambda (item)
+       (table-insert! tbl
+		      (sb-dir item)
+		      (cons item (or (table-lookup tbl (sb-dir item))
+				     '()))))
+     lst)
+    (map (curry table-lookup tbl)
+	 (sort (key-sequence tbl) string<?))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;   main program
+;;;
+
+(define (parse-req-list str)
+  (string-split str #\,))
+
+(define (main args)
+  (clear-process-dir)
+  (let ((req #f)
+	(create? #t)
+        (edit? #f)
+	(rem #f))
+    (define (more-req str)
+      (set! req (append (or req '()) (parse-req-list str))))
+    (define (more-rem str)
+      (set! rem str))
+    (let loop ((f '())
+	       (a args))
+      (cond
+       ((null? a)
+	(with-sb-env
+	 (append 
+	  (if rem (list (list 'remarks rem)) '())
+	  (if req (list (cons 'request req)) '()))
+	 (lambda ()
+           (let ((items (map get-path-info (reverse f))))
+             (if edit? 
+                 (do-checkin items)
+                 (do-create-or-del items create?))))))
+       ((and (>= (string-length (car a)) 2)
+	     (string=? (substring (car a) 0 2) "-y"))
+	(if (string=? (car a) "-y")
+	    (begin
+	      (more-req (cadr a))
+	      (loop f (cddr a)))
+	    (begin
+	      (more-req (substring (car a) 2))
+	      (loop f (cdr a)))))
+       ((string=? (car a) "-v")
+        (set! *verbose* #t)
+        (loop f (cdr a)))
+       ((and (>= (string-length (car a)) 2)
+	     (string=? (substring (car a) 0 2) "-m"))
+	(if (string=? (car a) "-m")
+	    (begin
+	      (more-rem (cadr a))
+	      (loop f (cddr a)))
+	    (begin
+	      (more-rem (substring (car a) 2))
+	      (loop f (cdr a)))))
+       ((string=? (car a) "-e")
+        (set! edit? #t)
+        (set! create? #f)
+        (loop f (cdr a)))
+       ((string=? (car a) "-rm")
+	(set! create? #f)
+	(loop f (cdr a)))
+       (else
+	(loop (cons (car a) f) (cdr a)))))))

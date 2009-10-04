@@ -1,0 +1,18 @@
+#! /bin/sh
+
+willshow=$(sb --report active-fs-changes --format base-request)
+
+echo "----- Fixing ----"
+sb --report fixing-changereqs --where not id in \( $willshow \)
+
+echo "----- Researching ----"
+sb --report changereq --where state = research
+
+echo "----- Pending Integration Requests ----"
+sb --report integrations --where not in-snapshot?
+
+echo "----- Active FS Changes ----"
+sb --report active-fs-changes
+
+echo "----- Locked Files ----"
+sb --report locked-files --where user = "$SB_LOGIN"

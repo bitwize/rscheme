@@ -1,0 +1,72 @@
+#!/bin/sh
+#
+
+flags=""
+recursive=false
+
+find_top() {
+   p="$1"
+   if test -f $p
+   then p=${p%/*}
+   fi
+   case "$p" in
+     /*) ;;
+     *) p=$PWD/$p
+   esac
+   fullp="$p"
+
+   while ! test -f $p/.top
+   do p1="${p%/*}"
+      if test "$p" = "$p1"
+      then echo Top not found
+           exit 1
+      fi
+      p=$p1
+   done
+   export SB_TOP=$p
+   . $p/.top $fullp
+   if test "$fs" = ""
+   then :
+   else SB_FILESPACE="$fs"
+   fi
+}
+
+strip_top () {
+   while test $# -gt 0
+   do a=$1
+      echo ${a#$SB_TOP}
+      shift
+   done
+}
+
+rem=""
+fs=""
+
+while test $# -gt 0
+do case "$1" in
+    -m*)  z="$1"
+          rem="${z#-m}"
+          ;;
+    -f*)  z="$1"
+	  fs="${z#-f}"
+          ;;
+    -t*)  z="$1"
+          flags="$flags --timestamp $(echo ${z#-t} | tr ' ' '_')"
+	  ;;
+    -y*)  z="$1"
+          flags="$flags --request ${z#-y}"
+          ;;
+    -h*)  echo "usage: $(basename $0) [-yCR] [-mREMARK] [-f FILESET] FILE ..." >&2
+          exit 1
+          ;;
+    -*)  echo "unrecognized option '$1'"
+         exit 1 ;;
+    *)   find_top $1
+         if test "$rem" = ""
+         then sb --file `strip_top $@` $flags --checkin
+         else sb --file `strip_top $@` $flags --checkin --remarks "$rem"
+	 fi
+         exit $? ;;
+   esac
+   shift
+done

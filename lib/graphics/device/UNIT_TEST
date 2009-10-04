@@ -1,0 +1,139 @@
+;;;@title Graphics Output Device; Baseline Test Cases
+;;;@tag graphics.device-1
+,(use graphics.device)
+;;;@note <p>We need <code>graphics.geometry</code> in order to
+;;;@note pass most arguments to the graphics device.</p>
+;;;@reprompt
+,(use graphics.geometry)
+#|@note[[
+<p>The first thing to do is create a graphics output device.
+ In the case of an EPS device, you are obliged to supply the
+ bounding box when opening the device.  However, see 
+ <code>open-bbox-device</code> for a way to find the bounding
+ box from a set of drawing commands.
+</p>
+]]|#
+;;;@reprompt
+(define p (open-eps-device "test001.eps" (make-rect 0 0 100 50)))
+;;;@note <p>If you know PostScript, this will seem eerily familiar.
+;;;@note Or maybe not so eerie...</p>
+;;;@reprompt
+(moveto p (make-point 10 10))
+(lineto p (make-point 90 40))
+(lineto p (make-point 10 30))
+(stroke p)
+(close-graphics-device p)
+;;;@note <p>That's it.  Here's the resulting EPS file converted
+;;;@note to a PNG:</p>
+;;;@note <img class="example" src="test001.png"/>
+;;;@shell eps2png test001.eps test001.png
+;;;@note <p>Here is a somewhat more interesting example.  There's
+;;;@note nothing really new here, although the mapping of some additional
+;;;@note PostScript operators is illustrated.</p>
+;;;@reprompt
+(define (star dev n r0 r1)
+  (for-each 
+    (lambda (i)
+      (let* ((r (if (even? i) r0 r1))
+             (angle (* i (/ (* 2 $Pi) n)))
+             (pt (make-point (* (cos angle) r) (* (sin angle) r))))
+        (if (= i 0)
+            (moveto dev pt)
+            (lineto dev pt))))
+    (range n))
+  (closepath dev))
+(define p (open-eps-device "test002.eps" (make-rect 0 0 110 110)))
+(translate p (make-point 55 55))
+(star p 10 25 50)
+(with-gstate-saved
+ p
+ (lambda ()
+  (setlinewidth p 3)
+  (setlinecap p 'round)
+  (setdash p '#(0 5) 0)
+  (stroke p)))
+(setlinewidth p 0.5)
+(stroke p)
+(star p 10 15 40)
+(setlinewidth p 1)
+(setcolor p (device-color p '(rgb 0 0 1)))
+(stroke p)
+(close-graphics-device p)
+;;;@note <p>Here's the result:</p>
+;;;@shell eps2png test002.eps test002.png
+;;;@note <img class="example" src="test002.png"/>
+#|@note[[
+
+<h2>Computing Bounding Boxes</h2>
+
+<p>Remember I said that <code>open-bbox-device</code> could be
+used to figure out the bounding box for a set of drawing commands?
+The way this works is that <code>open-bbox-device</code> creates a
+<i>virtual</i> graphics device, the only job of which
+is to accumulate drawing commands and pay attention to how large
+an area they paint.</p>
+
+<p>(<i><b>Note</b></i>: The bbox device does not pay attention to
+clipping paths yet, so clipped drawing will still count against the
+bounding box)</p>
+
+<p>First, for convenience, we'll wrap our entire drawing into
+a single procedure which just takes a graphics device object onto
+which to render.  That's because we're going to invoke it twice,
+once for the bbox virtual device and again for the real output.
+</p>
+]]|#
+;;;@reprompt
+(define (drawme dev)
+  ;; this is the same drawing as before, except I've shifted
+  ;; the origin because my eps->png converter doesn't like negative 
+  ;; bboxes
+  (translate dev (make-point 100 100))
+  (star dev 10 25 50)
+  (with-gstate-saved
+   dev
+   (lambda ()
+     (setlinewidth dev 3)
+     (setlinecap dev 'round)
+     (setdash dev '#(0 5) 0)
+     (stroke dev)))
+  (setlinewidth dev 0.5)
+  (stroke dev)
+  (star dev 10 15 40)
+  (setlinewidth dev 1)
+  (setcolor dev (device-color dev '(rgb 0 0 1)))
+  (stroke dev))
+;;;@note <p>The call to <code>close-graphics-device</code> for
+;;;@note the bbox device returns the accumulated bounding box.</p>
+;;;@reprompt
+(define r (let ((p (open-bbox-device)))
+            (drawme p)
+            (close-graphics-device p)))
+r
+(let ((p (open-eps-device "test003.eps" r)))
+  (drawme p)
+  (close-graphics-device p))
+;;;@shell eps2png test003.eps test003.png
+;;;@note <p>Here's the result:</p> <img class="example" src="test003.png"/>
+;;;@note <p>Let's make a bigger canvas and draw that explicitly.</p>
+;;;@reprompt
+(let ((p (open-eps-device "test004.eps" (inset-rect r -20 -20))))
+  (with-gstate-saved
+   p
+   (lambda ()
+     (setlinewidth p 0.1)
+     (setcolor p (device-color p '(rgb 1 0 0)))
+     (rectstroke p r)))
+  (drawme p)
+  (close-graphics-device p))
+;;;@shell eps2png test004.eps test004.png
+#|@note[[
+<p>Now it's easier to see where the bounding box is relative to the
+drawing.  Furthermore, if you
+look closely (under zoom) at <a href="test004.eps">the EPS file</a> using
+something like GhostView, you can see a small margin around the shape.
+That margin is present
+because the bbox device is taking into account the line width (and it's
+mitering effects) but not
+the dashing or linecaps (which obviate the mitering effect).</p>
+ <img class="example" src="test004.png"/> ]]|#

@@ -1,0 +1,32 @@
+
+This is the beginning of an implementation of an IP stack, using
+Linux's TUN/TAP device (in TUN mode) to access raw packets.
+
+It runs on Linux 2.6.12, and only understands ICMP ECHO-REQUEST
+enough to generate a sensible reply (in other words you can ping
+it!)
+
+Start it up:
+
+        $ rsf -q substring.scm tun_tap.scm gen.scm
+        top[0]=>(g)
+
+Note that /dev/net/tun must be rw by the user running rs,
+but the user doesn't necessarily have to be root.
+
+The device "tun0" will appear in the kernel (or some other tunX).  As
+root, run ifconfig:
+
+        ifconfig tun0 10.0.0.1 pointopoint 10.0.0.2 up
+
+Then, you can ping the RScheme process:
+
+        ping -c 1 -I tun0 10.0.0.2
+
+
+
+http://linux-ip.net/gl/tcng/node38.html  IPv4 header picture
+
+http://www.faqs.org/rfcs/rfc791.html  IP
+http://www.faqs.org/rfcs/rfc792.html  ICMP
+
