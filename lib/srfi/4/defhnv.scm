@@ -45,6 +45,7 @@
   (let ((class-name (symbol-append "<" tag "-vector>"))
 	(TAGvector? (symbol-append tag "vector?"))
 	(TAGvector (symbol-append tag "vector"))
+	(make-TAGvector (symbol-append "make-" tag "vector"))
 	(TAGvector-length (symbol-append tag "vector-length"))
 	(TAGvector-ref (symbol-append tag "vector-ref"))
 	(TAGvector-set! (symbol-append tag "vector-set!"))
@@ -61,6 +62,16 @@
 	 (instance? thing ,class-name))
        (define (,TAGvector . args)
 	 (,list->TAGvector args))
+       (define (,make-TAGvector len . fill)
+	 (let ((b (bvec-alloc ,class-name (* ,b/e len)))
+	       (real-fill (if (null? fill) 0 (car fill))))
+	   (let loop (((i <fixnum>) 0))
+	     (if (>= i len)
+		 b
+		 (begin
+		   (,set b (* i ,b/e) real-fill)
+		   (loop (+ i 1)))))))
+	   
        (define (,TAGvector-length (self ,class-name))
 	 (quotient (bvec-length self) ,b/e))
        (define (,TAGvector-ref (self ,class-name) (index <fixnum>))
@@ -133,6 +144,7 @@
 	(export ,class-name  ;; RScheme extension to SRFI-4
 		,TAGvector?
 		,TAGvector
+		,make-TAGvector
 		,TAGvector-length
 		,TAGvector-ref
 		,TAGvector-set!
